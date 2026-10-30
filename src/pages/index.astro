@@ -1,0 +1,19 @@
+---
+import Layout from '../layouts/Layout.astro'
+import StatusBadge from '../components/StatusBadge.svelte'
+---
+
+<Layout
+  title="Inkstone Blog"
+  description="The public blog frontend for Inkstone notes."
+>
+  <main class="mx-auto flex min-h-dvh w-full max-w-2xl flex-col justify-center gap-4 px-6 py-16">
+    <StatusBadge label="Initialized" />
+    <p class="text-sm font-medium tracking-[0.2em] text-sky-400 uppercase">Inkstone Blog</p>
+    <h1 class="text-4xl font-semibold tracking-tight">Frontend initialized</h1>
+    <p class="text-slate-400">
+      The public blog will be ported here from Shirone. Content and reading rendering are provided
+      by the Inkstone blog API and reading runtime.
+    </p>
+  </main>
+</Layout>
