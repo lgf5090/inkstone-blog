@@ -1,19 +1,27 @@
 ---
 import '../styles/global.css'
+import type { BlogSitePublic } from '../lib/blog-types'
 
 interface Props {
+  site?: BlogSitePublic | null
   title?: string
   description?: string
 }
 
 const {
-  title = 'Inkstone Blog',
-  description = 'A blog frontend for Inkstone notes.',
+  site = null,
+  title = site?.site.title ?? 'Inkstone Blog',
+  description = site?.site.description ?? 'A blog powered by Inkstone notes.',
 } = Astro.props
+
+const nav = site?.nav.length
+  ? site.nav
+  : [{ label: 'Posts', href: '/' }]
+const pathname = Astro.url.pathname
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={site?.site.locale ?? 'en'} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,7 +31,38 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="min-h-dvh bg-slate-950 text-slate-100 antialiased">
-    <slot />
+  <body class="min-h-dvh bg-[#0b0f17] text-slate-100 antialiased">
+    <div class="mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-5 sm:px-8">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 py-5">
+        <a href="/" class="text-lg font-semibold tracking-tight text-white">
+          {site?.site.title ?? 'Inkstone Blog'}
+        </a>
+        <nav aria-label="Blog navigation" class="flex flex-wrap items-center gap-1 text-sm text-slate-400">
+          {nav.map((item) => (
+            <a
+              href={item.href}
+              aria-current={pathname === item.href ? 'page' : undefined}
+              class:list={[
+                'rounded-full px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white',
+                pathname === item.href && 'bg-white/10 text-white',
+              ]}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </header>
+
+      <main class="flex-1 py-10 sm:py-14">
+        <slot />
+      </main>
+
+      <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-6 text-xs text-slate-500">
+        <span>{site?.site.title ?? 'Inkstone Blog'}</span>
+        <span>
+          {site ? `${site.counts.posts} posts · ${site.counts.tags} tags` : 'Powered by Inkstone'}
+        </span>
+      </footer>
+    </div>
   </body>
 </html>

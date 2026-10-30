@@ -1,0 +1,557 @@
+
+
+:root {
+
+  --font-ui: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text',
+    'Segoe UI', Inter, Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI',
+    'Microsoft YaHei', sans-serif;
+  --font-serif: 'Iowan Old Style', 'Source Serif 4', Charter, Georgia, 'Songti SC',
+    'Noto Serif CJK SC', 'Source Han Serif SC', 'SimSun', serif;
+  /* app.css sets a display face for prose headings with a Georgia fallback; the name lives here so
+  the cascade has one place to retune it and the token gate sees a definition. */
+  --font-display: var(--font-serif);
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono',
+    Consolas, 'Liberation Mono', Menlo, 'Sarasa Mono SC', monospace;
+
+
+  --r-1: 1px;
+  --r-2: 2px;
+  --r-3: 3px;
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 20px;
+  --r-full: 999px;
+
+  --sp-0-5: 2px;
+  /* The outline's located-marker bar is 2.5px wide; without the step the class resolved to nothing
+  and the marker painted no pixels at all. */
+  --sp-0-625: 2.5px;
+  --sp-0-75: 3px;
+  --sp-1: 4px;
+  --sp-1-5: 6px;
+  --sp-2: 8px;
+  --sp-2-25: 9px;
+  --sp-2-5: 10px;
+  --sp-3: 12px;
+  --sp-3-5: 14px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  /* The short header-control step: 22px tall buttons sit in 24px rows. */
+  --sp-5-5: 22px;
+  --sp-6: 24px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* The smallest comfortable hit target for a finger, applied only under
+     `@media (pointer: coarse)` so desktop density is never paid for it. */
+  --tap-target: 44px;
+
+  /* WCAG 2.5.8's floor for *any* pointer: 24 by 24 CSS pixels. A control painted smaller than this
+     keeps its drawn size and gains the missing area from an invisible overlay (`.ink-tap-pad`), so a
+     dense row stays dense and is still tappable. */
+  --tap-min: 24px;
+
+  /* Every size the interface sets, in one ordered scale: a class names a step, never a pixel.
+     The half steps exist because dense chrome is retuned in half-pixel increments, where a whole
+     pixel reads as a different weight rather than a different size. */
+  --text-6: 6px;
+  --text-8-5: 8.5px;
+  --text-9: 9px;
+  --text-9-5: 9.5px;
+  --text-10: 10px;
+  --text-10-5: 10.5px;
+  --text-11: 11px;
+  --text-11-5: 11.5px;
+  --text-12: 12px;
+  --text-12-5: 12.5px;
+  --text-13: 13px;
+  --text-13-5: 13.5px;
+  --text-14: 14px;
+  --text-14-5: 14.5px;
+  --text-15: 15px;
+  --text-15-5: 15.5px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  /* The kanban chart's headline numbers already asked for this step; the scale never defined it, so
+     they rendered at the inherited 13px until the step arrived. */
+  --text-20: 20px;
+  --text-22: 22px;
+  --text-26: 26px;
+  --text-30: 30px;
+
+  /* The leading every dense UI stack shares, so a card and its column header agree. */
+  --ui-line: 1.55;
+
+  /* ── The reader's type, on one setting for both surfaces they read on ──────────────────────────
+     `settings → appearance → body text size` writes `--prose-size` on the document element, and the note
+     preview has always read it. An assistant answer is the same prose in a narrower column, so it takes the
+     same step down the scale rather than a second size nobody can find: `.ink-chat-prose` used to carry a
+     literal `--text-13`, which meant a reader who raised their text size for the notebook still read the
+     assistant at 13px. The gap between the two is its own named step, not arithmetic in a stylesheet.
+     `--chat-line` is the same trick in the other direction: it is the dense leading until the density
+     selector below says otherwise, and it is the only thing density moves here — a reader's line height,
+     measure and size stay theirs to set. */
+  --chat-size-offset: 3px;
+  --chat-size: calc(var(--prose-size) - var(--chat-size-offset));
+  --chat-line: var(--ui-line);
+
+  --dur-fast: 130ms;
+  --dur-base: 220ms;
+  --dur-slow: 340ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+
+  --statusbar-h: 26px;
+  --nav-w: 244px;
+  --list-w: 328px;
+  --prose-size: 16px;
+  --prose-line: 1.65;
+  --prose-width: 72ch;
+  --editor-size: 15px;
+
+  /* A slide is laid out on a fixed 1280x720 design canvas, so its type is measured in canvas
+     pixels rather than in the reader's: 28px on the canvas lands near 18px on a 1080p projector. */
+  --slide-prose-size: 28px;
+  --slide-line-height: 1.44;
+  --slide-code-size: 0.74em;
+  --slide-chart-height: 340px;
+
+
+  --writing-line: 1.64;
+  --heading-line: 1.28;
+  --heading-1-size: 1.52em;
+  --heading-2-size: 1.28em;
+  --heading-3-size: 1.14em;
+  --heading-4-size: 1.03em;
+  --heading-5-size: 0.94em;
+
+
+  --code-size: var(--editor-size, 15px);
+  --code-line: 1.56;
+  --code-weight: 400;
+  --code-spacing: -0.012em;
+
+
+  /* Carried as small text — counts, warnings, the over-budget figure — on the darkest light surface
+     (#f1efe9), where these three measured 2.19 / 1.90 / 3.21. Each is now the lightest value in its own
+     hue and chroma that clears 5:1, which leaves a point of margin over the AA floor of 4.5:1. The dark
+     theme already passed and is untouched. See tests/contrast-light-semantic-colors.test.ts. */
+  --success: oklch(48% 0.14 155);
+  --warning: oklch(51% 0.145 80);
+  --danger: oklch(53% 0.19 22);
+  --brand-accent: #bb4430;
+
+  /* Chart series. The Cloudflare app's graphs are the first screens here that draw more than one
+     series, so the palette is a token rather than a component's own list: `--chart-1` follows the
+     reader's accent, and the other four are hue-separated at the same lightness so no series is
+     told apart by brightness alone. */
+  --chart-1: var(--accent);
+  --chart-2: oklch(52% 0.13 230);
+  --chart-3: oklch(50% 0.14 155);
+  --chart-4: oklch(55% 0.13 80);
+  --chart-5: oklch(52% 0.15 320);
+
+  --empty-h-md: 192px;
+  --empty-h-sm: 128px;
+  --sp-7: 28px;
+  --sp-8: 32px;
+  --sp-9: 36px;
+  --sp-10: 40px;
+  /* The tracking scale, ordered by how wide the letters are set. `micro` is the
+     tightest small caps and dense monospace labels, `caps` the uppercase chip and
+     tool-button labels; both existed as magic numbers in prose.css before. */
+  --tracking-title: -0.012em;
+  --tracking-micro: 0.02em;
+  --tracking-caps: 0.04em;
+  --tracking-label: 0.06em;
+  --tracking-section: 0.07em;
+
+  /* ── The stacking scale ─────────────────────────────────────────────────────────────────────
+     One named band per tier two overlapping surfaces actually compare on. Every number the app
+     paints today has a name here: nothing outside this list may write a `z-index` of its own.
+     `src/client/lib/z-index.ts` mirrors these values for surfaces whose stack level is set from JS,
+     and `tests/shared-component-contract.test.ts` pins the two against each other, so a band cannot
+     be added on one side only and no band may be re-tuned out of order.
+     The scale is strictly increasing. Below `--z-drawer` the numbers are counters inside one
+     surface's own stacking context — a slide stage, a kanban column, a prose widget — so they read
+     small and never meet the viewport-fixed tiers above them.
+     Every band now has one name on each side. The two that used to disagree — a JS key called `menu`
+     on the `--z-pop` tier, and `hoverPinned` on `--z-pinned` — were renamed at their call sites, so a
+     key here and the band it mirrors are the same tier, and nothing carries a legacy alias. ───── */
+
+  /* The projector's stage counter: beats a slide's own stacking context, never its controls. */
+  --z-sticky: 10;
+  /* A menu or popover drawn inside one surface's own context — the kanban board's column, filter,
+     sort, shortcuts and view-options panels, which only have to beat the board they sit in. */
+  --z-menu: 20;
+  /* A handle floating over the text it belongs to (the block dragger). */
+  --z-float: 30;
+  /* A panel anchored to a control inside a reading or presentation surface. The widest-used band. */
+  --z-popover: 50;
+
+  /* The drawer rail: above the app shell, below every dialog. */
+  --z-drawer: 190;
+  /* The settings panel — the first full-viewport dialog, so it opens under the rest. */
+  --z-panel: 210;
+  /* The graph panel, which the settings panel must not cover. */
+  --z-workspace: 230;
+  /* A prompt or sheet a reader types into or picks from: the command palette, the omnisearch
+     prompt, a mobile filter sheet, an article or template preview, a graph overlay. */
+  --z-prompt: 240;
+  /* `Dialog`. The projector owns the viewport at this tier, and the rows it opens ride above it. */
+  --z-modal: 250;
+  /* A picker that has to beat the dialog it was opened from (the emoji picker). */
+  --z-picker: 255;
+  /* The floating `Menu` tier, and the image lightbox. */
+  --z-pop: 260;
+  /* A submenu flyout: one above the menu that opened it. */
+  --z-submenu: 265;
+  /* A wiki-link hover card, and a context menu opened over one. */
+  --z-hover-card: 270;
+  /* A pinned hover card and the menus it owns. */
+  --z-pinned: 280;
+  /* A menu opened from a pinned card. The shelf's full-viewport drop veil rides this tier. */
+  --z-pinned-menu: 300;
+  /* `Toaster`. */
+  --z-toast: 400;
+  /* `Tooltip`: above every toast, because it explains whatever is under the cursor. */
+  --z-tooltip: 500;
+  /* The outline's hover peek, which has to read over the surface it annotates. */
+  --z-peek: 520;
+  /* Last-resort escape hatch for a surface that owns the viewport outright (a full-screen embedded
+     editor). Reach for a band above instead; a second user of this one is a bug to fix, not a peer. */
+  --z-top: 9999;
+  /* Unnamed debt for its owner: `TextToDiagramModal.tsx` paints a full-screen dialog at `z-[100]`,
+     below the drawer it can be opened over. It belongs at `--z-modal`; it is left out of the scale so
+     the scale does not bless a mis-ordered tier. */
+
+  --kanban-tag-gray-fg: oklch(46.5% 0.005 106.6);
+  --kanban-tag-gray-bg: color-mix(in oklab, var(--kanban-tag-gray-fg) 14%, transparent);
+  --kanban-tag-brown-fg: oklch(49% 0.076 45.6);
+  --kanban-tag-brown-bg: color-mix(in oklab, var(--kanban-tag-brown-fg) 14%, transparent);
+  --kanban-tag-orange-fg: oklch(49% 0.159 55.7);
+  --kanban-tag-orange-bg: color-mix(in oklab, var(--kanban-tag-orange-fg) 14%, transparent);
+  --kanban-tag-yellow-fg: oklch(48.5% 0.13 76);
+  --kanban-tag-yellow-bg: color-mix(in oklab, var(--kanban-tag-yellow-fg) 14%, transparent);
+  --kanban-tag-green-fg: oklch(47% 0.085 158.4);
+  --kanban-tag-green-bg: color-mix(in oklab, var(--kanban-tag-green-fg) 14%, transparent);
+  --kanban-tag-blue-fg: oklch(47.5% 0.099 237.4);
+  --kanban-tag-blue-bg: color-mix(in oklab, var(--kanban-tag-blue-fg) 14%, transparent);
+  --kanban-tag-purple-fg: oklch(49.5% 0.12 309.5);
+  --kanban-tag-purple-bg: color-mix(in oklab, var(--kanban-tag-purple-fg) 14%, transparent);
+  --kanban-tag-pink-fg: oklch(50% 0.164 350.4);
+  --kanban-tag-pink-bg: color-mix(in oklab, var(--kanban-tag-pink-fg) 14%, transparent);
+  --kanban-tag-red-fg: oklch(49.5% 0.172 25.8);
+  --kanban-tag-red-bg: color-mix(in oklab, var(--kanban-tag-red-fg) 14%, transparent);
+  --kanban-tag-coral-fg: oklch(49.5% 0.171 27.2);
+  --kanban-tag-coral-bg: color-mix(in oklab, var(--kanban-tag-coral-fg) 14%, transparent);
+  --kanban-tag-teal-fg: oklch(45.5% 0.107 190.8);
+  --kanban-tag-teal-bg: color-mix(in oklab, var(--kanban-tag-teal-fg) 14%, transparent);
+  --kanban-tag-slate-fg: oklch(48.5% 0.041 257.4);
+  --kanban-tag-slate-bg: color-mix(in oklab, var(--kanban-tag-slate-fg) 14%, transparent);
+
+  --media-scrim: oklch(0% 0 0 / 92%);
+  --media-control: oklch(0% 0 0 / 35%);
+  --media-control-hover: oklch(0% 0 0 / 55%);
+  --media-text: oklch(100% 0 0 / 80%);
+  --media-text-strong: oklch(100% 0 0);
+  --media-surface: oklch(100% 0 0 / 10%);
+
+  --memo-tag-dot: 6px;
+  --memo-blur: 6px;
+  --memo-sidebar-width: 248px;
+  --memo-detail-width: 400px;
+  --memo-share-image-width: 420px;
+  --memo-setting-control-width: 320px;
+  --memo-field-narrow-width: 150px;
+  --memo-media-max-height: 420px;
+  --memo-pin-badge-min: 18px;
+  --memo-page-width: 1200px;
+  --memo-library-width: 1100px;
+  --memo-settings-width: 980px;
+  --memo-reading-width: 760px;
+  --memo-filter-chip-max-width: 240px;
+  --memo-field-min-width: 160px;
+  --memo-token-field-min-width: 180px;
+  --memo-field-wide-width: 280px;
+}
+
+
+:root[data-theme='dark'], [data-code-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-sunken: #131110;
+  --bg-base: #181614;
+  --bg-editor: #1e1b19;
+  --bg-surface: oklch(21.5% 0.01 265);
+  --bg-raised: oklch(25% 0.011 265);
+  --bg-overlay: oklch(27% 0.012 265);
+  --bg-inset: oklch(14% 0.008 265);
+  --bg-hover: oklch(100% 0 0 / 4.5%);
+  --bg-active: oklch(100% 0 0 / 8%);
+
+  --border-subtle: oklch(100% 0 0 / 6%);
+  --border-default: oklch(100% 0 0 / 10%);
+  --border-strong: oklch(100% 0 0 / 17%);
+
+  /* De-emphasis has a hard floor here: the lightest dark surface (--bg-overlay
+     under `[data-background='white']`) is nearly #2a2a2d, so a step below ~67% L
+     cannot reach WCAG AA 4.5:1 on it. The four steps therefore live in the upper
+     band (93/78/73/67) and keep their order by spacing rather than by distance
+     from white; `tests/contrast-dark-text-quaternary.test.ts` holds both. */
+  --text-primary: oklch(93% 0.004 265);
+  --text-secondary: oklch(78% 0.008 265);
+  --text-tertiary: oklch(73% 0.009 265);
+  --text-quaternary: oklch(67% 0.008 265);
+  --text-inverse: oklch(16% 0.008 265);
+
+  --graph-edge: oklch(66% 0.02 265);
+  --graph-edge-dim: oklch(52% 0.014 265);
+  --graph-node: oklch(56% 0.009 265);
+  --graph-label: oklch(74% 0.012 265);
+
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 40%);
+  --shadow-pop: 0 0 0 1px oklch(100% 0 0 / 7%), 0 8px 24px -6px oklch(0% 0 0 / 60%),
+    0 20px 48px -12px oklch(0% 0 0 / 45%);
+  --shadow-modal: 0 0 0 1px oklch(100% 0 0 / 8%), 0 16px 40px -8px oklch(0% 0 0 / 65%),
+    0 40px 80px -20px oklch(0% 0 0 / 55%);
+  --shadow-soft: 0 1px 2px oklch(0% 0 0 / 12%), 0 4px 16px -4px oklch(0% 0 0 / 10%);
+
+  --scrim: oklch(0% 0 0 / 55%);
+  --selection: color-mix(in oklab, var(--accent) 30%, transparent);
+  --success: oklch(72% 0.145 155);
+  --warning: oklch(80% 0.15 82);
+  --danger: oklch(68% 0.185 22);
+  --brand-accent: #e0664a;
+  --chart-1: var(--accent);
+  --chart-2: oklch(72% 0.12 230);
+  --chart-3: oklch(72% 0.13 155);
+  --chart-4: oklch(78% 0.13 80);
+  --chart-5: oklch(72% 0.13 320);
+
+
+  --code-fg: #adbac7;
+  --code-inline-fg: #6cb6ff;
+  --syntax-comment: #768390;
+  --syntax-keyword: #f47067;
+  --syntax-string: #96d0ff;
+  --syntax-number: #6cb6ff;
+  --syntax-function: #dcbdfb;
+  --syntax-type: #6cb6ff;
+  --syntax-type-definition: #f69d50;
+  --syntax-variable: #adbac7;
+  --syntax-property: #f69d50;
+  --syntax-operator: #f47067;
+  --syntax-punctuation: #adbac7;
+  --syntax-constant: #6cb6ff;
+
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 5%);
+  --kanban-tag-gray-fg: oklch(73% 0.006 247.9);
+  --kanban-tag-gray-bg: color-mix(in oklab, var(--kanban-tag-gray-fg) 14%, transparent);
+  --kanban-tag-brown-fg: oklch(73.5% 0.073 43.5);
+  --kanban-tag-brown-bg: color-mix(in oklab, var(--kanban-tag-brown-fg) 14%, transparent);
+  --kanban-tag-orange-fg: oklch(73.5% 0.115 54.8);
+  --kanban-tag-orange-bg: color-mix(in oklab, var(--kanban-tag-orange-fg) 14%, transparent);
+  --kanban-tag-yellow-fg: oklch(73% 0.113 76.5);
+  --kanban-tag-yellow-bg: color-mix(in oklab, var(--kanban-tag-yellow-fg) 14%, transparent);
+  --kanban-tag-green-fg: oklch(71.5% 0.101 156.5);
+  --kanban-tag-green-bg: color-mix(in oklab, var(--kanban-tag-green-fg) 14%, transparent);
+  --kanban-tag-blue-fg: oklch(73% 0.11 259.6);
+  --kanban-tag-blue-bg: color-mix(in oklab, var(--kanban-tag-blue-fg) 14%, transparent);
+  --kanban-tag-purple-fg: oklch(74.5% 0.162 305);
+  --kanban-tag-purple-bg: color-mix(in oklab, var(--kanban-tag-purple-fg) 14%, transparent);
+  --kanban-tag-pink-fg: oklch(75.5% 0.191 350.2);
+  --kanban-tag-pink-bg: color-mix(in oklab, var(--kanban-tag-pink-fg) 14%, transparent);
+  --kanban-tag-red-fg: oklch(76% 0.175 25.1);
+  --kanban-tag-red-bg: color-mix(in oklab, var(--kanban-tag-red-fg) 14%, transparent);
+  --kanban-tag-coral-fg: oklch(74.5% 0.163 26.7);
+  --kanban-tag-coral-bg: color-mix(in oklab, var(--kanban-tag-coral-fg) 14%, transparent);
+  --kanban-tag-teal-fg: oklch(71.5% 0.113 191.2);
+  --kanban-tag-teal-bg: color-mix(in oklab, var(--kanban-tag-teal-fg) 14%, transparent);
+  --kanban-tag-slate-fg: oklch(73% 0.035 256.8);
+  --kanban-tag-slate-bg: color-mix(in oklab, var(--kanban-tag-slate-fg) 14%, transparent);
+}
+
+
+:root[data-theme='light'], [data-code-theme='light'] {
+  color-scheme: light;
+
+  --bg-sunken: #f1efe9;
+  --bg-base: #f7f5f1;
+  --bg-editor: #fdfcfa;
+  --bg-surface: oklch(100% 0 0);
+  --bg-raised: oklch(100% 0 0);
+  --bg-overlay: oklch(100% 0 0);
+  --bg-inset: oklch(96.8% 0.005 90);
+  --bg-hover: oklch(20% 0.01 265 / 4%);
+  --bg-active: oklch(20% 0.01 265 / 7%);
+
+  --border-subtle: oklch(20% 0.01 265 / 7%);
+  --border-default: oklch(20% 0.01 265 / 11%);
+  --border-strong: oklch(20% 0.01 265 / 17%);
+
+  /* Light theme is the mirror image of the dark contract above: text is dark on
+     light, so de-emphasis means climbing *towards* white, and AA puts a ceiling
+     on that climb rather than a floor. The binding surface is the darkest light
+     one (`--bg-sunken` #f1efe9), where ratios are lowest and steps compress;
+     `[data-background='white']` is the opposite end - pure #ffffff is the
+     highest-contrast light surface, so it constrains nothing here.
+     The four steps therefore sit at 21/41/46/52: `--text-quaternary` at the
+     shallowest depth that still clears AA 4.5:1 with the margin the dark ladder
+     also ships, one 5-6 point perceptual step per rank below it, and
+     `--text-secondary` deepened by three points so the three de-emphasis ranks
+     keep that spacing instead of collapsing into each other. The previous
+     44/58/51 was not only short of contrast, it was inverted: tertiary read
+     quieter than quaternary. `tests/contrast-light-text-ladder.test.ts` holds
+     the floor, the order, the spacing and the non-inversion. */
+  --text-primary: oklch(21% 0.01 265);
+  --text-secondary: oklch(41% 0.01 265);
+  --text-tertiary: oklch(46% 0.009 265);
+  /* Small labels are used on both the editor and the darker sunken sidebar. */
+  --text-quaternary: oklch(52% 0.008 265);
+  --text-inverse: oklch(99% 0 0);
+
+  --graph-edge: oklch(46% 0.02 265);
+  --graph-edge-dim: oklch(62% 0.014 265);
+  --graph-node: oklch(58% 0.009 265);
+  --graph-label: oklch(38% 0.012 265);
+
+  --shadow-sm: 0 1px 2px oklch(20% 0.01 265 / 6%);
+  --shadow-pop: 0 0 0 1px oklch(20% 0.01 265 / 6%), 0 2px 4px -1px oklch(20% 0.01 265 / 5%),
+    0 12px 28px -8px oklch(20% 0.01 265 / 12%), 0 24px 56px -16px oklch(20% 0.01 265 / 10%);
+  --shadow-modal: 0 0 0 1px oklch(20% 0.01 265 / 7%), 0 8px 16px -4px oklch(20% 0.01 265 / 8%),
+    0 24px 48px -12px oklch(20% 0.01 265 / 16%);
+  --shadow-soft: 0 1px 2px oklch(20% 0.01 265 / 6%), 0 4px 16px -4px oklch(20% 0.01 265 / 6%);
+
+  --scrim: oklch(35% 0.01 265 / 32%);
+  --selection: color-mix(in oklab, var(--accent) 22%, transparent);
+  --brand-accent: #bb4430;
+
+
+  --code-fg: #24292e;
+  --code-inline-fg: #005cc5;
+  --syntax-comment: #6a737d;
+  --syntax-keyword: #d73a49;
+  --syntax-string: #032f62;
+  --syntax-number: #005cc5;
+  --syntax-function: #6f42c1;
+  --syntax-type: #005cc5;
+  --syntax-type-definition: #6f42c1;
+  --syntax-variable: #24292e;
+  /* #e36209 measured 2.51:1 on a hovered key's wash and 3.04:1 on a white card — the JSON faces paint
+     their keys, and every code block its `.token.property` and `.token.deleted`, with this token, so it
+     carries text, not decoration. #8d4500 is the same hue at the depth that clears 4.5:1 on all twelve
+     light backgrounds; the dark theme's #f69d50 already measured 4.72:1 and is untouched. */
+  --syntax-property: #8d4500;
+  --syntax-operator: #d73a49;
+  --syntax-punctuation: #24292e;
+  --syntax-constant: #005cc5;
+
+  --shadow-xs: 0 1px 2px oklch(20% 0.01 265 / 5%);
+}
+
+
+:root[data-theme='light'][data-background='white'] {
+  --bg-sunken: #f7f7f8;
+  --bg-base: #ffffff;
+  --bg-editor: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-raised: #ffffff;
+  --bg-overlay: #ffffff;
+  --bg-inset: #f4f5f6;
+}
+
+:root[data-theme='dark'][data-background='white'] {
+  --bg-sunken: #0f1011;
+  --bg-base: #151617;
+  --bg-editor: #1b1c1e;
+  --bg-surface: #202123;
+  --bg-raised: #252629;
+  --bg-overlay: #292a2d;
+  --bg-inset: #111214;
+}
+
+/* Interface density is one attribute on the document element, written by `syncAppearanceToDom` from the
+   reader's own setting, and this is the only place a density value is allowed to live: a rule that reaches
+   for a pixel per surface is a second setting under the first. Compact tightens the leading the chat is
+   read at — the rows of the note list already answer it in code — and stops there, because font size, line
+   height and measure are three settings a reader moves by hand and density must not quietly move again.
+   Nothing here is eased: a re-read of the same text at a new leading has to be instant, and an animation
+   of it would be one more thing a reader who asked for reduced motion had to sit through. */
+:root[data-density='compact'] {
+  --chat-line: 1.42;
+}
+
+
+:root[data-accent='cinnabar'][data-theme='dark'] { --accent: oklch(66.5% 0.15 32); --accent-hover: oklch(71% 0.145 32); --accent-on-soft: #eb755f; }
+:root[data-accent='cinnabar'][data-theme='light'] { --accent: oklch(54% 0.15 30); --accent-hover: oklch(48.5% 0.155 30); --accent-on-soft: #ab3b2d; }
+
+:root[data-accent='indigo'][data-theme='dark'] { --accent: oklch(72% 0.13 252); --accent-hover: oklch(77% 0.125 252); }
+:root[data-accent='indigo'][data-theme='light'] { --accent: oklch(52% 0.14 252); --accent-hover: oklch(46% 0.13 252); --accent-on-soft: #1063ae; }
+
+:root[data-accent='celadon'][data-theme='dark'] { --accent: oklch(74% 0.12 150); --accent-hover: oklch(79% 0.115 150); }
+:root[data-accent='celadon'][data-theme='light'] { --accent: oklch(49% 0.13 150); --accent-hover: oklch(43% 0.11 150); --accent-on-soft: #067132; }
+
+:root[data-accent='amber'][data-theme='dark'] { --accent: oklch(80% 0.14 95); --accent-hover: oklch(85% 0.13 95); }
+:root[data-accent='amber'][data-theme='light'] { --accent: oklch(56% 0.105 95); --accent-hover: oklch(50% 0.1 95); --accent-on-soft: #766200; }
+
+:root[data-accent='terracotta'][data-theme='dark'] { --accent: oklch(76% 0.105 205); --accent-hover: oklch(81% 0.1 205); }
+:root[data-accent='terracotta'][data-theme='light'] { --accent: oklch(49% 0.075 205); --accent-hover: oklch(43% 0.07 205); }
+
+:root[data-accent='wisteria'][data-theme='dark'] { --accent: oklch(72% 0.13 300); --accent-hover: oklch(77% 0.13 300); }
+:root[data-accent='wisteria'][data-theme='light'] { --accent: oklch(52% 0.16 300); --accent-hover: oklch(46% 0.15 300); --accent-on-soft: #764ab2; }
+
+:root[data-accent='graphite'][data-theme='dark'] { --accent: oklch(80% 0.025 250); --accent-hover: oklch(86% 0.02 250); }
+:root[data-accent='graphite'][data-theme='light'] { --accent: oklch(38% 0.03 250); --accent-hover: oklch(30% 0.025 250); }
+
+
+:root {
+  --accent: oklch(54% 0.15 30);
+  --accent-hover: oklch(48.5% 0.155 30);
+  --accent-contrast: oklch(99% 0 0);
+  --danger-contrast: oklch(99% 0 0);
+  --accent-soft: color-mix(in oklab, var(--accent) 14%, transparent);
+  --accent-softer: color-mix(in oklab, var(--accent) 7%, transparent);
+  /* The warning's own wash, same recipe as the accent's: `--warning` is per scheme and per accent
+     theme, so a fixed colour here would be wrong in one of them. Only the text on it is chosen to
+     clear AA — `--warning` on `--bg-raised` is not measured, so a badge never relies on colour alone
+     to say what it means. */
+  --warning-softer: color-mix(in oklab, var(--warning) 12%, transparent);
+  /* Text drawn on the accent's own tint. The accent itself does not clear AA on a 14% wash of
+     itself for five of the seven accents in the light theme nor for cinnabar in the dark one,
+     so this defaults to the accent and only those pairings override it below;
+     tests/accent-on-soft-contrast.test.ts measures every accent and theme against every surface
+     the wash can land on. */
+  --accent-on-soft: var(--accent);
+  /* ErrorBoundary paints a danger wash behind its icon; the fork builds washes with color-mix
+  rather than carrying a second flat colour per theme. */
+  --danger-soft: color-mix(in oklab, var(--danger) 14%, transparent);
+  --success-soft: color-mix(in oklab, var(--success) 14%, transparent);
+  --warning-soft: color-mix(in oklab, var(--warning) 14%, transparent);
+  --accent-ring: color-mix(in oklab, var(--accent) 34%, transparent);
+  --shadow-ring: 0 0 0 2px var(--accent-ring);
+  /* The ring a text field wears when it takes focus, and the only thickness one is allowed. A control
+     ring and a selection wash read at 2px (`--shadow-ring`); a field needs the third pixel to
+     separate from the border it sits inside, and every field ring in the app already measures 3px —
+     four of them spelled out by hand. Named so the next one is not spelled out as a fifth. */
+  --shadow-ring-focus: 0 0 0 3px var(--accent-ring);
+  --accent-muted: color-mix(in oklab, var(--accent) 62%, var(--text-tertiary));
+  --list-marker: var(--accent-muted);
+}
+
+
+:root[data-theme='dark'] { --accent-contrast: oklch(16% 0.008 265); --danger-contrast: oklch(16% 0.008 265); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
+}

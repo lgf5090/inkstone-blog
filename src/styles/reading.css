@@ -1,0 +1,3787 @@
+@import "./inkstone-tokens.css";
+
+
+
+.ink-prose {
+  font-size: var(--prose-size, 16px);
+  line-height: var(--prose-line, 1.65);
+  color: var(--text-primary);
+  letter-spacing: -0.005em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: var(--font-ui);
+  max-width: var(--prose-width, 72ch);
+  margin-inline: auto;
+  padding-block: 0 42vh;
+}
+
+.ink-prose[data-font='serif'] {
+  font-family: var(--font-serif);
+  letter-spacing: 0;
+}
+
+
+.ink-prose p {
+  margin: 0 0 0.72em;
+  text-wrap: pretty;
+}
+/* The live editor wraps every single block in its own prose host, so "last child of the column" would
+   otherwise be true for all of them and the document would lose its vertical rhythm there. */
+.ink-prose:not(.cm-live-block) > *:last-child {
+  margin-bottom: 0;
+}
+
+
+.ink-prose h1,
+.ink-prose h2,
+.ink-prose h3,
+.ink-prose h4,
+.ink-prose h5,
+.ink-prose h6 {
+  margin: 1.45em 0 0.44em;
+  font-weight: 650;
+  line-height: var(--heading-line, 1.28);
+  letter-spacing: -0.019em;
+  scroll-margin-top: 24px;
+  position: relative;
+}
+.ink-prose > h1:first-child,
+.ink-prose > h2:first-child,
+.ink-prose > h3:first-child {
+  margin-top: 0;
+}
+.ink-prose h1 {
+  font-size: var(--heading-1-size, 1.52em);
+  font-weight: 650;
+  letter-spacing: -0.024em;
+  margin-top: 1.55em;
+}
+.ink-prose h2 {
+  font-size: var(--heading-2-size, 1.28em);
+  margin-top: 1.5em;
+}
+.ink-prose h3 {
+  font-size: var(--heading-3-size, 1.14em);
+}
+.ink-prose h4 {
+  font-size: var(--heading-4-size, 1.03em);
+}
+.ink-prose h5,
+.ink-prose h6 {
+  font-size: var(--heading-5-size, 0.94em);
+  color: var(--text-secondary);
+  text-transform: none;
+}
+
+
+.ink-prose .heading-anchor {
+  position: absolute;
+  left: -0.95em;
+  top: 0;
+  width: 0.9em;
+  color: var(--text-quaternary);
+  opacity: 0;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  user-select: none;
+}
+.ink-prose .heading-anchor::before {
+  content: '#';
+}
+.ink-prose h1:hover .heading-anchor,
+.ink-prose h2:hover .heading-anchor,
+.ink-prose h3:hover .heading-anchor,
+.ink-prose h4:hover .heading-anchor {
+  opacity: 1;
+}
+.ink-prose .heading-anchor:hover {
+  color: var(--accent);
+}
+
+
+.ink-prose ul,
+.ink-prose ol {
+  margin: 0 0 0.68em;
+  padding-inline-start: 1.4em;
+}
+.ink-prose ul {
+  list-style-type: disc;
+}
+.ink-prose ol {
+  list-style-type: decimal;
+}
+.ink-prose ul ul {
+  list-style-type: circle;
+}
+.ink-prose ul ul ul {
+  list-style-type: square;
+}
+.ink-prose li {
+  margin-bottom: 0.14em;
+}
+.ink-prose li > ul,
+.ink-prose li > ol {
+  margin: 0.18em 0 0;
+}
+.ink-prose li::marker {
+  color: var(--list-marker, var(--text-tertiary));
+}
+.ink-prose ol > li::marker {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92em;
+}
+
+
+.ink-prose ul.contains-task-list,
+.ink-prose ul.contains-task-list > li.task-list-item {
+  list-style: none;
+}
+.ink-prose ul.contains-task-list {
+  padding-inline-start: 0.15em;
+}
+.ink-prose .task-list-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 0.45em;
+}
+.ink-prose ol.contains-task-list > li.task-list-item {
+  display: list-item;
+}
+.ink-prose ol.contains-task-list > li.task-list-item > input[type='checkbox'] {
+  margin-inline-end: 0.45em;
+}
+.ink-prose .task-list-item > p {
+  margin: 0;
+  display: contents;
+}
+.ink-prose .task-list-item > ul,
+.ink-prose .task-list-item > ol {
+  grid-column: 2;
+  width: 100%;
+}
+.ink-prose .task-label {
+  min-width: 0;
+}
+.ink-prose input[type='checkbox'] {
+  appearance: none;
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0.28em 0 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--bg-inset);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose input[type='checkbox']:hover {
+  border-color: var(--accent);
+}
+
+/*
+ * WCAG 2.5.8 wants 24 by 24 CSS pixels of target, and a task box is painted at 1.05em (17 at the
+ * default prose size) because a taller box would push every line of the list apart. So the drawn box
+ * stays and the tappable area grows around it — the same invisible overlay `.ink-tap-pad` uses, here
+ * on `::before` because `::after` is the check mark. It reaches into the first pixels of the label,
+ * which is prose rather than a control, and a query row's own neighbour is 8px further out.
+ */
+.ink-prose input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--tap-min));
+  height: max(100%, var(--tap-min));
+  translate: -50% -50%;
+}
+.ink-prose input[type='checkbox']:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+.ink-prose input[type='checkbox']:disabled:hover {
+  border-color: var(--border-strong);
+}
+.ink-prose input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.ink-prose input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-contrast);
+  clip-path: polygon(
+    20% 52%,
+    16% 58%,
+    40% 80%,
+    84% 30%,
+    78% 24%,
+    39% 68%
+  );
+}
+.ink-prose .task-list-item.done > p > .task-label,
+.ink-prose .task-list-item.done > .task-label {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-quaternary);
+}
+
+
+.ink-prose blockquote {
+  margin: 0.86em 0;
+  padding: 0.54em 0.86em;
+  border-left: 3px solid var(--border-strong);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+}
+.ink-prose blockquote > *:last-child {
+  margin-bottom: 0;
+}
+.ink-prose blockquote blockquote {
+  margin: 0.5em 0;
+  background: transparent;
+}
+
+
+.ink-prose .markdown-details,
+.ink-prose > details:not(.callout):not(.frontmatter-properties),
+.ink-prose .markdown-example-preview details:not(.callout):not(.frontmatter-properties) {
+  margin: 0.9em 0;
+  overflow: clip;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-inset);
+}
+.ink-prose .markdown-details > summary,
+.ink-prose > details:not(.callout):not(.frontmatter-properties) > summary,
+.ink-prose .markdown-example-preview details:not(.callout):not(.frontmatter-properties) > summary {
+  padding: 0.55em 0.8em;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.ink-prose .markdown-details[open] > summary,
+.ink-prose > details[open]:not(.callout):not(.frontmatter-properties) > summary,
+.ink-prose .markdown-example-preview details[open]:not(.callout):not(.frontmatter-properties) > summary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ink-prose .markdown-details > :not(summary),
+.ink-prose > details:not(.callout):not(.frontmatter-properties) > :not(summary),
+.ink-prose .markdown-example-preview details:not(.callout):not(.frontmatter-properties) > :not(summary) {
+  margin-inline: 0.85em;
+}
+.ink-prose .markdown-details > :nth-child(2),
+.ink-prose > details:not(.callout):not(.frontmatter-properties) > :nth-child(2),
+.ink-prose .markdown-example-preview details:not(.callout):not(.frontmatter-properties) > :nth-child(2) {
+  margin-top: 0.72em;
+}
+.ink-prose .markdown-details > :last-child,
+.ink-prose > details:not(.callout):not(.frontmatter-properties) > :last-child,
+.ink-prose .markdown-example-preview details:not(.callout):not(.frontmatter-properties) > :last-child {
+  margin-bottom: 0.72em;
+}
+
+.ink-prose .callout {
+  --callout-color: var(--accent);
+  margin: 0.9em 0;
+  overflow: clip;
+  border: 1px solid color-mix(in oklab, var(--callout-color) 30%, var(--border-subtle));
+  border-left: 3px solid var(--callout-color);
+  border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--callout-color) 6%, var(--bg-inset));
+}
+.ink-prose .callout-warning,
+.ink-prose .callout-question { --callout-color: var(--warning); }
+.ink-prose .callout-danger,
+.ink-prose .callout-failure { --callout-color: var(--danger); }
+.ink-prose .callout-success,
+.ink-prose .callout-tip { --callout-color: var(--success); }
+.ink-prose .callout-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.48em 0.72em;
+  color: var(--callout-color);
+  font-weight: 650;
+  line-height: 1.4;
+}
+.ink-prose summary.callout-title { cursor: pointer; }
+.ink-prose .callout-title::before {
+  width: 0.58em;
+  height: 0.58em;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+.ink-prose .callout-content { padding: 0 0.78em 0.62em; }
+.ink-prose .callout-content > :last-child { margin-bottom: 0; }
+
+.ink-prose .markdown-tabs-outer {
+  margin: 0.95em 0;
+  container-type: inline-size;
+}
+.ink-prose .markdown-tabs {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-base);
+  position: relative;
+}
+.ink-prose .markdown-tabs-header-wrap {
+  display: contents;
+}
+.ink-prose .markdown-tabs.is-settings-open > .markdown-tabs-header-wrap {
+  display: block;
+  position: relative;
+  flex: 0 0 100%;
+}
+.ink-prose .tab-list {
+  display: flex;
+  gap: var(--sp-0-5);
+  overflow-x: auto;
+  padding: 5px 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  background: var(--bg-inset);
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical']):not([data-tabs-position='bottom']) > .tab-list {
+  padding-inline-end: 130px;
+}
+.ink-prose [role='tab'] {
+  flex: none;
+  padding: 0.42em 0.72em 0.5em;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--text-tertiary);
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose [role='tab']:hover { color: var(--text-secondary); }
+.ink-prose [role='tab'][aria-selected='true'] {
+  border-bottom-color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ink-prose .tab-panel { padding: 0.8em 0.9em 0.15em; min-width: 0; }
+.ink-prose .tab-panel[hidden] { display: none; }
+
+/* A strip on a side edge reads as a column of labels, and the panel takes whatever is left. */
+.ink-prose .markdown-tabs[data-tabs-style='vertical'] {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'] .tab-list {
+  flex-direction: column;
+  border-bottom: none;
+  border-inline-end: 1px solid var(--border-subtle);
+  border-radius: var(--r-md) 0 0 var(--r-md);
+  padding: var(--sp-1-5) var(--sp-1);
+  min-width: 130px;
+  max-width: 200px;
+  gap: var(--sp-0-5);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-inset);
+  flex-shrink: 0;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'] [role='tab'] {
+  text-align: start;
+  border-bottom: none;
+  border-inline-start: 3px solid transparent;
+  padding: 0.45em 0.7em;
+  border-radius: var(--r-sm);
+  width: 100%;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'] [role='tab'][aria-selected='true'] {
+  border-inline-start-color: var(--accent);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'] .tab-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-x: auto;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] .tab-list {
+  border-inline-end: none;
+  border-inline-start: 1px solid var(--border-subtle);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  order: 1;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] .tab-panel { order: 0; }
+.ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] [role='tab'] {
+  border-inline-start: none;
+  border-inline-end: 3px solid transparent;
+}
+.ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] [role='tab'][aria-selected='true'] {
+  border-inline-end-color: var(--accent);
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] {
+  display: flex;
+  flex-direction: column;
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] .tab-list {
+  order: 1;
+  border-bottom: none;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  padding: 0 6px 5px;
+  padding-inline-end: 132px;
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] .tab-panel { order: 0; }
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] [role='tab'] {
+  border-bottom: none;
+  border-top: 2px solid transparent;
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] [role='tab'][aria-selected='true'] {
+  border-top-color: var(--accent);
+}
+
+.ink-prose .markdown-tabs[data-tabs-variant='pills'] .tab-list {
+  padding: var(--sp-1);
+  gap: var(--sp-1);
+  align-items: center;
+  border-bottom: none;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='pills'] [role='tab'] {
+  border: none;
+  border-radius: var(--r-full);
+  padding: 0.3em 0.8em;
+  font-size: 0.86em;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='pills'] [role='tab'][aria-selected='true'] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-inline-start: none;
+  border-top: none;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='cards'] .tab-list {
+  padding-top: var(--sp-1);
+  padding-inline: var(--sp-1);
+  gap: var(--sp-0-5);
+}
+.ink-prose .markdown-tabs[data-tabs-variant='cards'] [role='tab'] {
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  margin-bottom: -1px;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='cards'] [role='tab'][aria-selected='true'] {
+  background: var(--bg-base);
+  border-color: var(--border-subtle);
+  border-bottom-color: var(--bg-base);
+  color: var(--text-primary);
+}
+.ink-prose .markdown-tabs[data-tabs-variant='minimal'] {
+  border: none;
+  background: transparent;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='minimal'] .tab-list {
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+}
+.ink-prose .markdown-tabs[data-tabs-variant='minimal'] .tab-panel { padding-inline: 0; }
+
+.ink-prose .markdown-tabs[data-tabs-align='center'] .tab-list { justify-content: center; }
+.ink-prose .markdown-tabs[data-tabs-align='end'] .tab-list { justify-content: flex-end; }
+.ink-prose .markdown-tabs[data-tabs-align='stretch'] [role='tab'] {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+/* The toolbar floats over the empty right hand end of the strip, which reserves the room for it. */
+.ink-prose .markdown-tabs > .markdown-tabs-header-wrap > .block-tools {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  padding: 2px 4px;
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--bg-inset) 86%, transparent);
+  border: 1px solid var(--border-subtle);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  z-index: 2;
+}
+.ink-prose .markdown-tabs:hover > .markdown-tabs-header-wrap > .block-tools,
+.ink-prose .markdown-tabs:focus-within > .markdown-tabs-header-wrap > .block-tools,
+.ink-prose .markdown-tabs.is-settings-open > .markdown-tabs-header-wrap > .block-tools,
+.ink-prose .markdown-tabs.is-layout-open > .markdown-tabs-header-wrap > .block-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ink-prose .markdown-tabs[data-tabs-position='right'] > .markdown-tabs-header-wrap > .block-tools {
+  right: auto;
+  left: 6px;
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] > .markdown-tabs-header-wrap > .block-tools {
+  top: auto;
+  bottom: 5px;
+}
+/* `[data-tabs]` is here for weight, not selection: the edge-positioned rules below each carry an
+   extra attribute selector, and without it a block sitting on the bottom edge would keep its toolbar
+   pinned to the bottom of the box — on top of the settings panel's last row. */
+.ink-prose .markdown-tabs[data-tabs].is-settings-open > .markdown-tabs-header-wrap > .block-tools {
+  top: 5px;
+  bottom: auto;
+  right: 6px;
+  left: auto;
+}
+.ink-prose .markdown-tabs > .markdown-tabs-header-wrap > .block-popover {
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 3;
+}
+.ink-prose .markdown-tabs[data-tabs-position='right'] > .markdown-tabs-header-wrap > .block-popover {
+  right: auto;
+  left: 0;
+}
+.ink-prose .markdown-tabs:not([data-tabs-style='vertical'])[data-tabs-position='bottom'] > .markdown-tabs-header-wrap > .block-popover {
+  top: auto;
+  bottom: calc(100% + 5px);
+}
+.ink-prose .markdown-tabs[data-tabs].is-settings-open > .markdown-tabs-header-wrap > .block-popover {
+  top: calc(100% + 5px);
+  bottom: auto;
+}
+.ink-prose .block-tool-btn.is-layout-trigger[aria-expanded='true'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+/* 5px offset + a 30px-tall toolbar, plus air: anything less and the strip's first row starts under it. */
+.ink-prose .markdown-tabs.is-settings-open > .markdown-tabs-header-wrap > .block-settings { padding-top: 38px; }
+.ink-prose .block-opt-btn.is-danger { color: var(--danger); }
+.ink-prose .block-opt-btn.is-danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.ink-prose .block-opt-btn:disabled,
+.ink-prose .block-icon-opt:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* A side strip has no room to stay beside the panels once the surface is that narrow. */
+@container (max-width: 480px) {
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'] { flex-direction: column; }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'] .tab-list {
+    flex-direction: row;
+    border-inline-end: none;
+    border-inline-start: none;
+    border-bottom: 1px solid var(--border-subtle);
+    border-radius: var(--r-md) var(--r-md) 0 0;
+    min-width: unset;
+    max-width: 100%;
+    padding: 5px 6px 0;
+    padding-inline-end: 132px;
+    order: 0;
+  }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'] [role='tab'] {
+    border-inline-start: none;
+    border-inline-end: none;
+    border-bottom: 2px solid transparent;
+    width: auto;
+  }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'] [role='tab'][aria-selected='true'] {
+    border-bottom-color: var(--accent);
+    background: transparent;
+  }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-variant='pills'] [role='tab'] { border-bottom: none; }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'] .tab-panel {
+    flex: 0 0 auto;
+    overflow-x: visible;
+  }
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] .tab-list,
+  .ink-prose .markdown-tabs[data-tabs-style='vertical'][data-tabs-position='right'] .tab-panel { order: 0; }
+  .ink-prose .markdown-tabs[data-tabs-position='right'] > .markdown-tabs-header-wrap > .block-tools,
+  .ink-prose .markdown-tabs[data-tabs-position='right'] > .markdown-tabs-header-wrap > .block-popover {
+    left: auto;
+    right: 6px;
+  }
+}
+
+.ink-prose .markdown-align { margin: 0.9em 0; }
+.ink-prose .markdown-align > :first-child { margin-top: 0; }
+.ink-prose .markdown-align > :last-child { margin-bottom: 0; }
+.ink-prose .markdown-align[data-align='left'] { text-align: left; }
+.ink-prose .markdown-align[data-align='center'] { text-align: center; }
+.ink-prose .markdown-align[data-align='right'] { text-align: right; }
+.ink-prose .markdown-align[data-align='justify'] { text-align: justify; }
+/* Justify needs the line to be free to break anywhere; a long unbreakable run would stretch instead. */
+.ink-prose .markdown-align[data-align='justify'] :is(p, li) { overflow-wrap: anywhere; }
+
+.ink-prose .markdown-cols {
+  margin: 0.95em 0;
+  display: grid;
+  align-items: start;
+  gap: var(--sp-3-5);
+  grid-template-columns: minmax(0, 1fr);
+  container-type: inline-size;
+}
+.ink-prose .markdown-cols[data-cols='1'] { grid-template-columns: var(--panel-cols-tracks, minmax(0, 1fr)); }
+.ink-prose .markdown-cols[data-cols='2'] { grid-template-columns: var(--panel-cols-tracks, repeat(2, minmax(0, 1fr))); }
+.ink-prose .markdown-cols[data-cols='3'] { grid-template-columns: var(--panel-cols-tracks, repeat(3, minmax(0, 1fr))); }
+.ink-prose .markdown-cols[data-cols='4'] { grid-template-columns: var(--panel-cols-tracks, repeat(4, minmax(0, 1fr))); }
+.ink-prose .markdown-cols[data-cols='5'] { grid-template-columns: var(--panel-cols-tracks, repeat(5, minmax(0, 1fr))); }
+.ink-prose .markdown-cols[data-cols='6'] { grid-template-columns: var(--panel-cols-tracks, repeat(6, minmax(0, 1fr))); }
+.ink-prose .markdown-cols[data-cols-gap='narrow'] { gap: var(--sp-1-5); }
+.ink-prose .markdown-cols[data-cols-gap='wide'] { gap: var(--sp-6); }
+.ink-prose .markdown-col { min-width: 0; }
+.ink-prose .markdown-col > :first-child { margin-top: 0; }
+.ink-prose .markdown-col > :last-child { margin-bottom: 0; }
+.ink-prose .markdown-cols[data-cols-divider] > .markdown-col + .markdown-col {
+  border-inline-start: 1px solid var(--border-subtle);
+  padding-inline-start: calc(var(--sp-3-5) / 2);
+  margin-inline-start: calc(var(--sp-3-5) / -2);
+}
+.ink-prose .markdown-cols[data-cols-align='left'] .markdown-col { text-align: left; }
+.ink-prose .markdown-cols[data-cols-align='center'] .markdown-col { text-align: center; }
+.ink-prose .markdown-cols[data-cols-align='right'] .markdown-col { text-align: right; }
+.ink-prose .markdown-cols[data-cols-align='justify'] .markdown-col { text-align: justify; }
+.ink-prose .markdown-cols[data-cols-align='justify'] .markdown-col :is(p, li) { overflow-wrap: anywhere; }
+
+@container (max-width: 560px) {
+  .ink-prose .markdown-col { grid-column: 1 / -1; }
+  .ink-prose .markdown-cols[data-cols-divider] > .markdown-col + .markdown-col {
+    border-inline-start: 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+    padding-top: calc(var(--sp-3-5) / 2);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ::: media — a layout block of pictures.
+
+   Everything the reader sets arrives as a `data-media-*` value, which the enhancer turns into the
+   custom properties below after sanitization (a `style` attribute never survives the prose whitelist).
+   The block itself is a column of rows; a row is a line of flexed cells, so a row's height is one
+   number shared by every picture in it, and a cell's share of the width is one number too.
+   -------------------------------------------------------------------------- */
+.ink-prose .markdown-media {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--media-gap, var(--sp-3-5));
+  width: min(100%, var(--media-width, 100%));
+  margin: 0.95em 0;
+  --media-gap: var(--sp-3-5);
+  --media-r: var(--r-md);
+  --media-fit: contain;
+}
+.ink-prose .markdown-media[data-media-gap='narrow'] { --media-gap: var(--sp-1-5); }
+.ink-prose .markdown-media[data-media-gap='wide'] { --media-gap: var(--sp-6); }
+.ink-prose .markdown-media[data-media-radius='none'] { --media-r: 0px; }
+.ink-prose .markdown-media[data-media-radius='sm'] { --media-r: var(--r-sm); }
+.ink-prose .markdown-media[data-media-radius='md'] { --media-r: var(--r-md); }
+.ink-prose .markdown-media[data-media-radius='lg'] { --media-r: var(--r-lg); }
+.ink-prose .markdown-media[data-media-radius='full'] { --media-r: var(--r-full); }
+.ink-prose .markdown-media[data-media-fit='cover'] { --media-fit: cover; }
+.ink-prose .markdown-media[data-media-fit='fill'] { --media-fit: fill; }
+.ink-prose .markdown-media[data-media-fit='none'] { --media-fit: none; }
+.ink-prose .markdown-media[data-media-border] > .markdown-media-row,
+.ink-prose .markdown-media[data-media-border] > .markdown-media-cell {
+  outline: 1px solid var(--border-subtle);
+  outline-offset: -1px;
+}
+.ink-prose .markdown-media[data-media-shadow] { --media-shadow: var(--shadow-soft); }
+
+/* Floating: the note's own paragraphs put their line boxes beside the block, the way a wrapped figure
+   does. A block that establishes its own formatting context (a table, a code block) is pushed below it
+   instead, which is what CSS says a float does to a block box. */
+.ink-prose .markdown-media[data-media-wrap='left'] { float: left; margin: 0 var(--sp-5) var(--sp-3) 0; }
+.ink-prose .markdown-media[data-media-wrap='right'] { float: right; margin: 0 0 var(--sp-3) var(--sp-5); }
+.ink-prose .markdown-media[data-media-align='left'] { align-items: start; }
+.ink-prose .markdown-media[data-media-align='right'] { align-items: end; }
+
+/* The text-frame spelling: a floated frame of the author's own Markdown, used for a side note. */
+.ink-prose .markdown-media[data-media-text] {
+  padding: var(--sp-3) var(--sp-3-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--media-r);
+  background: var(--bg-inset);
+}
+.ink-prose .markdown-media[data-media-text] > :first-child { margin-top: 0; }
+.ink-prose .markdown-media[data-media-text] > :last-child { margin-bottom: 0; }
+
+.ink-prose .markdown-media-row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--media-gap, var(--sp-3-5));
+  min-height: 0;
+  height: var(--media-row-h, auto);
+}
+.ink-prose .markdown-media-row[data-media-row-align='left'] { justify-content: flex-start; }
+.ink-prose .markdown-media-row[data-media-row-align='right'] { justify-content: flex-end; }
+.ink-prose .markdown-media-row[data-media-row-align='center'] { justify-content: center; }
+
+/* One grid across the whole block: the rows stop being rows, and the pictures fill the columns. */
+.ink-prose .markdown-media[data-media-columns] {
+  display: grid;
+  grid-template-columns: repeat(var(--media-columns, 2), minmax(0, 1fr));
+}
+.ink-prose .markdown-media[data-media-columns] > .markdown-media-row { display: contents; }
+/* The block's own head is a grid item like any other, so unless it is told to span the row it eats the first
+   picture's track and every column in the block slides one to the right. */
+.ink-prose .markdown-media[data-media-columns] > .block-head { grid-column: 1 / -1; }
+/* In a grid the axis an author's `align` talks about is the track axis, not the row's own, so the same word
+   moves sideways here and the pictures keep filling their track's height. */
+.ink-prose .markdown-media[data-media-columns][data-media-align='left'] { align-items: stretch; justify-items: start; }
+.ink-prose .markdown-media[data-media-columns][data-media-align='right'] { align-items: stretch; justify-items: end; }
+
+.ink-prose .markdown-media-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  /* Unweighted, a picture keeps its own shape and the row shares out what is left over; weighted, the
+     reader's number decides the share and the picture is measured against it. */
+  flex: 0 1 auto;
+  border-radius: var(--media-r);
+  box-shadow: var(--media-shadow, none);
+}
+.ink-prose .markdown-media-cell.is-media-weighted { flex: var(--media-w, 1) 1 0%; }
+.ink-prose .markdown-media-cell > figure {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  margin: 0;
+}
+.ink-prose .markdown-media-cell > figure > img,
+.ink-prose .markdown-media-cell > img {
+  display: block;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: var(--media-r);
+}
+.ink-prose .markdown-media-cell :is(img, video) { object-fit: var(--media-fit, contain); }
+.ink-prose .markdown-media-cell.is-media-sized :is(img, video) {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+.ink-prose .markdown-media-cell:has(> .note-embed) { overflow: hidden; }
+/* Inside a layout a picture is a picture: the attachment card's own chrome would frame it twice. */
+.ink-prose .markdown-media-cell .note-embed {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: var(--media-r);
+  background: none;
+  overflow: hidden;
+}
+.ink-prose .markdown-media-cell .note-embed-head { display: none; }
+.ink-prose .markdown-media-cell .note-embed-body {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+}
+.ink-prose .markdown-media-cell .note-embed-body > img {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--media-r);
+}
+.ink-prose .markdown-media[data-media-ratio] .markdown-media-cell { aspect-ratio: var(--media-ratio); }
+
+.ink-prose .markdown-media-caption,
+.ink-prose .markdown-media-cell figcaption {
+  padding: var(--sp-1) var(--sp-0-5) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-11-5);
+  line-height: 1.45;
+  text-align: var(--media-caption-align, center);
+}
+.ink-prose .markdown-media[data-media-caption-align='left'] { --media-caption-align: start; }
+.ink-prose .markdown-media[data-media-numbered] .markdown-media-cell figcaption { display: none; }
+.ink-prose .markdown-media-figure {
+  margin-inline-end: var(--sp-1);
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+/* A caption switched off hides both spellings, because a half-captioned row reads as a mistake. */
+.ink-prose .markdown-media[data-media-caption='off'] :is(.markdown-media-caption, figcaption) { display: none; }
+
+/* A reference to a figure: the same target a block id gets, so the jump and the flash are already there. */
+.ink-prose .figure-reference { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* A named equation keeps its number at the writing edge, the way a book prints one, because that number is
+   what every `@eq:` in the note says. */
+.ink-prose .math-equation {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.ink-prose .math-equation > .math-block { flex: 1 1 auto; min-width: 0; }
+.ink-prose .math-equation-number {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: var(--text-11-5);
+  font-variant-numeric: tabular-nums;
+}
+.ink-prose .markdown-table-caption {
+  caption-side: top;
+  padding: 0 0 var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--text-11-5);
+  font-weight: 600;
+  text-align: start;
+}
+
+/* The block's own settings bar reuses the shared block chrome skin; only the handles below are new. */
+.ink-prose .markdown-media > .block-head { margin-bottom: 0; }
+.ink-prose .media-handles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.ink-prose .media-splitter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 13px;
+  transform: translateX(-50%);
+  cursor: col-resize;
+  pointer-events: auto;
+  border-radius: var(--r-full);
+}
+.ink-prose .media-edge {
+  position: absolute;
+  z-index: 3;
+  pointer-events: auto;
+}
+.ink-prose .media-edge-right { top: 0; right: -5px; bottom: 0; width: 11px; cursor: ew-resize; }
+.ink-prose .media-edge-bottom { right: 0; bottom: -5px; left: 0; height: 11px; cursor: ns-resize; }
+.ink-prose .media-edge-corner {
+  right: -5px;
+  bottom: -5px;
+  width: 19px;
+  height: 19px;
+  cursor: nwse-resize;
+  border-radius: var(--r-sm);
+}
+.ink-prose .media-splitter::after,
+.ink-prose .media-edge::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--r-full);
+  background: color-mix(in oklab, var(--accent) 55%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.ink-prose .media-splitter::after { inset: 12% 5px; }
+.ink-prose .markdown-media.is-media-active :is(.media-splitter::after, .media-edge::after),
+.ink-prose .media-splitter.is-media-shown::after,
+.ink-prose .media-splitter:hover::after,
+.ink-prose .media-edge:hover::after {
+  opacity: 1;
+}
+/* What the reader is dragging, and where it would land: the lifted picture fades, the picture under the
+   pointer takes the outline, so a reorder is legible before the note is touched. */
+.ink-prose .markdown-media .markdown-media-cell.is-media-lifted { opacity: 0.45; }
+.ink-prose .markdown-media .markdown-media-cell.is-media-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.ink-prose .markdown-media.has-media-chrome img { -webkit-user-drag: none; user-select: none; }
+.ink-prose .markdown-media.is-media-dragging { cursor: inherit; user-select: none; }
+.ink-prose .markdown-media.is-media-dragging :is(.media-splitter::after, .media-edge::after) { opacity: 1; }
+.ink-prose .media-splitter:focus-visible,
+.ink-prose .media-edge:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring);
+}
+.ink-prose .media-splitter:focus-visible::after,
+.ink-prose .media-edge:focus-visible::after { opacity: 1; }
+
+/* On a phone the block gets the line to itself and the handles are hit targets, not decorations. */
+@media (max-width: 640px) {
+  .ink-prose .markdown-media[data-media-wrap] { float: none; width: 100%; margin-inline: 0; }
+  .ink-prose .media-splitter { width: 19px; }
+}
+
+.ink-prose .block-head {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+.ink-prose .block-head-title {
+  font-family: var(--font-ui);
+  font-size: var(--text-10-5);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.ink-prose .block-head > .block-tools { margin-inline-start: 0; }
+.ink-prose .block-settings-value {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.ink-prose .panel-block:last-child > .markdown-align,
+.ink-prose .panel-block:last-child > .markdown-cols { margin-bottom: 0; }
+.ink-prose .panel-block > .block-head,
+.ink-prose .panel-block > .block-settings { margin-bottom: 0; }
+
+
+.ink-prose .markdown-timeline-block { margin: 1em 0; }
+.ink-prose .markdown-timeline-caption {
+  margin-bottom: var(--sp-2);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ink-prose .markdown-timeline-intro { margin-bottom: var(--sp-3); }
+.ink-prose .markdown-timeline-intro > :last-child { margin-bottom: 0; }
+.ink-prose .markdown-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: markdown-timeline;
+}
+.ink-prose .markdown-timeline-item {
+  --tl-mark: var(--text-tertiary);
+  --tl-fill: var(--bg-inset);
+  position: relative;
+  padding: 0 0 var(--sp-4) var(--sp-6);
+  border-inline-start: 1px solid var(--border-strong);
+}
+.ink-prose .markdown-timeline-item[data-status='done'] { --tl-mark: var(--success); --tl-fill: var(--success); }
+.ink-prose .markdown-timeline-item[data-status='doing'] { --tl-mark: var(--warning); --tl-fill: var(--warning); }
+.ink-prose .markdown-timeline-item[data-status='error'] { --tl-mark: var(--danger); --tl-fill: var(--danger); }
+.ink-prose .markdown-timeline-item[data-status='milestone'] { --tl-mark: var(--accent); --tl-fill: var(--accent); }
+.ink-prose .markdown-timeline-item:last-child {
+  padding-bottom: 0;
+  border-inline-start-color: transparent;
+}
+.ink-prose .markdown-timeline-node {
+  position: absolute;
+  inset-block-start: 0.34em;
+  inset-inline-start: calc(var(--sp-2) / -2 - 1px);
+  display: grid;
+  width: var(--sp-2);
+  height: var(--sp-2);
+  box-sizing: border-box;
+  place-items: center;
+  border: 1px solid var(--tl-mark);
+  border-radius: var(--r-full);
+  background: var(--tl-fill);
+}
+.ink-prose .markdown-timeline-item[data-status='milestone'] .markdown-timeline-node {
+  border-radius: var(--r-1);
+  transform: rotate(45deg);
+}
+.ink-prose .markdown-timeline-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-0-5) var(--sp-2);
+}
+.ink-prose .markdown-timeline-time {
+  color: var(--text-secondary);
+  font-size: var(--text-12);
+  font-variant-numeric: tabular-nums;
+}
+.ink-prose .markdown-timeline-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ink-prose .markdown-timeline-status {
+  padding-inline: var(--sp-1-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  font-size: var(--text-11);
+  line-height: 1.6;
+}
+.ink-prose .markdown-timeline-body > :last-child { margin-bottom: 0; }
+.ink-prose .markdown-timeline-block[data-timeline-dense='true'] .markdown-timeline-item { padding-bottom: var(--sp-2); }
+.ink-prose .markdown-timeline-block[data-timeline-dense='true'] .markdown-timeline-node { inset-block-start: 0.22em; }
+.ink-prose .markdown-timeline-block[data-timeline-status='off'] .markdown-timeline-status { display: none; }
+.ink-prose .markdown-timeline-block[data-timeline-marker='number'] .markdown-timeline-item { counter-increment: markdown-timeline; }
+.ink-prose .markdown-timeline-block[data-timeline-marker='number'] .markdown-timeline-node {
+  inset-inline-start: calc(-0.85em - 1px);
+  width: 1.7em;
+  height: 1.7em;
+  padding-inline: 0;
+  border-radius: var(--r-full);
+  background: var(--bg-inset);
+  color: var(--text-secondary);
+  font-size: var(--text-11);
+  font-variant-numeric: tabular-nums;
+  transform: none;
+}
+.ink-prose .markdown-timeline-block[data-timeline-marker='number'] .markdown-timeline-node::before { content: counter(markdown-timeline); }
+
+.ink-prose .markdown-example {
+  container-type: inline-size;
+  margin: 1em 0 1.25em;
+  overflow: clip;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-base);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--text-primary) 5%, transparent);
+}
+.ink-prose .markdown-example-head {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  padding: 0.55em 0.82em;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 58%, var(--bg-base));
+}
+.ink-prose .markdown-example-title {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55em;
+  color: var(--text-primary);
+  font-size: 0.92em;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.ink-prose .markdown-example-title::before {
+  width: 0.58em;
+  height: 0.58em;
+  flex: none;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent) 55%, var(--success)));
+  box-shadow: 0 0 0 3px var(--accent-softer);
+  content: '';
+}
+.ink-prose .markdown-example-grid {
+  --ex-budget: min(70vh, 720px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  background: var(--border-subtle);
+}
+.ink-prose .markdown-example-preview,
+.ink-prose .markdown-example-source {
+  min-width: 0;
+}
+.ink-prose .markdown-example-preview {
+  background: var(--bg-base);
+}
+.ink-prose .markdown-example-preview-body {
+  min-height: 72px;
+  padding: 14px 16px;
+}
+.ink-prose .markdown-example-preview-body > :first-child {
+  margin-top: 0;
+}
+.ink-prose .markdown-example-preview-body > :last-child {
+  margin-bottom: 0;
+}
+.ink-prose .markdown-example-preview-body :is(.callout, .markdown-tabs, .markdown-details, .code-block, .mermaid-block, .chart-block-wrap),
+.ink-prose .markdown-example-preview-body > :is(figure, details) {
+  margin-block: 0;
+}
+.ink-prose .markdown-example-preview-body img {
+  margin-block: 0;
+}
+.ink-prose .markdown-example-preview-body .footnotes {
+  margin-top: 1em;
+}
+.ink-prose .markdown-example-source {
+  background: var(--bg-inset);
+}
+.ink-prose .markdown-example-source .code-block {
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.ink-prose .markdown-example-source .markdown-example-copy {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 88%, var(--bg-base));
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--text-primary) 7%, transparent);
+}
+.ink-prose .markdown-example-source pre {
+  min-height: 72px;
+  padding: 14px 16px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-size: max(12px, calc(var(--code-size, 15px) - 1.5px));
+  line-height: 1.5;
+}
+.ink-prose .markdown-example-source :is(code, .line) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@container (min-width: 360px) {
+  .ink-prose .markdown-example-grid[data-example-layout='lr'],
+  .ink-prose .markdown-example-grid[data-example-layout='rl'] {
+    grid-template-columns: var(--ex-cols, 45fr 55fr);
+  }
+  /* A row split has no definite height to divide, so the ratio caps each panel rather than
+     sizing its track: a generous pane scrolls into its share, a short one costs nothing. */
+  .ink-prose .markdown-example-grid[data-example-layout='tb'],
+  .ink-prose .markdown-example-grid[data-example-layout='bt'] {
+    grid-template-rows: auto auto;
+  }
+  .ink-prose .markdown-example-grid:is([data-example-layout='tb'], [data-example-layout='bt']) > * {
+    overflow: auto;
+  }
+  .ink-prose .markdown-example-grid:is([data-example-layout='tb'], [data-example-layout='bt']) > :first-child {
+    max-height: calc(var(--ex-budget) * var(--ex-a, 45) / (var(--ex-a, 45) + var(--ex-b, 55)));
+  }
+  .ink-prose .markdown-example-grid:is([data-example-layout='tb'], [data-example-layout='bt']) > :last-child {
+    max-height: calc(var(--ex-budget) * var(--ex-b, 45) / (var(--ex-a, 45) + var(--ex-b, 55)));
+  }
+  .ink-prose .markdown-example-grid[data-example-layout='rl'] > :first-child,
+  .ink-prose .markdown-example-grid[data-example-layout='bt'] > :first-child {
+    order: 2;
+  }
+  .ink-prose .markdown-example-grid[data-example-layout='rl'] > :last-child,
+  .ink-prose .markdown-example-grid[data-example-layout='bt'] > :last-child {
+    order: 1;
+  }
+}
+.ink-prose .markdown-example-preview,
+.ink-prose .markdown-example-source {
+  min-height: 0;
+}
+
+
+.ink-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: var(--code-weight, 400);
+  letter-spacing: var(--code-spacing, -0.012em);
+  font-variant-ligatures: none;
+}
+.ink-prose :not(pre) > code {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  padding: 0.08em 0.28em;
+  border-radius: var(--r-xs);
+  color: var(--code-inline-fg);
+  white-space: break-spaces;
+}
+
+.ink-prose .code-block {
+  position: relative;
+  margin: 0.9em 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  background: var(--bg-inset);
+  overflow: hidden;
+}
+.ink-prose .code-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 7px 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 60%, var(--bg-base));
+}
+.ink-prose .code-lang {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.ink-prose .code-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ink-prose .code-title + .code-lang { margin-left: auto; margin-right: 8px; }
+.ink-prose .code-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .code-block:hover .code-copy,
+.ink-prose .code-copy:focus-visible {
+  opacity: 1;
+}
+.ink-prose .code-copy:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .code-copy.copied {
+  color: var(--success);
+  opacity: 1;
+}
+.ink-prose .code-collapse {
+  margin-left: auto;
+  padding: 0 7px;
+  border-radius: var(--r-sm);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 20px;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .code-collapse:hover,
+.ink-prose .code-collapse:focus-visible {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.ink-prose pre {
+  margin: 0;
+  padding: 10px 14px;
+  overflow-x: auto;
+  color: var(--code-fg);
+  font-size: var(--code-size, 15px);
+  font-weight: var(--code-weight, 400);
+  line-height: var(--code-line, 1.56);
+  letter-spacing: var(--code-spacing, -0.012em);
+  background: transparent;
+  tab-size: 2;
+}
+.ink-prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1em;
+  font-weight: inherit;
+  line-height: inherit;
+}
+.ink-prose .code-block.is-code-collapsed pre {
+  overflow-y: hidden;
+}
+
+
+.ink-prose .code-block .line {
+  display: inline-block;
+  width: 100%;
+  min-height: 1lh;
+  vertical-align: top;
+}
+.ink-prose .token.comment,
+.ink-prose .token.prolog,
+.ink-prose .token.doctype,
+.ink-prose .token.cdata { color: var(--syntax-comment); }
+.ink-prose .token.punctuation { color: var(--syntax-punctuation); }
+.ink-prose .token.namespace { opacity: 0.75; }
+.ink-prose .token.property,
+.ink-prose .token.tag,
+.ink-prose .token.constant,
+.ink-prose .token.symbol,
+.ink-prose .token.deleted { color: var(--syntax-property); }
+.ink-prose .token.boolean,
+.ink-prose .token.number { color: var(--syntax-number); }
+.ink-prose .token.selector,
+.ink-prose .token.attr-name,
+.ink-prose .token.string,
+.ink-prose .token.char,
+.ink-prose .token.builtin,
+.ink-prose .token.inserted { color: var(--syntax-string); }
+.ink-prose .token.operator,
+.ink-prose .token.entity,
+.ink-prose .token.url { color: var(--syntax-operator); }
+.ink-prose .token.atrule,
+.ink-prose .token.attr-value,
+.ink-prose .token.keyword { color: var(--syntax-keyword); }
+.ink-prose .token.function { color: var(--syntax-function); }
+.ink-prose .token.class-name { color: var(--syntax-type); }
+.ink-prose .token.regex,
+.ink-prose .token.important,
+.ink-prose .token.variable { color: var(--syntax-constant); }
+.ink-prose .token.important,
+.ink-prose .token.bold { font-weight: 600; }
+.ink-prose .token.italic { font-style: italic; }
+.ink-prose .code-block .line.highlighted {
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  box-shadow: inset 2px 0 var(--accent);
+}
+.ink-prose .code-block.has-line-numbers pre { padding-left: 0; }
+.ink-prose .code-block.has-line-numbers .line::before {
+  display: inline-block;
+  width: 3.4em;
+  margin-right: 1em;
+  padding-right: 0.75em;
+  color: var(--text-quaternary);
+  content: attr(data-line-number);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  user-select: none;
+}
+.ink-prose .code-block[data-code-wrap='true'] pre {
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.ink-prose .code-block[data-code-wrap='true'] :is(code, .line) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.ink-prose .code-block > .block-settings .block-text-input.is-title {
+  flex-basis: 190px;
+}
+
+.ink-prose .block-tools {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-0-5);
+  margin-inline-start: auto;
+}
+.ink-prose .code-block-head > .block-tools {
+  margin-inline-start: auto;
+}
+.ink-prose .code-block-head > .code-lang + .block-tools {
+  margin-inline-start: 0;
+}
+.ink-prose .markdown-example-head > .block-tools,
+.ink-prose .js-example-controls > .block-tools {
+  margin-inline-start: 0;
+}
+.ink-prose .js-example-controls > .block-tools {
+  padding-inline-end: var(--sp-1);
+  border-inline-end: 1px solid var(--border-subtle);
+}
+/* ── Tool buttons ─────────────────────────────────────────────────────────────────
+   One recipe for every block toolbar button. `.tool-btn` is the base; the older
+   `.block-tool-btn` (square icon) and `.chart-tool-btn` / `.mindmap-tool-btn`
+   (labelled) names are kept as selector-list aliases because the toolbar markup is
+   still built from template strings in `features/preview/*-toolbar.ts`, so renaming
+   them here would silently strip their styling. Each alias contributes only its
+   own geometry; colour, hover, expanded and caps-label treatment exist once. */
+.ink-prose .tool-btn,
+.ink-prose .tool-btn--text,
+.ink-prose .block-tool-btn,
+.ink-prose .chart-tool-btn,
+.ink-prose .chart-tool-btn--text,
+.ink-prose .mindmap-tool-btn,
+.ink-prose .mindmap-tool-btn--text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .tool-btn:hover,
+.ink-prose .block-tool-btn:hover,
+.ink-prose .chart-tool-btn:hover,
+.ink-prose .mindmap-tool-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .tool-btn[aria-expanded='true'],
+.ink-prose .block-tool-btn[aria-expanded='true'],
+.ink-prose .chart-tool-btn[aria-expanded='true'],
+.ink-prose .mindmap-tool-btn[aria-expanded='true'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.ink-prose .tool-btn,
+.ink-prose .chart-tool-btn,
+.ink-prose .mindmap-tool-btn {
+  height: var(--sp-5);
+  padding: 0 var(--sp-1-5);
+  border-radius: var(--r-sm);
+}
+.ink-prose .tool-btn--text,
+.ink-prose .chart-tool-btn--text,
+.ink-prose .mindmap-tool-btn--text {
+  font-family: var(--font-mono);
+  font-size: var(--text-10-5);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.ink-prose .block-tool-btn {
+  width: var(--sp-6);
+  height: var(--sp-6);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  background: transparent;
+}
+.ink-prose .code-block-head > .block-tools .block-tool-btn {
+  width: var(--sp-5);
+  height: var(--sp-5);
+}
+
+/* Block-header icon buttons, one recipe for the dataview and kanban headers.
+   `.block-btn` is the base; the two module names stay selectable because their
+   markup is emitted by the corresponding feature. Each keeps only what genuinely
+   differs — its own box, its hover colour and its label typography. */
+.ink-prose .block-btn,
+.ink-prose .dataview-block-btn,
+.ink-prose .kanban-block-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .block-btn:hover,
+.ink-prose .dataview-block-btn:hover,
+.ink-prose .kanban-block-btn:hover {
+  background: var(--bg-hover);
+}
+.ink-prose .block-popover {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-pop);
+  z-index: 3;
+}
+.ink-prose .block-popover[hidden] { display: none; }
+.ink-prose .block-icon-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .block-icon-opt:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .block-icon-opt.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.ink-prose .block-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1-5);
+  padding: var(--sp-2) var(--sp-2-5);
+  background: var(--bg-inset);
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-ui);
+  font-size: var(--text-12);
+  color: var(--text-secondary);
+}
+.ink-prose .block-settings[hidden] { display: none; }
+.ink-prose .block-settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ink-prose .block-settings-row.is-column { align-items: stretch; }
+.ink-prose .block-settings-title {
+  width: 56px;
+  flex: none;
+  white-space: nowrap;
+  font-size: var(--text-10-5);
+  letter-spacing: var(--tracking-micro);
+  color: var(--text-quaternary);
+}
+.ink-prose .block-settings-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.ink-prose .block-settings-group.is-fields { gap: var(--sp-1-5); }
+.ink-prose .block-settings-fields {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.ink-prose .block-opt-btn {
+  padding: 3px 10px;
+  font-size: var(--text-11);
+  line-height: 1.5;
+  font-family: var(--font-ui);
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .block-opt-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.ink-prose .block-opt-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+/* The option chips are a text-row control sized for a cursor; a thumb needs the
+   44px floor. Gated on the pointer so desktop density is untouched. */
+@media (pointer: coarse) {
+  .ink-prose .block-opt-btn {
+    min-height: var(--tap-target);
+  }
+}
+.ink-prose .block-text-input {
+  flex: 0 1 120px;
+  min-width: 0;
+  padding: 3px 8px;
+  font-size: var(--text-11);
+  font-family: var(--font-ui);
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+.ink-prose .block-text-input.is-narrow { flex-basis: 68px; }
+.ink-prose .block-text-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+.ink-prose .block-settings-hint {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--text-10-5);
+  line-height: 1.4;
+  color: var(--text-quaternary);
+}
+
+.ink-prose .js-example-head .js-example-title { gap: var(--sp-1-5); }
+.ink-prose .js-example-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-10);
+  font-weight: 800;
+  line-height: 1;
+  padding: var(--sp-0-5) var(--sp-1);
+  border-radius: var(--r-xs);
+  background: var(--warning);
+  color: var(--text-inverse);
+  letter-spacing: var(--tracking-caps);
+}
+.ink-prose .js-example-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  flex: none;
+}
+.ink-prose .js-example-switch-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  cursor: pointer;
+  user-select: none;
+}
+.ink-prose .js-example-switch-label {
+  font-size: var(--text-11);
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.ink-prose .js-example-switch {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: var(--r-full);
+  background: var(--border-strong);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .js-example-switch.is-checked { background: var(--accent); }
+.ink-prose .js-example-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--r-full);
+  background: var(--accent-contrast);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.ink-prose .js-example-switch.is-checked .js-example-switch-thumb { transform: translateX(12px); }
+.ink-prose .js-example-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 3px 10px;
+  border-radius: var(--r-sm);
+  font-size: var(--text-11);
+  font-weight: 600;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.ink-prose .js-example-run-btn:hover { opacity: 0.9; }
+.ink-prose .js-example-run-btn:active { transform: scale(0.96); }
+.ink-prose .js-example-run-btn[disabled] { opacity: 0.55; cursor: default; }
+.ink-prose .js-example-run-icon { font-size: var(--text-9); line-height: 1; }
+.ink-prose .js-example-output {
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  background: color-mix(in oklab, var(--bg-inset) 70%, var(--bg-base));
+}
+.ink-prose .markdown-example-source.js-example-source .markdown-example-code pre {
+  overflow-wrap: normal;
+  white-space: pre;
+  overflow-x: auto;
+}
+.ink-prose .markdown-example-source.js-example-source :is(code, .line) {
+  overflow-wrap: normal;
+  white-space: pre;
+}
+.ink-prose .js-example-output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4em 0.8em;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 40%, var(--bg-base));
+}
+.ink-prose .js-example-output-title {
+  font-size: var(--text-11);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+.ink-prose .js-example-output-status {
+  font-size: var(--text-11);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 1px var(--sp-1);
+  border-radius: var(--r-3);
+}
+.ink-prose .js-example-output-status.is-success {
+  color: var(--success);
+  background: color-mix(in oklab, var(--success) 12%, transparent);
+}
+.ink-prose .js-example-output-status.is-error {
+  color: var(--danger);
+  background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+.ink-prose .js-example-output-body {
+  flex: 1;
+  padding: var(--sp-2-5) var(--sp-3-5);
+  font-family: var(--font-mono);
+  font-size: max(12px, calc(var(--code-size, 15px) - 1.5px));
+  line-height: 1.5;
+  overflow-y: auto;
+  max-height: 360px;
+}
+.ink-prose .js-example-placeholder,
+.ink-prose .js-example-empty-hint {
+  color: var(--text-quaternary);
+  font-style: italic;
+  font-size: var(--text-12);
+}
+.ink-prose .js-example-placeholder { padding: var(--sp-2) 0; }
+.ink-prose .js-example-log-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  padding: var(--sp-0-5) 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--border-subtle) 40%, transparent);
+}
+.ink-prose .js-example-log-row:last-child { border-bottom: none; }
+.ink-prose .js-example-log-prefix {
+  font-size: var(--text-10);
+  font-weight: 700;
+  flex: none;
+  opacity: 0.7;
+}
+.ink-prose .js-example-log-text {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.ink-prose .js-example-log-row.is-log .js-example-log-prefix { color: var(--text-tertiary); }
+.ink-prose .js-example-log-row.is-info :is(.js-example-log-prefix, .js-example-log-text) { color: var(--accent); }
+.ink-prose .js-example-log-row.is-warn :is(.js-example-log-prefix, .js-example-log-text) { color: var(--warning); }
+.ink-prose .js-example-log-row.is-error :is(.js-example-log-prefix, .js-example-log-text),
+.ink-prose .js-example-log-row.is-error-banner :is(.js-example-log-prefix, .js-example-log-text) { color: var(--danger); }
+.ink-prose .js-example-log-row.is-return .js-example-log-prefix { color: var(--text-tertiary); }
+.ink-prose .js-example-log-row.is-return .js-example-log-text {
+  color: var(--syntax-constant);
+  font-weight: 600;
+}
+
+
+/* The plain fold only: the pretty panel brings its own shell, header and rows, shared with the
+   reading pane through `property-markup.ts`, so no prose rule may reach into it. */
+.ink-prose .frontmatter-properties:not(.pp) {
+  margin: 0 0 1em;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-inset);
+  font-size: 0.9em;
+}
+.ink-prose .frontmatter-properties:not(.pp) > summary {
+  padding: 0.45em 0.7em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  cursor: pointer;
+}
+.ink-prose .frontmatter-properties:not(.pp) dl { margin: 0; padding: 0 0.72em 0.6em; }
+.ink-prose .frontmatter-row {
+  display: grid;
+  grid-template-columns: minmax(7em, 0.35fr) minmax(0, 1fr);
+  gap: 0.7em;
+  padding: 0.24em 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.ink-prose .frontmatter-row dt { color: var(--text-tertiary); }
+.ink-prose .frontmatter-row dd { min-width: 0; margin: 0; }
+.ink-prose .frontmatter-chip {
+  display: inline-flex;
+  margin: 0.08em 0.25em 0.08em 0;
+  padding: 0.02em 0.4em;
+  border-radius: 999px;
+  background: var(--accent-softer);
+}
+.ink-prose .frontmatter-error {
+  margin-bottom: 1em;
+  padding: 0.6em 0.75em;
+  border: 1px solid color-mix(in oklab, var(--danger) 35%, var(--border-subtle));
+  border-radius: var(--r-md);
+  color: var(--danger);
+  background: color-mix(in oklab, var(--danger) 7%, var(--bg-inset));
+}
+.ink-prose .frontmatter-error ul { margin: 0.35em 0 0; }
+
+.ink-prose .note-embed {
+  display: block;
+  margin: 0.9em 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--bg-inset);
+}
+.ink-prose .note-embed-head {
+  display: block;
+  padding: 0.42em 0.75em;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--accent);
+  font-size: 0.86em;
+  font-weight: 650;
+}
+.ink-prose .note-embed-body { display: block; padding: 0.7em 0.8em 0.05em; }
+.ink-prose .note-embed-body > :last-child { margin-bottom: 0.65em; }
+.ink-prose .note-embed.loading .note-embed-body,
+.ink-prose .note-embed.error .note-embed-body { color: var(--text-tertiary); font-size: 0.9em; }
+/* An embedded conversation: a transcript, not a document. Roles are told apart by a left edge and a
+   label, because the note's own prose is what should stay the loudest thing on the page. */
+.ink-prose .chat-embed { display: block; margin: 0; padding: 0; list-style: none; }
+.ink-prose .chat-embed-message {
+  margin: 0 0 0.55em;
+  padding-left: 0.6em;
+  border-left: 2px solid var(--border-subtle);
+}
+.ink-prose .chat-embed-message[data-role='assistant'] { border-left-color: var(--accent); }
+.ink-prose .chat-embed-author {
+  display: block;
+  color: var(--text-quaternary);
+  font-size: 0.78em;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.ink-prose .chat-embed-message p { margin: 0.1em 0 0; white-space: pre-wrap; }
+/* The label of a quoted turn opens that turn: a note arguing with one exchange should not land the
+   reader at the top of a long thread and leave them to find it. */
+.ink-prose .chat-embed-author[role='link'] { cursor: pointer; }
+.ink-prose .chat-embed-author[role='link']:hover,
+.ink-prose .chat-embed-author[role='link']:focus-visible { color: var(--accent); }
+.ink-prose .chat-embed-more { color: var(--text-tertiary); font-size: 0.88em; }
+.ink-prose .note-embed-head[role='link'] { cursor: pointer; }
+.ink-prose [data-block-id] { scroll-margin-top: 24px; }
+.ink-prose [data-block-id]:target {
+  border-radius: 4px;
+  outline: 2px solid var(--accent-ring);
+  background: var(--accent-softer);
+}
+
+
+.ink-prose .table-wrap {
+  margin: 0.9em 0;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+.ink-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.91em;
+}
+.ink-prose thead {
+  background: var(--bg-inset);
+}
+.ink-prose th {
+  font-weight: 620;
+  text-align: start;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.ink-prose th,
+.ink-prose td {
+  padding: 0.4em 0.7em;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+.ink-prose tbody tr:last-child td {
+  border-bottom: none;
+}
+/* The alignment a delimiter row asked for. markdown-it spells it as an inline style, which the
+   sanitizer refuses for any note text, so the renderer hands it over as a class instead. */
+.ink-prose .markdown-cell-left {
+  text-align: left;
+}
+.ink-prose .markdown-cell-center {
+  text-align: center;
+}
+.ink-prose .markdown-cell-right {
+  text-align: right;
+}
+.ink-prose tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose tbody tr:hover {
+  background: var(--bg-hover);
+}
+.ink-prose td[align='right'],
+.ink-prose th[align='right'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ink-prose td[align='center'],
+.ink-prose th[align='center'] {
+  text-align: center;
+}
+
+
+.ink-prose a:not(.heading-anchor):not(.wikilink) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2.5px;
+  transition: text-decoration-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose a:not(.heading-anchor):not(.wikilink):hover {
+  text-decoration-color: var(--accent);
+}
+
+.ink-prose .wikilink {
+  color: var(--accent);
+  background: var(--accent-softer);
+  padding: 0.06em 0.32em;
+  margin: 0 -0.06em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .wikilink:hover {
+  background: var(--accent-soft);
+}
+.ink-prose .wikilink.missing {
+  color: var(--text-tertiary);
+  background: transparent;
+  text-decoration: underline dashed;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.ink-prose .wikilink.missing:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.ink-prose .inline-tag {
+  color: var(--accent);
+  background: var(--accent-softer);
+  padding: 0.06em 0.4em;
+  border-radius: 999px;
+  font-size: 0.9em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ink-prose .inline-tag:hover {
+  background: var(--accent-soft);
+}
+
+
+.ink-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-subtle);
+  display: block;
+  margin: 0.9em auto;
+  cursor: zoom-in;
+  background: var(--bg-inset);
+}
+.ink-prose figure {
+  margin: 1em 0;
+}
+.ink-prose figure img {
+  margin-bottom: 0.4em;
+}
+.ink-prose figcaption {
+  text-align: center;
+  font-size: 0.82em;
+  color: var(--text-tertiary);
+}
+
+
+.ink-prose hr {
+  border: none;
+  margin: 1.6em 0;
+  height: 1em;
+  position: relative;
+}
+.ink-prose hr::before {
+  content: '· · ·';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  letter-spacing: 0.55em;
+  text-indent: 0.55em;
+  color: var(--text-quaternary);
+  font-size: 0.95em;
+}
+
+
+.ink-prose .footnotes {
+  margin-top: 2em;
+  padding-top: 0.8em;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+.ink-prose .footnotes ol {
+  padding-inline-start: 1.2em;
+}
+.ink-prose .footnote-backref {
+  text-decoration: none;
+  margin-inline-start: 0.35em;
+}
+.ink-prose sup.footnote-ref a {
+  text-decoration: none;
+  font-size: 0.85em;
+  padding: 0 0.15em;
+}
+
+
+.ink-prose mark {
+  background: color-mix(in oklab, var(--warning) 26%, transparent);
+  color: var(--text-primary);
+  padding: 0.04em 0.22em;
+  border-radius: 3px;
+}
+.ink-prose kbd {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  padding: 0.15em 0.42em;
+  border: 1px solid var(--border-default);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.ink-prose del {
+  color: var(--text-tertiary);
+}
+.ink-prose abbr {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+.ink-prose .katex {
+  font-size: 1.04em;
+}
+.ink-prose .katex-display {
+  margin: 0.9em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25em 0;
+}
+.ink-prose .math-source {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.ink-prose .math-block.math-source {
+  margin: 0.9em 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  background: var(--bg-inset);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ink-prose .math-error {
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: color-mix(in oklab, var(--danger) 10%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+
+.ink-prose .mermaid-block {
+  margin: 1em 0;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  /* The diagram's own node fills are `--pele-bg`, so the block is painted with it too: a shape
+     filled with the page's inset grey on a cream block reads as a mistake in either direction. */
+  background: var(--pele-bg);
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+.ink-prose .mermaid-block svg {
+  max-width: 100%;
+  height: auto;
+}
+.ink-prose .mermaid-block.loading {
+  min-height: 90px;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.ink-prose .mermaid-block.loading::before {
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border: 1.5px solid color-mix(in oklab, var(--text-tertiary) 32%, transparent);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  content: '';
+  animation: mermaid-spin 0.8s linear infinite;
+}
+.ink-prose .mermaid-block.mermaid-source,
+.ink-prose .mermaid-block.has-error {
+  justify-content: flex-start;
+}
+.ink-prose .mermaid-block.mermaid-source > code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  white-space: pre;
+}
+.ink-prose .mermaid-error {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.ink-prose .mermaid-error-message {
+  align-self: center;
+  overflow-wrap: anywhere;
+}
+.ink-prose .mermaid-error code {
+  grid-column: 1 / -1;
+  overflow-x: auto;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  white-space: pre-wrap;
+}
+.ink-prose .mermaid-retry {
+  align-self: start;
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  padding: 3px 9px;
+  color: var(--text-primary);
+  background: var(--bg-overlay);
+  cursor: pointer;
+}
+.ink-prose .mermaid-retry:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+@keyframes mermaid-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.ink-prose .chart-block-wrap {
+  margin: 1em 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-inset);
+  overflow: hidden;
+}
+.ink-prose .chart-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 7px 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 60%, var(--bg-base));
+}
+.ink-prose .chart-block-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ink-prose .chart-block-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.ink-prose .chart-block-source {
+  max-height: 260px;
+  margin: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+}
+.ink-prose .chart-block-source[hidden] {
+  display: none;
+}
+.ink-prose .chart-block-source > code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  white-space: pre;
+}
+.ink-prose .chart-block {
+  min-height: 300px;
+  padding: 14px;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+.ink-prose .chart-canvas-holder {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  /* The canvas is sized from this box, so it has to carry a height of its own rather than collapse to
+     the canvas's intrinsic one — otherwise a re-measure would read back the size it just wrote. */
+  height: 272px;
+}
+.ink-prose .chart-canvas {
+  max-width: 100%;
+}
+.ink-prose .chart-block.loading {
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.ink-prose .chart-block.loading::before {
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border: 1.5px solid color-mix(in oklab, var(--text-tertiary) 32%, transparent);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  content: '';
+  animation: mermaid-spin 0.8s linear infinite;
+}
+.ink-prose .chart-block.has-error {
+  min-height: 0;
+  justify-content: flex-start;
+}
+.ink-prose .chart-block.chart-source {
+  min-height: 0;
+  justify-content: flex-start;
+}
+.ink-prose .chart-block.chart-source > code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ink-prose .chart-error {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.ink-prose .chart-error-message {
+  overflow-wrap: anywhere;
+}
+.ink-prose .chart-error code {
+  overflow-x: auto;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  white-space: pre-wrap;
+}
+
+
+/* ---- mind map blocks ---- */
+
+.ink-prose .mindmap-block-wrap {
+  margin: 1em 0;
+}
+.ink-prose .mindmap-block {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-inset);
+  overflow: hidden;
+}
+.ink-prose .mindmap-block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 7px 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 60%, var(--bg-base));
+}
+.ink-prose .mindmap-block-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ink-prose .mindmap-block-mode {
+  padding: 0 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 15px;
+}
+.ink-prose .mindmap-block-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.ink-prose .mindmap-block-theme {
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.ink-prose .mindmap-block-theme:hover {
+  color: var(--accent);
+  border-color: var(--border-default);
+}
+/* Same reason as the other controls here: the hover treatment alone does not tell a
+   keyboard user which pill holds focus, and `outline: none` removed the global ring. */
+.ink-prose .mindmap-block-theme:focus-visible {
+  color: var(--accent);
+  border-color: var(--border-default);
+  outline: none;
+  box-shadow: var(--shadow-ring);
+}
+.ink-prose .mindmap-block-theme:disabled {
+  color: var(--text-quaternary);
+  cursor: default;
+}
+.ink-prose .mindmap-block-placeholder {
+  position: relative;
+  min-height: 64px;
+}
+.ink-prose .mindmap-block.loading .mindmap-block-placeholder {
+  /* The height belongs to the loading state only: it matches the canvas the map is about to
+     install, so mounting does not shove the note down, while a block that fell back to its
+     source or an error banner sizes to what it actually shows. */
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.ink-prose .mindmap-block.loading .mindmap-block-placeholder::before {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid color-mix(in oklab, var(--text-tertiary) 32%, transparent);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  content: '';
+  animation: mermaid-spin 0.8s linear infinite;
+}
+.ink-prose .mindmap-block-status {
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+.ink-prose .mindmap-canvas {
+  width: 100%;
+  height: 320px;
+  outline: none;
+}
+.ink-prose .mindmap-canvas:focus-visible,
+.ink-prose .mindmap-canvas:focus-within {
+  box-shadow: inset 0 0 0 2px var(--accent-soft);
+}
+.ink-prose .mindmap-canvas.is-static {
+  /* The still takes the same box the pannable canvas is given, so a map is the same size whatever
+     surface read it; `contain` keeps the whole picture in the frame instead of cropping it. */
+  display: flex;
+  height: 320px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ink-prose .mindmap-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  object-fit: contain;
+  padding: 8px;
+}
+.ink-prose .mindmap-block-source {
+  max-height: 260px;
+  margin: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+}
+.ink-prose .mindmap-block-source[hidden] {
+  display: none;
+}
+.ink-prose .mindmap-block-source > code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-size);
+  line-height: var(--code-line);
+  white-space: pre;
+}
+.ink-prose .mindmap-block.mindmap-source pre,
+.ink-prose .mindmap-error pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--code-size);
+  line-height: var(--code-line);
+  white-space: pre;
+}
+.ink-prose .mindmap-error {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.ink-prose .mindmap-error-message {
+  flex: 1 1 100%;
+  overflow-wrap: anywhere;
+}
+.ink-prose .mindmap-error pre {
+  flex: 1 1 100%;
+  padding: 0;
+  background: none;
+}
+.ink-prose .mindmap-retry {
+  align-self: start;
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  padding: 3px 9px;
+  color: var(--text-primary);
+  background: var(--bg-overlay);
+  cursor: pointer;
+}
+.ink-prose .mindmap-retry:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ink-prose .excalidraw-block {
+  position: relative;
+  margin: 1em 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-inset);
+  overflow: hidden;
+  height: var(--excalidraw-embed-height, 520px);
+  display: flex;
+  flex-direction: column;
+}
+.ink-prose .excalidraw-block.excalidraw-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  z-index: 9999;
+  background: var(--bg-base);
+}
+.ink-prose .excalidraw-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--bg-inset) 60%, var(--bg-base));
+  flex-shrink: 0;
+}
+.ink-prose .excalidraw-head-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.ink-prose .excalidraw-tab-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: var(--r-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.ink-prose .excalidraw-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.ink-prose .excalidraw-tab-btn.is-active {
+  color: var(--accent);
+  background: var(--bg-surface);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.ink-prose .excalidraw-head-title {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+.ink-prose .excalidraw-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ink-prose .excalidraw-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .excalidraw-action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .excalidraw-action-btn svg {
+  width: 13px;
+  height: 13px;
+}
+.ink-prose .excalidraw-canvas-container {
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 32px);
+  position: relative;
+  overflow: hidden;
+}
+.ink-prose .excalidraw-canvas-container .excalidraw {
+  height: 100% !important;
+}
+
+.excalidraw .FixedSideContainer_side_top {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+}
+
+.excalidraw .App-menu_top {
+  width: 100% !important;
+}
+
+.excalidraw .mobile-misc-tools-container,
+.excalidraw .tray-misc-tools-container,
+.excalidraw .sidebar-trigger__label-element,
+.excalidraw .default-sidebar-trigger {
+  display: none !important;
+}
+
+.excalidraw .library-menu-control-buttons {
+  height: auto !important;
+}
+
+.excalidraw .library-menu-browse-button {
+  height: 36px !important;
+  flex: 0 0 auto !important;
+}
+
+.excalidraw .sidebar-triggers {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+}
+
+.excalidraw .sidebar-tab-trigger {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  background-color: transparent !important;
+  color: var(--text-primary, currentColor) !important;
+  border: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.excalidraw .sidebar-tab-trigger svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.excalidraw .sidebar-tab-trigger:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.excalidraw .sidebar-tab-trigger.active,
+.excalidraw .sidebar-tab-trigger[data-state="active"],
+.excalidraw .sidebar-tab-trigger[aria-selected="true"] {
+  background-color: #6965db !important;
+  color: #ffffff !important;
+}
+
+.excalidraw .sidebar-tab-trigger.active svg,
+.excalidraw .sidebar-tab-trigger[data-state="active"] svg,
+.excalidraw .sidebar-tab-trigger[aria-selected="true"] svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.excalidraw .sidebar .ExcTextField,
+.excalidraw .layer-ui__search .ExcTextField,
+.excalidraw .layer-ui__library .ExcTextField {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: unset !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  display: block !important;
+}
+
+.excalidraw .sidebar .ExcTextField svg,
+.excalidraw .layer-ui__search .ExcTextField svg,
+.excalidraw .layer-ui__library .ExcTextField svg {
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #8e8e93 !important;
+  stroke: #8e8e93 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+  opacity: 1 !important;
+}
+
+.excalidraw.theme--dark .sidebar .ExcTextField svg,
+.excalidraw.theme--dark .layer-ui__search .ExcTextField svg,
+.excalidraw.theme--dark .layer-ui__library .ExcTextField svg {
+  color: #a1a1aa !important;
+  stroke: #a1a1aa !important;
+}
+
+.excalidraw .sidebar .ExcTextField__input,
+.excalidraw .layer-ui__search-header .ExcTextField__input,
+.excalidraw .layer-ui__library .ExcTextField__input {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  border-radius: 8px !important;
+  background-color: var(--bg-sunken, #f4f4f5) !important;
+  border: 1px solid var(--border-subtle, #e4e4e7) !important;
+  padding: 0 12px 0 34px !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+}
+
+.excalidraw.theme--dark .sidebar .ExcTextField__input,
+.excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input,
+.excalidraw.theme--dark .layer-ui__library .ExcTextField__input {
+  background-color: #232329 !important;
+  border-color: #31303b !important;
+}
+
+.excalidraw .sidebar .ExcTextField__input:focus-within,
+.excalidraw .layer-ui__search-header .ExcTextField__input:focus-within,
+.excalidraw .layer-ui__library .ExcTextField__input:focus-within {
+  border-color: #6965db !important;
+  background-color: var(--bg-surface, #ffffff) !important;
+  box-shadow: 0 0 0 1px #6965db !important;
+}
+
+.excalidraw.theme--dark .sidebar .ExcTextField__input:focus-within,
+.excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input:focus-within,
+.excalidraw.theme--dark .layer-ui__library .ExcTextField__input:focus-within {
+  border-color: #6965db !important;
+  background-color: #1e1e24 !important;
+}
+
+.excalidraw .sidebar .ExcTextField__input input,
+.excalidraw .layer-ui__search-header .ExcTextField__input input,
+.excalidraw .layer-ui__library .ExcTextField__input input {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  line-height: normal !important;
+  color: var(--text-primary, #18181b) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.excalidraw.theme--dark .sidebar .ExcTextField__input input,
+.excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input input,
+.excalidraw.theme--dark .layer-ui__library .ExcTextField__input input {
+  color: #f4f4f5 !important;
+}
+
+.excalidraw .sidebar .ExcTextField__input input::placeholder,
+.excalidraw .layer-ui__search-header .ExcTextField__input input::placeholder,
+.excalidraw .layer-ui__library .ExcTextField__input input::placeholder {
+  color: #a1a1aa !important;
+  font-size: 13px !important;
+  opacity: 1 !important;
+}
+
+.excalidraw.theme--dark .sidebar .ExcTextField__input input::placeholder,
+.excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input input::placeholder,
+.excalidraw.theme--dark .layer-ui__library .ExcTextField__input input::placeholder {
+  color: #71717a !important;
+}
+
+.excalidraw .layer-ui__search-header {
+  padding: 0 12px !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+}
+
+.excalidraw .layer-ui__library {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.excalidraw .layer-ui__library > *:not([data-ink-library-tree]) {
+  display: none !important;
+}
+
+.excalidraw .layer-ui__library > [data-ink-library-tree] {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.excalidraw .App-toolbar {
+  position: relative !important;
+}
+
+.excalidraw .HintViewer {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  width: 100% !important;
+  margin-top: 6px !important;
+  pointer-events: none !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.excalidraw .HintViewer > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left section {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left .undo-redo-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left .main-menu-trigger,
+.excalidraw .layer-ui__wrapper__footer-left .dropdown-menu-event-wrapper:has(.main-menu-trigger) {
+  order: -1 !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left .undo-button-container {
+  order: 1 !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left .redo-button-container {
+  order: 2 !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer-left section > .zoom-actions {
+  order: 3 !important;
+}
+
+.ink-prose .excalidraw-block-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+.ink-prose .excalidraw-block-source {
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--code-size);
+  line-height: var(--code-line);
+  flex: 1;
+}
+.ink-prose .excalidraw-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  padding: 24px;
+  color: var(--danger);
+}
+.ink-prose .excalidraw-retry {
+  padding: 4px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mindmap-node-link {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mindmap-node-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.mindmap-fullscreen {
+  background: var(--bg-base);
+}
+.mindmap-fullscreen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.mindmap-fullscreen-head > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mindmap-fullscreen-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.mindmap-fullscreen-stage {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.mindmap-fullscreen-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.mindmap-fullscreen-canvas .mindmap-canvas.is-fullscreen {
+  height: 100%;
+  width: 100%;
+}
+/* The library's own full screen button asks the browser to full-screen just its canvas, which the
+   preview's re-parenting undoes on the next write; the registry routes the press to this overlay, so
+   the duplicate control is hidden rather than left to do something visibly wrong. */
+.mindmap-fullscreen-canvas .mindmap-canvas.is-fullscreen #fullscreen {
+  display: none;
+}
+.mindmap-shortcuts {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 20;
+  width: min(100% - 24px, 560px);
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  transform: translate(-50%, -50%);
+}
+.mindmap-shortcuts ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+
+.ink-hit {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-radius: 3px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+
+@media print {
+  .ink-prose {
+    max-width: none;
+    padding: 0;
+    font-size: 11pt;
+    color: #000;
+  }
+  .ink-prose .code-copy,
+  .ink-prose .chart-block-tools,
+  .ink-prose .heading-anchor {
+    display: none;
+  }
+  .ink-prose .code-block,
+  .ink-prose .chart-block-wrap,
+  .ink-prose .table-wrap,
+  .ink-prose .markdown-timeline-item,
+  .ink-prose .markdown-example {
+    break-inside: avoid;
+  }
+}
+
+.ink-prose .note-embed.attachment .note-embed-body {
+  padding: 0;
+}
+.ink-prose .note-embed img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.ink-prose .attachment-open {
+  display: block;
+  padding: 0.5em 0.7em;
+  overflow-wrap: anywhere;
+  color: var(--accent);
+  font-size: 0.88em;
+}
+
+/* Memo cards, comments and the detail panel are surfaces inside the app, not the note page: the
+   reading column's 42vh tail turned a one-line comment into a 308px card (232px of it blank). */
+.ink-memo-prose {
+  max-width: none;
+  margin-inline: 0;
+  padding-block: 0;
+}
+
+/* A search word is a wash behind the text, not a badge: the accent tint stays readable in every
+   theme and leaves the glyph colour to the prose around it. */
+.ink-memo-prose mark[data-memo-hit] {
+  padding-inline: 0.08em;
+  border-radius: var(--r-2);
+  background: color-mix(in oklab, var(--accent) 24%, transparent);
+  color: inherit;
+}
+
+.wiki-hover-body .ink-prose {
+  max-width: none;
+  margin-inline: 0;
+  padding-block: 0;
+  font-size: var(--prose-size, 14px);
+}
+.wiki-hover-body .ink-prose h1,
+.wiki-hover-body .ink-prose h2,
+.wiki-hover-body .ink-prose h3 {
+  margin-top: 0.9em;
+}
+.wiki-hover-body .ink-prose > :first-child {
+  margin-top: 0;
+}
+.wiki-hover-body .ink-prose > *:last-child {
+  margin-bottom: 0;
+}
+
+.pinned-window-flash {
+  animation: pinned-window-flash 1100ms var(--ease-out);
+}
+@keyframes pinned-window-flash {
+  0% {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 75%, transparent), var(--shadow-pop);
+  }
+  70% {
+    box-shadow: 0 0 0 12px transparent, var(--shadow-pop);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent, var(--shadow-pop);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pinned-window-flash {
+    animation: none;
+  }
+}
+
+:root[data-outliner-guides="on"] .ink-prose li > ul,
+:root[data-outliner-guides="on"] .ink-prose li > ol {
+  position: relative;
+}
+:root[data-outliner-guides="on"] .ink-prose li > ul::before,
+:root[data-outliner-guides="on"] .ink-prose li > ol::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.1em 0.3em;
+  inset-inline-start: 0.4em;
+  width: 1px;
+  background: var(--border-strong);
+}
+
+/* ---- JSON preview: the structure and mind-map faces of a ```json block ---- */
+
+.ink-prose .json-code-block[data-json-mode='tree'] > pre,
+.ink-prose .json-code-block[data-json-mode='map'] > pre {
+  display: none;
+}
+.ink-prose .json-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--bg-inset) 70%, var(--bg-base));
+}
+.ink-prose .json-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  /* A tab label is the only name the control has, so it is text, not chrome. */
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.ink-prose .json-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .json-tab.is-active {
+  /* The tint and an underline say which tab is on; the label itself stays in the reading colour,
+     because the accent measured 2.59:1 against its own soft tint in the dark theme. */
+  background: var(--accent-soft);
+  box-shadow: inset 0 -1.5px 0 var(--accent);
+  color: var(--text-primary);
+}
+.ink-prose .json-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+}
+.ink-prose .json-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.ink-prose .json-tool:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ink-prose .json-tool[aria-expanded='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.ink-prose .json-tool.is-inline {
+  width: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+}
+/* The export tools are words, not glyphs: "SVG" and "PNG" say which format leaves the editor, and no icon
+   does that without a label next to it. They cost width, so they only appear where the picture being
+   exported is the whole window. */
+.ink-prose .json-tool--text {
+  width: auto;
+  padding: 0 5px;
+  font-size: 9.5px;
+  letter-spacing: var(--tracking-micro);
+}
+/* A phone's reading width cannot hold three tab names and eight tool buttons, and the tools are the part
+   nobody wants to lose. Each tab keeps its icon, and its name stays in the accessible name through the
+   button's own `aria-label`, so dropping the visible label drops nothing a screen reader had. */
+@media (max-width: 639px) {
+  .ink-prose .json-tab-label {
+    display: none;
+  }
+  .ink-prose .json-tab {
+    padding: 0 5px;
+  }
+}
+.ink-prose .json-filter {
+  display: flex;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-inset);
+}
+.ink-prose .json-filter[hidden] {
+  display: none;
+}
+.ink-prose .json-filter-input {
+  width: 100%;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xs);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.ink-prose .json-filter-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: var(--shadow-ring);
+}
+/* Same thumb-floor rule as the chips: the fixed 22px height is replaced, not just
+   floored, because a set height otherwise wins over min-height in the box. */
+@media (pointer: coarse) {
+  .ink-prose .json-filter-input {
+    height: var(--tap-target);
+  }
+}
+.ink-prose .json-view {
+  position: relative;
+  max-height: min(60vh, 560px);
+  overflow: auto;
+}
+.ink-prose .json-view[hidden] {
+  display: none;
+}
+.ink-prose .json-view-note {
+  margin: 0;
+  padding: 7px 12px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+.ink-prose .json-view-note.is-invalid {
+  border-bottom: 1px solid color-mix(in oklab, var(--danger) 26%, transparent);
+  background: var(--danger-soft);
+  /* The wash and the rule carry the "this is an error"; the sentence has to be readable. */
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.ink-prose .json-tree {
+  padding: 6px 8px 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.ink-prose .jt-children {
+  padding-left: 15px;
+}
+.ink-prose .jt-node:hover {
+  background: var(--accent-softer);
+}
+.ink-prose .jt-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: var(--r-xs);
+  white-space: nowrap;
+}
+.ink-prose .jt-row:hover {
+  background: var(--bg-active);
+}
+.ink-prose .jt-row.is-selected {
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+.ink-prose .jt-fold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-right: 1px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.ink-prose .jt-fold:hover {
+  color: var(--text-primary);
+}
+.ink-prose .jt-node.is-collapsed > .jt-fold {
+  transform: rotate(-90deg);
+}
+.ink-prose .jt-node.is-collapsed > .jt-children,
+.ink-prose .jt-node.is-collapsed > .jt-row--close {
+  display: none;
+}
+.ink-prose .jt-key {
+  color: var(--syntax-property);
+  cursor: text;
+  border-radius: var(--r-2);
+  padding: 0 2px;
+}
+/* An array index is how a reader addresses an element, so it is content rather than scaffolding and
+   carries the same weight as the value beside it. */
+.ink-prose .jt-index {
+  color: var(--text-secondary);
+}
+.ink-prose .jt-key:hover,
+.ink-prose .jt-value:hover {
+  background: var(--bg-active);
+}
+/* The tree's quiet parts are set smaller and lighter than the values, but never lighter than
+   `--text-secondary`: the bottom two tiers of the ramp measured 1.75–2.71:1 on a hovered row in the dark
+   theme, which is not a quieter grey, it is an invisible one. */
+.ink-prose .jt-colon {
+  color: var(--text-secondary);
+}
+.ink-prose .jt-brace {
+  color: var(--syntax-punctuation);
+}
+.ink-prose .jt-count {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.ink-prose .jt-value {
+  cursor: text;
+  border-radius: var(--r-2);
+  padding: 0 2px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.ink-prose .jt-value--string {
+  color: var(--syntax-string);
+}
+.ink-prose .jt-value--number {
+  color: var(--syntax-number);
+}
+.ink-prose .jt-value--boolean {
+  color: var(--syntax-constant);
+}
+.ink-prose .jt-value--null {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.ink-prose .jt-kind {
+  margin-left: 5px;
+  color: var(--text-secondary);
+  font-size: 9.5px;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  opacity: 0;
+}
+.ink-prose .jt-row:hover .jt-kind {
+  opacity: 1;
+}
+.ink-prose .jt-ops {
+  display: none;
+  gap: 2px;
+  margin-left: 6px;
+}
+.ink-prose .jt-row:hover > .jt-ops,
+.ink-prose .jt-op:focus-visible {
+  display: inline-flex;
+}
+.ink-prose .jt-op {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  /* The glyph is the button's whole accessible name, so it is text like any other. */
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ink-prose .jt-op:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.ink-prose .jt-input {
+  height: 17px;
+  padding: 0 3px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-2);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  font: inherit;
+  outline: none;
+}
+/* The accent border is permanent here, so it reads as "editable", not "this is the
+   one holding the keyboard". The ring lands outside the border box and only exists
+   on keyboard focus. */
+.ink-prose .jt-input:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-focus);
+}
+
+.ink-prose .json-code-block[data-json-mode='map'] > .json-view,
+.jm-stage {
+  position: relative;
+  max-height: none;
+  min-height: 340px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  background-image: radial-gradient(var(--border-subtle) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.ink-prose .json-code-block[data-json-mode='map'] > .json-view.is-dragging,
+.jm-stage.is-dragging {
+  cursor: grabbing;
+}
+.jm-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+.jm-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.jm-links path {
+  fill: none;
+  stroke: var(--graph-edge);
+  stroke-width: 1.4;
+}
+/* The name a card's row does not print travels on the connector instead, and it has to stay legible on
+   top of the dotted backdrop, so it gets the panel's own fill behind it rather than a heavier line. It is
+   a second reading of the same information as the row it points at, so it is allowed to be quieter than
+   the text — but not quieter than the backdrop's own noise, which is what the halo is for. */
+.jm-edge-label {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  paint-order: stroke;
+  stroke: var(--bg-base);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+/* A card is one container. Its rows are placed by the layout, which is why the row pitch, the handle and
+   the chip advances are written here as well as in `json-map-view.ts`: the layout measures the row as
+   this stylesheet will paint it, so a change to either alone shows up as clipped or drifting text.
+   The kind stripe is an inset shadow rather than a thick border for exactly that reason: a 3px border
+   would take 3px away from every row, and the widest row of every card would ellipsize. */
+.jm-card {
+  --jm-stripe: inset 3px 0 0 var(--syntax-property);
+  position: absolute;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  box-shadow: var(--jm-stripe), var(--shadow-sm);
+  user-select: none;
+}
+.jm-card:hover {
+  box-shadow: var(--jm-stripe), var(--shadow-pop);
+}
+.jm-card.is-selected,
+.jm-row.is-selected {
+  box-shadow: var(--jm-stripe), var(--shadow-ring);
+}
+.jm-card--array {
+  --jm-stripe: inset 3px 0 0 var(--syntax-number);
+}
+.jm-row {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  /* No gap: the advances come from the handle's and chip's own margins, which the measurer adds to the
+     label it is given. A `gap` here would paint `k : v` wider than the card was sized for. */
+  gap: 0;
+  white-space: nowrap;
+}
+/* Every member is a line of its own, so the card reads as a list rather than as a block of text. The
+   first row carries no rule because the card's own edge is above it. */
+.jm-row--rule {
+  border-top: 1px solid var(--border-subtle);
+}
+.jm-key {
+  color: var(--syntax-property);
+  /* The layout's label is `key: value`, spaces included, and a flex item drops leading and trailing
+     spaces; `pre` is what keeps the painted run the same string the card was measured from. */
+  white-space: pre;
+  flex: none;
+}
+.jm-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+  color: var(--text-primary);
+}
+.jm-value--string {
+  color: var(--syntax-string);
+}
+.jm-value--number {
+  color: var(--syntax-number);
+}
+.jm-value--boolean {
+  color: var(--syntax-constant);
+}
+.jm-value--null {
+  color: var(--text-secondary);
+}
+.jm-value--object,
+.jm-value--array {
+  color: var(--text-secondary);
+}
+.jm-chip {
+  /* Without this the chip is an inline box, `width` is ignored and the colour never paints — measured in
+     a browser, where the swatch came out 1px wide. `inline-block` keeps it inside the value's text run so
+     an ellipsized value still carries its colour with it. */
+  display: inline-block;
+  vertical-align: -3px;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-right: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-2);
+}
+/* The count of what the card left out is the one number the reader cannot get from the picture, so it
+   is not allowed to sit in the decorative tier. */
+.jm-more {
+  color: var(--text-secondary);
+}
+.jm-empty {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.jm-fold {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  /* The glyph is the only label on the button, and `--text-tertiary` measured 3.76:1 on a card in the
+     dark theme — a control's name has to clear AA like any other text. */
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+.jm-fold:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+/* A leaf has nothing to fold, but it still costs the same advance: every card's keys start on one
+   vertical line only if the rows that hold no handle reserve the room for one. */
+.jm-fold--none {
+  border-color: transparent;
+  background: none;
+  cursor: default;
+}
+
+.jm-map-menu {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 168px;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-overlay);
+  box-shadow: var(--shadow-pop);
+  font-size: 11.5px;
+  cursor: auto;
+  user-select: none;
+}
+.jm-map-menu-item {
+  display: block;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.jm-map-menu-item:hover {
+  color: var(--text-primary);
+  background: var(--bg-active);
+}
+/* The wash above is also what a pointer gets, so keyboard focus adds the ring: with
+   `outline: none` in play it is the only thing that says where the caret is. */
+.jm-map-menu-item:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-active);
+  outline: none;
+  box-shadow: var(--shadow-ring);
+}
+
+.jm-detail {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 260px;
+  max-width: calc(100% - 16px);
+  padding: 8px 10px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-overlay);
+  box-shadow: var(--shadow-pop);
+  font-size: 11px;
+  cursor: auto;
+  user-select: text;
+}
+.jm-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.jm-detail-title {
+  color: var(--text-secondary);
+  font-size: 10.5px;
+}
+.jm-detail-close {
+  padding: 0 2px;
+  border: 0;
+  color: var(--text-secondary);
+  background: none;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.jm-detail-close:hover {
+  color: var(--text-primary);
+}
+.jm-detail-body {
+  max-height: 118px;
+  margin: 0;
+  overflow: auto;
+  color: var(--text-primary);
+  white-space: pre;
+  line-height: 1.45;
+}
+.jm-detail-label {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.jm-detail-path {
+  width: 100%;
+  padding: 2px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-2);
+  color: var(--text-primary);
+  background: var(--bg-inset);
+  font: inherit;
+  outline: none;
+}
+/* The item path is a real editable field, and this rule suppressed the global
+   `:focus-visible` outline without replacing it. Border tint plus the 3px field
+   ring restores the keyboard signal. */
+.jm-detail-path:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: var(--shadow-ring-focus);
+}
+.jm-detail-actions {
+  display: flex;
+  gap: 6px;
+}
+.jm-detail-copy {
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  font: inherit;
+  cursor: pointer;
+}
+.jm-detail-copy:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.json-fullscreen-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.json-fullscreen-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.json-fullscreen-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.json-fullscreen-stage .jm-stage {
+  height: 100%;
+}
+.json-shortcuts {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  background: var(--bg-overlay);
+  box-shadow: var(--shadow-pop);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.json-shortcuts ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The stage paints the window; the block fills it as a column, so the head, the filter row and the
+   picture each get their own height and the map takes whatever is left. The block is `position: relative`
+   rather than `fixed` because it has already been moved into a fixed wrapper — a second fixed box would
+   fight the one that carries the click route. */
+.code-block.is-json-fullscreen {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-base);
+}
+.code-block.is-json-fullscreen > .code-block-head,
+.code-block.is-json-fullscreen > .json-filter {
+  flex: none;
+}
+.code-block.is-json-fullscreen > .json-view {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* The map measures labels from this element's computed font, so the nodes inherit from here rather than
+   carrying the size themselves; a mismatch is what made every label ellipsize. */
+.ink-prose .json-view {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.jm-card,
+.jm-detail {
+  font-size: inherit;
+  font-family: inherit;
+}
+/* The hover wash names a range, it does not flag it: the accent tint reads as an error on the cinnabar
+   theme, where the accent is a red. */
+/* The range a hover names is the innermost container under the pointer. Without the `:has()` clause a
+   hover on a leaf satisfies `:hover` on every ancestor too, so the root's wash covers the whole document
+   and "highlight the range" becomes "highlight everything". */
+.ink-prose .jt-node:hover:not(:has(.jt-node:hover)) {
+  background: var(--bg-hover);
+}
+.json-fs-stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--bg-base);
+}
+/* The stage carries `.ink-prose` so the block keeps its scoped styling when it is moved to <body>, and
+   the prose column's own measure comes with it. Full screen means the window, not the reading width — and
+   not the column's `42vh` of trailing padding either, which was leaving a 420px band of empty field below
+   the map at a 1000px window (measured: the block came out 580px tall, exactly the stage minus 42vh). */
+.json-fs-stage {
+  width: 100%;
+  max-width: none;
+  padding-block: 0;
+}
+
+/* A reading mark kept in colour by the reader's own note. The six values are the reader's own
+   palette, repeated here on purpose: a note has to look the same when no book is open. */
+.ink-prose mark[data-hl='yellow'] { background: rgba(255, 206, 64, 0.45); }
+.ink-prose mark[data-hl='green'] { background: rgba(118, 214, 108, 0.42); }
+.ink-prose mark[data-hl='blue'] { background: rgba(96, 165, 250, 0.42); }
+.ink-prose mark[data-hl='pink'] { background: rgba(248, 123, 168, 0.42); }
+.ink-prose mark[data-hl='red'] { background: rgba(245, 168, 160, 0.42); }
+.ink-prose mark[data-hl='purple'] { background: rgba(213, 184, 255, 0.42); }

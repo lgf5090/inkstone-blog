@@ -12,3 +12,7 @@ Shirone is licensed under the MIT License; the license text is reproduced in
 LICENSE. Portions copied or adapted from Shirone remain under the MIT License
 and retain this notice. The Inkstone backend and admin app are separate works
 under their own license.
+
+The reading-surface styles (`src/styles/reading.css` and
+`src/styles/inkstone-tokens.css`) are derived from the Inkstone project and are
+included here by the project owner.

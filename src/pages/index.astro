@@ -1,19 +1,84 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import StatusBadge from '../components/StatusBadge.svelte'
+import { BlogApiError, loadPosts, loadSite } from '../lib/blog-api'
+import type { BlogPage, BlogPostSummary, BlogSitePublic } from '../lib/blog-types'
+
+let site: BlogSitePublic | null = null
+let page: BlogPage<BlogPostSummary> | null = null
+let error = ''
+
+try {
+  ;[site, page] = await Promise.all([loadSite(), loadPosts(1, 20)])
+} catch (cause) {
+  error = cause instanceof BlogApiError
+    ? `The blog API answered ${cause.status}.`
+    : 'The blog API is unreachable.'
+}
+
+function formatDate(value: number | null): string {
+  if (!value) return ''
+  try {
+    return new Intl.DateTimeFormat(site?.site.locale ?? 'en', {
+      dateStyle: 'medium',
+      timeZone: site?.site.timeZone || undefined,
+    }).format(new Date(value))
+  } catch {
+    return new Date(value).toISOString().slice(0, 10)
+  }
+}
+
+const posts = page?.items ?? []
 ---
 
-<Layout
-  title="Inkstone Blog"
-  description="The public blog frontend for Inkstone notes."
->
-  <main class="mx-auto flex min-h-dvh w-full max-w-2xl flex-col justify-center gap-4 px-6 py-16">
-    <StatusBadge label="Initialized" />
-    <p class="text-sm font-medium tracking-[0.2em] text-sky-400 uppercase">Inkstone Blog</p>
-    <h1 class="text-4xl font-semibold tracking-tight">Frontend initialized</h1>
-    <p class="text-slate-400">
-      The public blog will be ported here from Shirone. Content and reading rendering are provided
-      by the Inkstone blog API and reading runtime.
+<Layout site={site} title={site?.site.title ?? 'Inkstone Blog'} description={site?.site.description}>
+  <section class="mb-10 max-w-2xl">
+    <StatusBadge label="Journal" />
+    <h1 class="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+      {site?.site.title ?? 'Inkstone Blog'}
+    </h1>
+    <p class="mt-3 text-base leading-relaxed text-slate-400">
+      {site?.site.subtitle || site?.site.description || 'Notes, essays and small things worth keeping.'}
     </p>
-  </main>
+  </section>
+
+  {error ? (
+    <div role="alert" class="rounded-2xl border border-red-400/30 bg-red-400/10 p-5 text-sm text-red-200">
+      <p class="font-medium">The blog could not load.</p>
+      <p class="mt-1 text-red-200/80">{error}</p>
+      <a href="/" class="mt-3 inline-block rounded-full border border-red-300/30 px-3 py-1.5 hover:bg-red-300/10">
+        Try again
+      </a>
+    </div>
+  ) : posts.length === 0 ? (
+    <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
+      No posts have been published yet.
+    </div>
+  ) : (
+    <section aria-label="Posts" class="grid gap-4">
+      {posts.map((post) => (
+        <article class="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-sky-400/40 hover:bg-white/[0.05] sm:p-6">
+          <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            {post.pinned && <span class="rounded-full bg-sky-400/10 px-2 py-0.5 text-sky-300">Pinned</span>}
+            {post.category && <span>{post.category}</span>}
+            {post.publishedAt && <time datetime={new Date(post.publishedAt).toISOString()}>{formatDate(post.publishedAt)}</time>}
+            <span>{post.readingMinutes} min read</span>
+          </div>
+          <h2 class="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+            <a href={`/posts/${post.slug}`} class="group-hover:text-sky-300">{post.title || 'Untitled'}</a>
+          </h2>
+          {(post.excerpt || post.description) && (
+            <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
+              {post.excerpt || post.description}
+            </p>
+          )}
+          {post.tags.length > 0 && (
+            <div class="mt-4 flex flex-wrap gap-1.5 text-[11px] text-slate-500">
+              {post.tags.map((tag) => <span class="rounded-full border border-white/10 px-2 py-0.5">#{tag}</span>)}
+            </div>
+          )}
+        </article>
+      ))}
+    </section>
+  )}
 </Layout>
