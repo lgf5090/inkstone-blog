@@ -351,7 +351,7 @@ pnpm check:i18n
 ## 9. Progress（完成即回填）
 
 > 状态：`[ ]` 未开始 · `[~]` 进行中 · `[x]` 完成 · `[!]` 阻塞。必须填提交 SHA、验证命令 + RC、偏差。
-> 基线：Inkstone `bd0bfe9d`；Shirone `dd1b7826` 只读参考；前端仓库从零初始化，两处此前无 Blog 提交。
+> 基线：Inkstone `bd0bfe9d`；Shirone `dd1b7826` 只读参考；前端仓库从零初始化，FE-00 @ `8f60e90`。
 
 ### 9.1 Inkstone `feat/blog`（BE）
 
@@ -377,7 +377,7 @@ pnpm check:i18n
 
 | ID | 任务 | 状态 | 提交 | 验证证据 | 偏差/后续 |
 | --- | --- | --- | --- | --- | --- |
-| FE-00 | C3 初始化/脚手架/依赖/SSR | [ ] | | | |
+| FE-00 | C3 初始化/脚手架/依赖/SSR | [x] | 8f60e90 | create-cloudflare 2.74.5 → Astro 7.4.4/adapter 14.4.3/wrangler 4.156.0；pnpm install --frozen-lockfile / check / type-check / build 全绿；TS 7 被 astro check 拒绝，固定 6.0.3 | Svelte/Tailwind 由 astro add 接入；功能移植未开始 |
 | FE-01 | 运行时配置/API/Zod/mock | [ ] | | | |
 | FE-02 | 外壳/主题/显示设置 | [ ] | | | |
 | FE-03 | 列表/归档/分类/标签 | [ ] | | | |
