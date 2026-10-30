@@ -16,7 +16,7 @@ export type MessageKey =
   | 'common.retry' | 'common.page' | 'common.previous' | 'common.next'
   | 'common.backHome' | 'common.untitled' | 'common.pinned' | 'common.updated'
   | 'common.published' | 'common.tableOfContents' | 'common.previousPost'
-  | 'common.nextPost' | 'common.share' | 'common.copied'
+  | 'common.nextPost' | 'common.share' | 'common.copied' | 'common.postNavigation'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
@@ -24,7 +24,13 @@ export type MessageKey =
   | 'collections.devices' | 'collections.games' | 'collections.anime'
   | 'collections.timeline' | 'collections.compass'
   | 'page.about' | 'page.archiveTitle' | 'page.archiveHint'
-  | 'common.recentPosts' | 'common.stats' | 'common.language' | 'comments.title' | 'comments.empty' | 'comments.reply' | 'comments.leave' | 'comments.name'
+  | 'common.recentPosts' | 'common.stats' | 'common.language' | 'appearance.title' | 'appearance.theme_auto' | 'appearance.theme_light' | 'appearance.theme_dark'
+  | 'appearance.accent' | 'appearance.theme' | 'appearance.background' | 'appearance.density'
+  | 'appearance.background_paper' | 'appearance.background_white'
+  | 'appearance.density_comfortable' | 'appearance.density_compact'
+  | 'appearance.accent_cinnabar' | 'appearance.accent_indigo' | 'appearance.accent_celadon'
+  | 'appearance.accent_amber' | 'appearance.accent_terracotta' | 'appearance.accent_wisteria'
+  | 'appearance.accent_graphite' | 'comments.title' | 'comments.empty' | 'comments.reply' | 'comments.leave' | 'comments.name'
   | 'comments.email' | 'comments.emailHint' | 'comments.content' | 'comments.posting' | 'comments.submit'
   | 'comments.moderated' | 'comments.closed' | 'comments.replyingTo' | 'comments.cancel'
   | 'comments.pending' | 'comments.published' | 'comments.notPublished' | 'comments.loadFailed'
@@ -44,6 +50,7 @@ const en: Dictionary = {
   'common.backHome': 'Back to home', 'common.untitled': 'Untitled', 'common.pinned': 'Pinned',
   'common.updated': 'Updated', 'common.published': 'Published', 'common.tableOfContents': 'On this page',
   'common.previousPost': 'Previous post', 'common.nextPost': 'Next post', 'common.share': 'Share',
+  'common.postNavigation': 'Post navigation',
   'common.copied': 'Link copied', 'common.copyFailed': 'Copy failed',
   'search.title': 'Search', 'search.placeholder': 'Search posts', 'search.empty': 'No posts matched this search.',
   'search.results': 'results',
@@ -55,6 +62,12 @@ const en: Dictionary = {
   'collections.games': 'Games', 'collections.anime': 'Anime', 'collections.timeline': 'Timeline',
   'collections.compass': 'Compass',
   'page.about': 'About', 'page.archiveTitle': 'Archive', 'page.archiveHint': 'Everything published, by year.',
+  'appearance.title': 'Appearance', 'appearance.theme': 'Theme', 'appearance.background': 'Background', 'appearance.density': 'Density', 'appearance.theme_auto': 'Auto', 'appearance.theme_light': 'Light',
+  'appearance.theme_dark': 'Dark', 'appearance.accent': 'Accent colour', 'appearance.background_paper': 'Paper',
+  'appearance.background_white': 'Pure white', 'appearance.density_comfortable': 'Comfortable',
+  'appearance.density_compact': 'Compact', 'appearance.accent_cinnabar': 'Cinnabar', 'appearance.accent_indigo': 'Indigo',
+  'appearance.accent_celadon': 'Celadon', 'appearance.accent_amber': 'Amber', 'appearance.accent_terracotta': 'Terracotta',
+  'appearance.accent_wisteria': 'Wisteria', 'appearance.accent_graphite': 'Graphite',
   'comments.title': 'Comments', 'comments.empty': 'No comments yet.', 'comments.reply': 'Reply',
   'comments.leave': 'Leave a comment', 'comments.name': 'Name', 'comments.email': 'Email',
   'comments.emailHint': 'Not published. Used only to verify the comment.', 'comments.content': 'Comment',
@@ -78,6 +91,7 @@ const zhCN: Dictionary = {
   'common.untitled': '未命名', 'common.pinned': '置顶', 'common.updated': '更新于',
   'common.published': '发布于', 'common.tableOfContents': '本页目录', 'common.previousPost': '上一篇',
   'common.nextPost': '下一篇', 'common.share': '分享', 'common.copied': '链接已复制', 'common.copyFailed': '复制失败',
+  'common.postNavigation': '文章导航',
   'search.title': '搜索', 'search.placeholder': '搜索文章', 'search.empty': '没有匹配的文章。',
   'search.results': '条结果',
   'theme.toggle': '切换明暗主题', 'blog.poweredBy': '由 Inkstone 笔记驱动',
@@ -88,6 +102,12 @@ const zhCN: Dictionary = {
   'collections.games': '游戏', 'collections.anime': '番剧', 'collections.timeline': '时间线',
   'collections.compass': '罗盘',
   'page.about': '关于', 'page.archiveTitle': '归档', 'page.archiveHint': '按年份浏览全部已发布内容。',
+  'appearance.title': '外观', 'appearance.theme': '主题', 'appearance.background': '背景', 'appearance.density': '密度', 'appearance.theme_auto': '跟随系统', 'appearance.theme_light': '浅色',
+  'appearance.theme_dark': '深色', 'appearance.accent': '强调色', 'appearance.background_paper': '暖纸',
+  'appearance.background_white': '纯白', 'appearance.density_comfortable': '舒适',
+  'appearance.density_compact': '紧凑', 'appearance.accent_cinnabar': '朱砂', 'appearance.accent_indigo': '靛蓝',
+  'appearance.accent_celadon': '青瓷', 'appearance.accent_amber': '琥珀', 'appearance.accent_terracotta': '陶土',
+  'appearance.accent_wisteria': '紫藤', 'appearance.accent_graphite': '石墨',
   'comments.title': '评论', 'comments.empty': '还没有评论。', 'comments.reply': '回复',
   'comments.leave': '留下评论', 'comments.name': '昵称', 'comments.email': '邮箱',
   'comments.emailHint': '不会公开，仅用于验证评论。', 'comments.content': '评论内容',
@@ -107,6 +127,7 @@ const zhTW: Dictionary = { ...zhCN,
   'common.backHome': '返回首頁', 'common.pinned': '置頂', 'common.updated': '更新於',
   'common.published': '發布於', 'common.tableOfContents': '本頁目錄',
   'common.previousPost': '上一篇', 'common.nextPost': '下一篇', 'search.empty': '沒有符合的文章。',
+  'common.postNavigation': '文章導覽',
   'collections.albums': '相簿', 'collections.games': '遊戲', 'collections.devices': '裝置',
   'page.archiveTitle': '歸檔',
 }
@@ -121,6 +142,7 @@ const ja: Dictionary = { ...en,
   'common.retry': '再試行', 'common.previous': '前へ', 'common.next': '次へ', 'common.backHome': 'ホームへ戻る',
   'common.untitled': '無題', 'common.pinned': 'ピン留め', 'common.updated': '更新', 'common.published': '公開',
   'common.tableOfContents': 'このページの目次', 'common.previousPost': '前の記事', 'common.nextPost': '次の記事',
+  'common.postNavigation': '記事ナビゲーション',
   'search.title': '検索', 'search.placeholder': '記事を検索', 'search.empty': '一致する記事がありません。',
   'collections.empty': 'まだ何もありません。', 'page.about': 'About', 'page.archiveTitle': 'アーカイブ',
   'page.archiveHint': '公開された記事を年別に表示します。',
@@ -136,6 +158,7 @@ const ko: Dictionary = { ...en,
   'common.retry': '다시 시도', 'common.previous': '이전', 'common.next': '다음', 'common.backHome': '홈으로',
   'common.untitled': '제목 없음', 'common.pinned': '고정됨', 'common.updated': '업데이트', 'common.published': '발행',
   'common.tableOfContents': '이 페이지의 목차', 'common.previousPost': '이전 글', 'common.nextPost': '다음 글',
+  'common.postNavigation': '글 탐색',
   'search.title': '검색', 'search.placeholder': '글 검색', 'search.empty': '일치하는 글이 없습니다.',
   'collections.empty': '아직 내용이 없습니다.', 'page.about': '소개', 'page.archiveTitle': '보관소',
   'page.archiveHint': '발행된 모든 글을 연도별로 봅니다.',
@@ -151,6 +174,7 @@ const es: Dictionary = { ...en,
   'common.retry': 'Reintentar', 'common.previous': 'Anterior', 'common.next': 'Siguiente', 'common.backHome': 'Volver al inicio',
   'common.untitled': 'Sin título', 'common.pinned': 'Fijado', 'common.updated': 'Actualizado', 'common.published': 'Publicado',
   'common.tableOfContents': 'En esta página', 'common.previousPost': 'Publicación anterior', 'common.nextPost': 'Publicación siguiente',
+  'common.postNavigation': 'Navegación de publicaciones',
   'search.title': 'Buscar', 'search.placeholder': 'Buscar publicaciones', 'search.empty': 'Ninguna publicación coincide.',
   'collections.empty': 'Todavía no hay nada aquí.', 'page.about': 'Acerca de', 'page.archiveTitle': 'Archivo',
   'page.archiveHint': 'Todo lo publicado, por año.',
@@ -166,6 +190,7 @@ const id: Dictionary = { ...en,
   'common.retry': 'Coba lagi', 'common.previous': 'Sebelumnya', 'common.next': 'Berikutnya', 'common.backHome': 'Kembali ke beranda',
   'common.untitled': 'Tanpa judul', 'common.pinned': 'Disematkan', 'common.updated': 'Diperbarui', 'common.published': 'Diterbitkan',
   'common.tableOfContents': 'Di halaman ini', 'common.previousPost': 'Postingan sebelumnya', 'common.nextPost': 'Postingan berikutnya',
+  'common.postNavigation': 'Navigasi postingan',
   'search.title': 'Cari', 'search.placeholder': 'Cari postingan', 'search.empty': 'Tidak ada postingan yang cocok.',
   'collections.empty': 'Belum ada apa pun di sini.', 'page.about': 'Tentang', 'page.archiveTitle': 'Arsip',
   'page.archiveHint': 'Semua yang diterbitkan, per tahun.',
@@ -181,6 +206,7 @@ const th: Dictionary = { ...en,
   'common.retry': 'ลองอีกครั้ง', 'common.previous': 'ก่อนหน้า', 'common.next': 'ถัดไป', 'common.backHome': 'กลับหน้าแรก',
   'common.untitled': 'ไม่มีชื่อ', 'common.pinned': 'ปักหมุด', 'common.updated': 'อัปเดต', 'common.published': 'เผยแพร่',
   'common.tableOfContents': 'ในหน้านี้', 'common.previousPost': 'บทความก่อนหน้า', 'common.nextPost': 'บทความถัดไป',
+  'common.postNavigation': 'การนำทางบทความ',
   'search.title': 'ค้นหา', 'search.placeholder': 'ค้นหาบทความ', 'search.empty': 'ไม่พบบทความที่ตรงกัน',
   'collections.empty': 'ยังไม่มีอะไรที่นี่', 'page.about': 'เกี่ยวกับ', 'page.archiveTitle': 'คลัง',
   'page.archiveHint': 'ทุกอย่างที่เผยแพร่ แยกตามปี',
@@ -196,6 +222,7 @@ const tr: Dictionary = { ...en,
   'common.retry': 'Tekrar dene', 'common.previous': 'Önceki', 'common.next': 'Sonraki', 'common.backHome': 'Ana sayfaya dön',
   'common.untitled': 'Başlıksız', 'common.pinned': 'Sabitlenmiş', 'common.updated': 'Güncellendi', 'common.published': 'Yayınlandı',
   'common.tableOfContents': 'Bu sayfada', 'common.previousPost': 'Önceki yazı', 'common.nextPost': 'Sonraki yazı',
+  'common.postNavigation': 'Yazı gezinmesi',
   'search.title': 'Ara', 'search.placeholder': 'Yazı ara', 'search.empty': 'Eşleşen yazı yok.',
   'collections.empty': 'Burada henüz bir şey yok.', 'page.about': 'Hakkında', 'page.archiveTitle': 'Arşiv',
   'page.archiveHint': 'Yayınlanan her şey, yıla göre.',
@@ -211,6 +238,7 @@ const vi: Dictionary = { ...en,
   'common.retry': 'Thử lại', 'common.previous': 'Trước', 'common.next': 'Sau', 'common.backHome': 'Về trang chủ',
   'common.untitled': 'Không tiêu đề', 'common.pinned': 'Ghim', 'common.updated': 'Cập nhật', 'common.published': 'Xuất bản',
   'common.tableOfContents': 'Trong trang này', 'common.previousPost': 'Bài trước', 'common.nextPost': 'Bài sau',
+  'common.postNavigation': 'Điều hướng bài viết',
   'search.title': 'Tìm kiếm', 'search.placeholder': 'Tìm bài viết', 'search.empty': 'Không có bài viết phù hợp.',
   'collections.empty': 'Chưa có nội dung.', 'page.about': 'Giới thiệu', 'page.archiveTitle': 'Lưu trữ',
   'page.archiveHint': 'Tất cả nội dung đã xuất bản, theo năm.',

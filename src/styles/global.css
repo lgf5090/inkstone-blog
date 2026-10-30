@@ -3,7 +3,10 @@
 @import "@fontsource/outfit/500.css";
 @import "@fontsource/outfit/600.css";
 @import "@fontsource/outfit/700.css";
+@import "@fontsource-variable/inter/index.css";
 @import "@fontsource-variable/jetbrains-mono/index.css";
+@import "katex/dist/katex.min.css";
+@import "./inkstone-tokens.css";
 @import "./blog.css";
 
 @source "../**/*.{astro,svelte,ts}";

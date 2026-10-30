@@ -1,4 +1,5 @@
 @import "./inkstone-tokens.css";
+@import "./kanban.css";
 
 
 
@@ -3785,3 +3786,33 @@
 .ink-prose mark[data-hl='pink'] { background: rgba(248, 123, 168, 0.42); }
 .ink-prose mark[data-hl='red'] { background: rgba(245, 168, 160, 0.42); }
 .ink-prose mark[data-hl='purple'] { background: rgba(213, 184, 255, 0.42); }
+
+/* ── Reading runtime ────────────────────────────────────────────────────────
+   The note app's own reading surface replaces the stored snapshot after it has rendered. While it
+   is being prepared it occupies the snapshot's width but no flow space, so no layout shifts under
+   the reader; once ready the snapshot is hidden and the stage becomes the article body. */
+[data-blog-reading-host] { position: relative; }
+
+.blog-runtime-stage {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.blog-runtime-stage.is-ready {
+  position: static;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* The runtime brings the app's reading column and its own scroller; on a public page the window is
+   the scroller, and the column padding belongs to the blog shell. */
+.blog-runtime-stage .blog-reading-surface {
+  height: auto;
+  overflow: visible;
+  padding: 0;
+}
+
+[data-blog-snapshot][hidden] { display: none; }

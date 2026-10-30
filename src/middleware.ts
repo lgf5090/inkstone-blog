@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
-import { loadSite, loadTaxonomy } from './lib/blog-api'
+import { loadPost, loadSite, loadTaxonomy } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { blogLocale, LOCALES } from './i18n'
 
@@ -41,7 +41,83 @@ async function mediaProxy(context: Parameters<Parameters<typeof defineMiddleware
   return new Response(upstream.body, { status: 200, headers: responseHeaders })
 }
 
+const RUNTIME_VERSION = /^inkstone-blog-v[0-9]+$/
+const RUNTIME_FILE = /^[A-Za-z0-9._/-]+$/
+
+/**
+ * Serves the versioned reading runtime, and the published note body it re-renders, through this
+ * origin. The browser never talks to the Inkstone host directly: the runtime is same-origin, its
+ * `vendor/` requests land here too, and a private or protected note is answered by the API's own
+ * status instead of being proxied around the access check.
+ */
+async function runtimeProxy(context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]): Promise<Response> {
+  const rest = context.url.pathname.slice('/_blog/runtime/'.length)
+  if (!rest || !RUNTIME_FILE.test(rest)) return new Response(null, { status: 404 })
+  if (rest.split('/').some((segment) => segment === '..' || segment === '.')) {
+    return new Response(null, { status: 404 })
+  }
+  const [version, ...tail] = rest.split('/')
+  if (!version || !RUNTIME_VERSION.test(version) || tail.length === 0) return new Response(null, { status: 404 })
+  const origin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')
+  if (!origin) return new Response(null, { status: 503 })
+  const upstreamPath = tail[0] === 'vendor'
+    ? `/vendor/${tail.slice(1).join('/')}`
+    : `/blog-runtime/${version}/${tail.join('/')}`
+  let upstream: Response
+  try {
+    upstream = await fetch(`${origin}${upstreamPath}`, {
+      headers: { 'x-inkstone-client': '1' },
+      signal: AbortSignal.timeout(Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')),
+    })
+  } catch {
+    return new Response(null, { status: 502 })
+  }
+  if (!upstream.ok) return new Response(null, { status: upstream.status })
+  const headers = new Headers()
+  for (const name of ['content-type', 'content-length', 'etag', 'last-modified']) {
+    const value = upstream.headers.get(name)
+    if (value) headers.set(name, value)
+  }
+  headers.set('cache-control', 'public, max-age=31536000, immutable')
+  headers.set('x-content-type-options', 'nosniff')
+  return new Response(upstream.body, { status: 200, headers })
+}
+
+async function readingData(context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]): Promise<Response> {
+  const raw = context.url.pathname.slice('/_blog/post/'.length)
+  if (!raw || raw.length > 240) return new Response(null, { status: 404 })
+  let slug: string
+  try {
+    slug = decodeURIComponent(raw)
+  } catch {
+    return new Response(null, { status: 400 })
+  }
+  try {
+    const post = await loadPost(slug)
+    if (!post.content || !post.render) return new Response(null, { status: 404 })
+    return new Response(JSON.stringify({
+      title: post.title,
+      content: post.content,
+      embeds: post.render.embeds ?? [],
+      settings: post.render.settings,
+      rendererVersion: post.render.rendererVersion,
+      wikiLinks: post.render.wikiLinks,
+    }), {
+      status: 200,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+        'x-content-type-options': 'nosniff',
+      },
+    })
+  } catch {
+    return new Response(null, { status: 404 })
+  }
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.url.pathname.startsWith('/_blog/runtime/')) return runtimeProxy(context)
+  if (context.url.pathname.startsWith('/_blog/post/')) return readingData(context)
   if (context.url.pathname.startsWith('/_blog/media/')) return mediaProxy(context)
 
   if (!PASSTHROUGH.test(context.url.pathname)) {

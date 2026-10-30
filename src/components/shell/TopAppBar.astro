@@ -1,6 +1,6 @@
 ---
 import Icon from '../Icon.astro'
-import ThemeToggle from './ThemeToggle.svelte'
+import AppearanceMenu from './AppearanceMenu.svelte'
 import { blogLocale, t, LOCALES, LOCALE_LABELS, type MessageKey } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -81,7 +81,7 @@ const fallbackLabel = (href: string, label: string): string => labelKey(href) ? 
           ))}
         </div>
       </details>
-      <ThemeToggle client:load label={t(locale, 'theme.toggle')} />
+      <AppearanceMenu client:load locale={locale} />
     </div>
   </div>
 

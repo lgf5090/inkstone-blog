@@ -25,19 +25,27 @@ const items = headings.filter((heading) => heading.depth <= depth)
 )}
 <script is:inline>
   (() => {
-    const links = [...document.querySelectorAll('[data-toc-link]')]
-    if (links.length === 0 || !('IntersectionObserver' in window)) return
-    const byId = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]))
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue
-        links.forEach((link) => link.removeAttribute('aria-current'))
-        byId.get(entry.target.id)?.setAttribute('aria-current', 'location')
+    let observer = null
+    const bind = () => {
+      observer?.disconnect()
+      const links = [...document.querySelectorAll('[data-toc-link]')]
+      if (links.length === 0 || !('IntersectionObserver' in window)) return
+      const byId = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]))
+      observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          links.forEach((link) => link.removeAttribute('aria-current'))
+          byId.get(entry.target.id)?.setAttribute('aria-current', 'location')
+        }
+      }, { rootMargin: '-20% 0px -70% 0px' })
+      for (const id of byId.keys()) {
+        const heading = document.getElementById(id)
+        if (heading) observer.observe(heading)
       }
-    }, { rootMargin: '-20% 0px -70% 0px' })
-    for (const id of byId.keys()) {
-      const heading = document.getElementById(id)
-      if (heading) observer.observe(heading)
     }
+    bind()
+    // The reading runtime replaces the stored still with its own headings after it mounts;
+    // an observer bound to the still would never see the headings the reader now scrolls.
+    document.addEventListener('blog:reading-ready', bind)
   })()
 </script>

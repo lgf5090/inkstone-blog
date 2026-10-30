@@ -50,6 +50,26 @@ const discussion = comments?.discussion ?? {
 }
 const origin = (import.meta.env.BLOG_SITE_URL ?? Astro.url.origin).replace(/\/+$/, '')
 const canonical = `${origin}${postUrl(slug)}`
+const runtimeOrigin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')
+const runtimeVersion = post?.render?.rendererVersion ?? ''
+// A plain article keeps its stored still: the runtime is 2 MiB of interactive block code, and the
+// still was produced by the same renderer. A post with a rich block or a link that has to resolve
+// loads it after idle.
+const runtimeNeeded = Boolean(post?.render && (
+  (post.render.features?.length ?? 0) > 0 ||
+  (post.render.wikiLinks?.length ?? 0) > 0 ||
+  (post.render.embeds?.length ?? 0) > 0
+))
+const runtimeUrl = !post?.render
+  ? ''
+  : import.meta.env.DEV
+    ? (runtimeOrigin ? `${runtimeOrigin}/src/blog-runtime/main.tsx` : '')
+    : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/runtime.js`
+const runtimeAssetBase = !post?.render
+  ? ''
+  : import.meta.env.DEV
+    ? `${runtimeOrigin}/`
+    : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/`
 const jsonLd = post ? {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -118,9 +138,9 @@ const jsonLd = post ? {
               )}
             </header>
             {cover && <img class="article-cover" src={cover} alt="" loading="eager" decoding="async" />}
-            <div class="article-body">
+            <div class="article-body" data-blog-reading-host>
               {post.render ? (
-                <div class="ink-prose" data-post-render set:html={post.render.html} />
+                <div class="ink-prose" data-blog-snapshot data-post-render set:html={post.render.html} />
               ) : (
                 <div class="empty-state" role="status">
                   {t(locale, 'common.loadError')}
@@ -130,7 +150,7 @@ const jsonLd = post ? {
           </article>
 
           {(adjacent.previous || adjacent.next) && (
-            <nav class="article-nav" aria-label={t(locale, 'common.tableOfContents')}>
+            <nav class="article-nav" aria-label={t(locale, 'common.postNavigation')}>
               {adjacent.previous
                 ? <a href={postUrl(adjacent.previous.slug)}>{t(locale, 'common.previousPost')}<strong>{adjacent.previous.title}</strong></a>
                 : <span />}
@@ -172,3 +192,109 @@ const jsonLd = post ? {
     })
   })
 </script>
+
+{post?.render && runtimeNeeded && runtimeUrl && (
+  <script is:inline define:vars={{ runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug: post.slug, readerLocale: locale, devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '' }}>
+    (() => {
+      const host = document.querySelector('[data-blog-reading-host]')
+      const snapshot = host && host.querySelector('[data-blog-snapshot]')
+      if (!host || !snapshot || !runtimeUrl) return
+      const keepSnapshot = (error) => {
+        console.warn('[blog] reading runtime unavailable; keeping the stored snapshot', error)
+      }
+      const boot = async () => {
+        try {
+          if (devRuntimeOrigin) {
+            // The runtime is served by the Inkstone dev server, whose React plugin expects its
+            // refresh preamble on the importing page. Production loads a built bundle and never
+            // reaches this branch.
+            const refresh = await import(devRuntimeOrigin + '/@react-refresh')
+            refresh.injectIntoGlobalHook(window)
+            window.$RefreshReg$ = () => {}
+            window.$RefreshSig$ = () => (type) => type
+            window.__vite_plugin_react_preamble_installed__ = true
+          }
+          await import(runtimeUrl)
+        } catch (error) {
+          keepSnapshot(error)
+          return
+        }
+        const reading = window.InkstoneReading
+        if (!reading || reading.version !== runtimeVersion) {
+          keepSnapshot(new Error('reading runtime version mismatch'))
+          return
+        }
+        let detail
+        try {
+          const response = await fetch('/_blog/post/' + encodeURIComponent(postSlug), { headers: { accept: 'application/json' } })
+          if (!response.ok) throw new Error('post body ' + response.status)
+          detail = await response.json()
+        } catch (error) {
+          keepSnapshot(error)
+          return
+        }
+        if (!detail || typeof detail.content !== 'string') {
+          keepSnapshot(new Error('post body missing'))
+          return
+        }
+        if (!devRuntimeOrigin && runtimeAssetBase && !document.querySelector('link[data-blog-runtime-style]')) {
+          const style = document.createElement('link')
+          style.rel = 'stylesheet'
+          style.href = runtimeAssetBase + 'runtime.css'
+          style.setAttribute('data-blog-runtime-style', '')
+          document.head.appendChild(style)
+        }
+        const stage = document.createElement('div')
+        stage.className = 'blog-runtime-stage'
+        host.appendChild(stage)
+        const selfPost = '/posts/' + encodeURIComponent(postSlug)
+        const wikiLinks = [{ target: detail.title, href: selfPost }]
+        for (const link of detail.wikiLinks || []) {
+          if (!link || !link.slug || !link.target) continue
+          wikiLinks.push({ target: link.target, href: '/posts/' + encodeURIComponent(link.slug) })
+        }
+        let handle = null
+        try {
+          handle = await reading.mount({
+            container: stage,
+            content: detail.content,
+            noteTitle: detail.title,
+            embeds: detail.embeds || [],
+            settings: detail.settings,
+            locale: readerLocale,
+            assetBase: runtimeAssetBase,
+            wikiLinks,
+            tagHref: (name) => '/tags/' + encodeURIComponent(name),
+          })
+        } catch (error) {
+          stage.remove()
+          keepSnapshot(error)
+          return
+        }
+        let attempts = 0
+        const reveal = () => {
+          if (!stage.querySelector('[data-preview-content]')) {
+            if (++attempts > 120) {
+              if (handle) handle.unmount()
+              stage.remove()
+              keepSnapshot(new Error('reading surface did not render'))
+              return
+            }
+            window.setTimeout(reveal, 16)
+            return
+          }
+          // Removed rather than hidden: both surfaces carry the same heading ids, and a hidden
+          // duplicate would win `getElementById` for every TOC anchor and scroll-spy lookup.
+          snapshot.remove()
+          stage.classList.add('is-ready')
+          document.dispatchEvent(new CustomEvent('blog:reading-ready'))
+        }
+        // A timer rather than requestAnimationFrame: a background tab does not run animation
+        // frames, and a reader who opened the article there would keep the still until they returned.
+        window.setTimeout(reveal, 16)
+      }
+      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 3000 })
+      else window.setTimeout(boot, 200)
+    })()
+  </script>
+)}

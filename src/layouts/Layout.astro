@@ -34,7 +34,7 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="light" class="light" style={`--hue:${hue}`}>
+<html lang={locale} data-theme="light" class="light" data-accent="cinnabar" data-background="paper" data-density="comfortable" style={`--hue:${hue}`}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -70,6 +70,12 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
         root.classList.toggle('light', !dark)
         root.dataset.theme = dark ? 'dark' : 'light'
         root.style.setProperty('--hue', String(localStorage.getItem('hue') || hue))
+        const accent = localStorage.getItem('accent')
+        const background = localStorage.getItem('background')
+        const density = localStorage.getItem('density')
+        if (accent) root.dataset.accent = accent
+        if (background) root.dataset.background = background
+        if (density) root.dataset.density = density
       })()
     </script>
   </head>

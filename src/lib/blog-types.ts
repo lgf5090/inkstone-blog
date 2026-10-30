@@ -5,6 +5,25 @@ export interface BlogHeading {
   html?: string
 }
 
+export interface BlogReadingSettings {
+  locale: string
+  emojiShortcodes: boolean
+  math?: boolean
+  mermaid?: boolean
+  chart?: boolean
+  codeBlockCollapse?: boolean
+  codeBlockCollapseLines?: number
+  jsonView?: 'source' | 'tree' | 'map'
+  jsonFold?: number
+  jsonTolerant?: boolean
+}
+
+export interface BlogEmbeddedNote {
+  id: string
+  title: string
+  content: string
+}
+
 export interface BlogRenderSnapshot {
   version: 1
   rendererVersion: string
@@ -14,7 +33,9 @@ export interface BlogRenderSnapshot {
   headings: BlogHeading[]
   fences: Record<string, string[]>
   features: string[]
-  settings: { locale: string; emojiShortcodes: boolean }
+  settings: BlogReadingSettings
+  embeds?: BlogEmbeddedNote[]
+  wikiLinks?: Array<{ target: string; slug: string | null }>
   generatedAt?: number
   warnings?: string[]
 }
