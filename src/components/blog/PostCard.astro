@@ -8,7 +8,7 @@ import type { BlogPostSummary } from '../../lib/blog-types'
 
 interface Props {
   post: BlogPostSummary
-  mode?: 'list' | 'grid'
+  mode?: 'list' | 'grid' | 'masonry'
 }
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)

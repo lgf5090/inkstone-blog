@@ -1703,3 +1703,20 @@ select {
     display: none;
   }
 }
+
+.post-list[data-mode='masonry'] {
+  display: block;
+  columns: 2;
+  column-gap: 1rem;
+}
+
+.post-list[data-mode='masonry'] .post-card {
+  break-inside: avoid;
+  margin: 0 0 1rem;
+}
+
+@media (max-width: 760px) {
+  .post-list[data-mode='masonry'] {
+    columns: 1;
+  }
+}

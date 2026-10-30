@@ -15,7 +15,7 @@ export interface BlogRuntimeConfig {
     texture: boolean
   }
   display: {
-    postListMode: 'list' | 'grid'
+    postListMode: 'list' | 'grid' | 'masonry'
     pageSize: number
     tocDepth: number
     progressStyle: 'dual' | 'single'
@@ -82,7 +82,7 @@ export function buildRuntimeConfig(
       texture: display.bannerTexture !== false,
     },
     display: {
-      postListMode: display.postListMode === 'grid' ? 'grid' : 'list',
+      postListMode: display.postListMode === 'grid' || display.postListMode === 'masonry' ? display.postListMode : 'list',
       pageSize: numberSetting(display.postListPageSize, 10, 1, 50),
       tocDepth: numberSetting(display.tocDepth, 2, 1, 6),
       progressStyle: display.progressStyle === 'single' ? 'single' : 'dual',
