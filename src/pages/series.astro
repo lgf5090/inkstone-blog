@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { FALLBACK_SITE } from '../server/site-config'
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, series: [] }
+const locale = blogLocale(blog.site.site.locale)
+const series = blog.series
+const error = Astro.locals.blogError
+---
+<Layout title={t(locale, 'nav.series')}>
+  <MainGridLayout page="series">
+    <div class="section-heading">
+      <div><h1>{t(locale, 'nav.series')}</h1><p>{series.length} {t(locale, 'common.series')}</p></div>
+    </div>
+    {error ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+    ) : series.length === 0 ? (
+      <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+    ) : (
+      <div class="collection-grid">
+        {series.map((item) => (
+          <a class="collection-card" href={`/series/${encodeURIComponent(item.slug)}`}>
+            <h2>{item.name}</h2>
+            {item.description && <p>{item.description}</p>}
+            <p class="muted">{item.count} {t(locale, 'common.posts')}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </MainGridLayout>
+</Layout>

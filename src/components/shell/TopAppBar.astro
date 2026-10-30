@@ -1,0 +1,96 @@
+---
+import Icon from '../Icon.astro'
+import ThemeToggle from './ThemeToggle.svelte'
+import { blogLocale, t, LOCALES, LOCALE_LABELS, type MessageKey } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+interface Props {
+  activePath?: string
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const pathname = Astro.props.activePath ?? Astro.url.pathname
+const links = blog.site.nav.length ? blog.site.nav : [{ label: t(locale, 'nav.home'), href: '/' }]
+const isActive = (href: string): boolean => href === '/'
+  ? pathname === '/' || pathname.startsWith('/page/')
+  : pathname === href || pathname.startsWith(`${href.replace(/\/$/, '')}/`)
+const languageHref = (code: string): string => {
+  const target = new URL(Astro.url)
+  target.searchParams.set('lang', code)
+  return `${target.pathname}${target.search}`
+}
+const labelKey = (href: string): MessageKey | null => {
+  const map: Record<string, MessageKey> = {
+    '/': 'nav.home', '/archive': 'nav.archive', '/categories': 'nav.categories', '/tags': 'nav.tags',
+    '/series': 'nav.series', '/friends': 'nav.friends', '/moments': 'nav.moments', '/albums': 'nav.albums',
+    '/projects': 'nav.projects', '/skills': 'nav.skills', '/devices': 'nav.devices', '/games': 'nav.games',
+    '/anime': 'nav.anime', '/timeline': 'nav.timeline', '/compass': 'nav.compass', '/about': 'nav.about',
+    '/search': 'nav.search',
+  }
+  return map[href.replace(/\/$/, '') || '/'] ?? null
+}
+const fallbackLabel = (href: string, label: string): string => labelKey(href) ? t(locale, labelKey(href)!) : label
+---
+
+<header class="top-app-bar">
+  <div class="top-app-bar-inner">
+    <a href="/" class="brand" aria-label={blog.site.site.title}>
+      <span class="brand-mark" aria-hidden="true">
+        <Icon name="sparkles" size={17} />
+      </span>
+      <span class="brand-text">
+        <span class="brand-title">{blog.site.site.title}</span>
+        {blog.site.site.subtitle && <span class="brand-subtitle">{blog.site.site.subtitle}</span>}
+      </span>
+    </a>
+
+    <nav class="top-nav" aria-label={t(locale, 'nav.home')}>
+      {links.map((item) => (
+        item.children?.length ? (
+          <details class="nav-menu">
+            <summary class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+              {fallbackLabel(item.href, item.label)}
+            </summary>
+            <div class="nav-menu-panel">
+              {item.children.map((child) => (
+                <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a>
+              ))}
+            </div>
+          </details>
+        ) : (
+          <a
+            href={item.href}
+            class="nav-link"
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {fallbackLabel(item.href, item.label)}
+          </a>
+        )
+      ))}
+    </nav>
+
+    <div class="top-actions">
+      <a href="/search" class="icon-button" aria-label={t(locale, 'search.title')} title={t(locale, 'search.title')}>
+        <Icon name="search" size={17} />
+      </a>
+      <details class="nav-menu lang-menu">
+        <summary class="icon-button" aria-label={t(locale, 'common.language')} title={t(locale, 'common.language')}>文</summary>
+        <div class="nav-menu-panel lang-panel">
+          {LOCALES.map((code) => (
+            <a href={languageHref(code)} aria-current={code === locale ? 'true' : undefined}>{LOCALE_LABELS[code]}</a>
+          ))}
+        </div>
+      </details>
+      <ThemeToggle client:load label={t(locale, 'theme.toggle')} />
+    </div>
+  </div>
+
+  <nav class="mobile-nav" aria-label={t(locale, 'nav.home')}>
+    {links.map((item) => (
+      <a href={item.href} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+        {fallbackLabel(item.href, item.label)}
+      </a>
+    ))}
+    <a href="/search" class="nav-link">{t(locale, 'nav.search')}</a>
+  </nav>
+</header>

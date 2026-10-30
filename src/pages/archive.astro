@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import PostCard from '../components/blog/PostCard.astro'
+import { blogLocale, t } from '../i18n'
+import { BlogApiError, loadArchive, loadPosts } from '../lib/blog-api'
+import { formatMonth } from '../lib/format'
+import type { BlogArchiveYear, BlogPage, BlogPostSummary } from '../lib/blog-types'
+import { FALLBACK_SITE } from '../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, display: { postListMode: 'list' as const } }
+const locale = blogLocale(blog.site.site.locale)
+const yearParam = Number(Astro.url.searchParams.get('year'))
+const year = Number.isFinite(yearParam) && yearParam > 0 ? yearParam : null
+let years: BlogArchiveYear[] = []
+let posts: BlogPage<BlogPostSummary> | null = null
+let error = Astro.locals.blogError ?? ''
+try {
+  years = (await loadArchive()).years
+  if (year) posts = await loadPosts({ year, limit: 100 })
+} catch (cause) {
+  error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+}
+const mode = blog.display.postListMode
+---
+<Layout title={t(locale, 'page.archiveTitle')} description={t(locale, 'page.archiveHint')}>
+  <MainGridLayout page="archive">
+    <section aria-labelledby="archive-heading">
+      <div class="section-heading">
+        <div>
+          <h1 id="archive-heading">{t(locale, 'page.archiveTitle')}</h1>
+          <p>{t(locale, 'page.archiveHint')}</p>
+        </div>
+        {year && <a class="chip" href="/archive">{t(locale, 'nav.archive')}</a>}
+      </div>
+
+      {error ? (
+        <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+      ) : years.length === 0 ? (
+        <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+      ) : (
+        <div class="archive-year">
+          {years.map((entry) => (
+            <section class="sidebar-card" style="margin-bottom:0.8rem" aria-labelledby={`year-${entry.year}`}>
+              <h2 class="sidebar-title" id={`year-${entry.year}`}>
+                <a href={`/archive?year=${entry.year}`} aria-current={year === Number(entry.year) ? 'page' : undefined}>{entry.year}</a>
+                <span class="widget-count">{entry.count}</span>
+              </h2>
+              <div class="archive-months">
+                {entry.months.map((month) => (
+                  <a class="chip" href={`/archive?year=${entry.year}`}>{formatMonth(month.month, locale)} · {month.count}</a>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {year && posts && (
+        <section aria-labelledby="archive-posts" style="margin-top:1.4rem">
+          <div class="section-heading"><h2 id="archive-posts">{year}</h2><span class="muted">{posts.total} {t(locale, 'common.posts')}</span></div>
+          {posts.items.length === 0 ? (
+            <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+          ) : (
+            <div class="post-list" data-mode={mode}>
+              {posts.items.map((post) => <PostCard post={post} mode={mode} />)}
+            </div>
+          )}
+        </section>
+      )}
+    </section>
+  </MainGridLayout>
+</Layout>

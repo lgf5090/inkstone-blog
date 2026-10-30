@@ -1,14 +1,16 @@
 <script lang="ts">
   import type { BlogCommentsResponse, PublicBlogComment } from '../lib/blog-types'
+  import { t, type BlogLocale } from '../i18n'
 
   interface Props {
     slug: string
     enabled: boolean
     discussion: BlogCommentsResponse['discussion']
     initial: PublicBlogComment[]
+    locale: BlogLocale
   }
 
-  let { slug, enabled, discussion, initial }: Props = $props()
+  let { slug, enabled, discussion, initial, locale }: Props = $props()
 
   // svelte-ignore state_referenced_locally
   let items = $state<PublicBlogComment[]>(initial)
@@ -40,7 +42,7 @@
 
   function formatDate(value: number): string {
     try {
-      return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+      return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
     } catch {
       return new Date(value).toISOString().slice(0, 10)
     }
@@ -76,25 +78,19 @@
       const response = await fetch(`/api/blog/posts/${encodeURIComponent(slug)}/comments`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({
-          authorName,
-          email,
-          content,
-          parentId,
-          website,
-        }),
+        body: JSON.stringify({ authorName, email, content, parentId, website }),
       })
       const payload = await response.json().catch(() => null) as
         | { status?: string; error?: { message?: string } }
         | null
-      if (!response.ok) throw new Error(payload?.error?.message || 'The comment could not be posted.')
+      if (!response.ok) throw new Error(payload?.error?.message || t(locale, 'comments.loadFailed'))
       content = ''
       cancelReply()
       if (payload?.status === 'pending') {
-        notice = 'Your comment is waiting for moderation.'
+        notice = t(locale, 'comments.pending')
       } else {
         await reload()
-        notice = 'Your comment is published.'
+        notice = t(locale, 'comments.published')
       }
     } catch (cause) {
       error = cause instanceof Error ? cause.message : String(cause)
@@ -104,36 +100,32 @@
   }
 </script>
 
-<section class="mt-14 border-t border-white/10 pt-8" aria-labelledby="comments-heading" data-blog-comments>
-  <h2 id="comments-heading" class="text-lg font-semibold text-white">
-    Comments <span class="text-slate-500">({flat.length})</span>
+<section class="comments-section" aria-labelledby="comments-heading" data-blog-comments>
+  <h2 id="comments-heading" class="comments-title">
+    {t(locale, 'comments.title')} <span class="muted">({flat.length})</span>
   </h2>
 
   {#if flat.length === 0}
-    <p class="mt-3 text-sm text-slate-500">No comments yet.</p>
+    <p class="comments-empty">{t(locale, 'comments.empty')}</p>
   {:else}
-    <ol class="mt-5 space-y-5">
+    <ol class="comments-list">
       {#each flat as entry (entry.node.id)}
         <li style={`margin-left: ${Math.min(entry.depth, 3) * 18}px`}>
-          <article class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <div class="flex flex-wrap items-baseline justify-between gap-2 text-xs text-slate-500">
-              <span class="font-medium text-slate-200">
+          <article class="comment-card">
+            <div class="comment-meta">
+              <span class="comment-author">
                 {#if entry.node.authorUrl}
-                  <a href={entry.node.authorUrl} target="_blank" rel="noopener noreferrer nofollow" class="hover:text-sky-300">{entry.node.authorName}</a>
+                  <a href={entry.node.authorUrl} target="_blank" rel="noopener noreferrer nofollow">{entry.node.authorName}</a>
                 {:else}
                   {entry.node.authorName}
                 {/if}
               </span>
               <time datetime={new Date(entry.node.createdAt).toISOString()}>{formatDate(entry.node.createdAt)}</time>
             </div>
-            <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap break-words text-slate-300">{entry.node.content}</p>
+            <p class="comment-body">{entry.node.content}</p>
             {#if enabled && discussion.allowReplies}
-              <button
-                type="button"
-                class="mt-2 text-xs text-slate-500 hover:text-sky-300"
-                onclick={() => startReply(entry.node)}
-              >
-                Reply
+              <button type="button" class="comment-action" onclick={() => startReply(entry.node)}>
+                {t(locale, 'comments.reply')}
               </button>
             {/if}
           </article>
@@ -143,32 +135,32 @@
   {/if}
 
   {#if enabled}
-    <form class="mt-8 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5" onsubmit={submit}>
-      <h3 class="text-sm font-semibold text-white">Leave a comment</h3>
+    <form class="comment-form" onsubmit={submit}>
+      <h3>{t(locale, 'comments.leave')}</h3>
       {#if replyToName}
-        <p class="text-xs text-sky-300">
-          Replying to {replyToName}.
-          <button type="button" class="ml-1 underline underline-offset-2" onclick={cancelReply}>Cancel</button>
+        <p class="comment-notice">
+          {t(locale, 'comments.replyingTo')} {replyToName}.
+          <button type="button" class="comment-action" onclick={cancelReply}>{t(locale, 'comments.cancel')}</button>
         </p>
       {/if}
       <div class="hidden" aria-hidden="true">
         <label for="comment-website">Website</label>
         <input id="comment-website" bind:value={website} tabindex="-1" autocomplete="off" />
       </div>
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="comment-fields">
         <div>
-          <label for="comment-name" class="mb-1 block text-xs text-slate-400">Name</label>
+          <label for="comment-name" class="comment-label">{t(locale, 'comments.name')}</label>
           <input
             id="comment-name"
             bind:value={authorName}
             required={discussion.requireNameEmail}
             maxlength="80"
             autocomplete="name"
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400"
+            class="comment-input"
           />
         </div>
         <div>
-          <label for="comment-email" class="mb-1 block text-xs text-slate-400">Email</label>
+          <label for="comment-email" class="comment-label">{t(locale, 'comments.email')}</label>
           <input
             id="comment-email"
             type="email"
@@ -176,13 +168,13 @@
             required={discussion.requireNameEmail}
             maxlength="254"
             autocomplete="email"
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400"
+            class="comment-input"
           />
-          <p class="mt-1 text-[11px] text-slate-600">Not published. Used only to verify the comment.</p>
+          <p class="comment-hint">{t(locale, 'comments.emailHint')}</p>
         </div>
       </div>
       <div>
-        <label for="comment-content" class="mb-1 block text-xs text-slate-400">Comment</label>
+        <label for="comment-content" class="comment-label">{t(locale, 'comments.content')}</label>
         <textarea
           id="comment-content"
           bind:this={textarea}
@@ -190,24 +182,20 @@
           required
           maxlength={discussion.maxLength}
           rows="4"
-          class="w-full resize-y rounded-lg border border-white/10 bg-[#0b0f17] px-3 py-2 text-sm leading-relaxed text-slate-100 outline-none focus:border-sky-400"
+          class="comment-input"
           aria-describedby={error ? 'comment-error' : undefined}
         ></textarea>
       </div>
-      {#if error}<p id="comment-error" role="alert" class="text-xs text-red-300">{error}</p>{/if}
-      {#if notice}<p role="status" class="text-xs text-emerald-300">{notice}</p>{/if}
-      <button
-        type="submit"
-        disabled={submitting}
-        class="rounded-full bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-sky-400 disabled:opacity-50"
-      >
-        {submitting ? 'Posting…' : 'Post comment'}
+      {#if error}<p id="comment-error" role="alert" class="comment-error">{error}</p>{/if}
+      {#if notice}<p role="status" class="comment-notice">{notice}</p>{/if}
+      <button type="submit" disabled={submitting} class="comment-submit">
+        {submitting ? t(locale, 'comments.posting') : t(locale, 'comments.submit')}
       </button>
       {#if discussion.requireApproval}
-        <p class="text-[11px] text-slate-600">Comments are moderated before they appear.</p>
+        <p class="comment-hint">{t(locale, 'comments.moderated')}</p>
       {/if}
     </form>
   {:else}
-    <p class="mt-4 text-sm text-slate-500">Comments are closed on this post.</p>
+    <p class="comments-empty">{t(locale, 'comments.closed')}</p>
   {/if}
 </section>

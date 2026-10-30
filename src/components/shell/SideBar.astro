@@ -1,0 +1,145 @@
+---
+import Icon from '../Icon.astro'
+import { loadPosts, mediaUrl } from '../../lib/blog-api'
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+import type { BlogPostSummary, BlogWidget } from '../../lib/blog-types'
+
+interface Props {
+  column?: 'primary' | 'secondary' | 'all'
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], series: [] }
+const locale = blogLocale(blog.site.site.locale)
+const column = Astro.props.column ?? 'primary'
+const widgets = blog.site.widgets ?? []
+const fallbackWidgets = [
+  { id: 'profile', type: 'profile', title: '', enabled: true, config: {} },
+  { id: 'search', type: 'search', title: '', enabled: true, config: {} },
+  { id: 'categories', type: 'categories', title: '', enabled: true, config: {} },
+  { id: 'tags', type: 'tags', title: '', enabled: true, config: {} },
+  { id: 'series', type: 'series', title: '', enabled: true, config: {} },
+]
+const all: BlogWidget[] = widgets.length ? widgets : fallbackWidgets
+const secondaryTypes = new Set(['categories', 'tags', 'series', 'stats', 'calendar'])
+const visible = all.filter((widget) => widget.enabled && (column === 'all' || (column === 'secondary' ? secondaryTypes.has(widget.type) : !secondaryTypes.has(widget.type))))
+const recentWidget = visible.some((widget) => widget.type === 'recent')
+let recent: BlogPostSummary[] = []
+if (recentWidget) {
+  try {
+    recent = (await loadPosts({ limit: 5 })).items
+  } catch {
+    recent = []
+  }
+}
+const profile = blog.site.profile
+const avatar = profile.avatar ? mediaUrl(profile.avatar) : null
+const widgetTitle = (widget: (typeof all)[number]): string => {
+  if (widget.title) return widget.title
+  const keys: Record<string, string> = {
+    profile: profile.name, search: t(locale, 'search.title'), categories: t(locale, 'nav.categories'),
+    tags: t(locale, 'nav.tags'), series: t(locale, 'nav.series'), recent: t(locale, 'common.recentPosts'),
+    stats: t(locale, 'common.stats'), announcement: '',
+  }
+  return keys[widget.type] ?? ''
+}
+const customHtml = (widget: (typeof all)[number]): string => typeof widget.config.html === 'string' ? widget.config.html : ''
+const announcement = (widget: (typeof all)[number]): string => typeof widget.config.text === 'string' ? widget.config.text : ''
+---
+
+{visible.length > 0 && (
+  <aside class="sidebar" aria-label={t(locale, 'common.categories')}>
+    {visible.map((widget) => {
+      if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
+        <section class="sidebar-card profile-card" aria-label={profile.name || t(locale, 'nav.about')}>
+          {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
+          {profile.name && <h2 class="profile-name">{profile.name}</h2>}
+          {profile.bio && <p class="profile-bio">{profile.bio}</p>}
+          {profile.links.length > 0 && (
+            <div class="profile-links">
+              {profile.links.map((link) => (
+                <a class="chip" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+              ))}
+            </div>
+          )}
+        </section>
+      )
+      if (widget.type === 'search') return (
+        <section class="sidebar-card" aria-label={t(locale, 'search.title')}>
+          <h2 class="sidebar-title">{widgetTitle(widget)}</h2>
+          <form class="search-form" action="/search" method="get" role="search">
+            <label class="sr-only" for="sidebar-search">{t(locale, 'search.placeholder')}</label>
+            <input id="sidebar-search" type="search" name="q" placeholder={t(locale, 'search.placeholder')} />
+            <button type="submit">{t(locale, 'search.title')}</button>
+          </form>
+        </section>
+      )
+      if (widget.type === 'categories' || widget.type === 'tags' || widget.type === 'series') {
+        const items = widget.type === 'categories' ? blog.categories : widget.type === 'tags' ? blog.tags : blog.series
+        const base = widget.type === 'categories' ? '/categories' : widget.type === 'tags' ? '/tags' : '/series'
+        const key = widget.type === 'categories' ? 'nav.categories' : widget.type === 'tags' ? 'nav.tags' : 'nav.series'
+        if (items.length === 0) return null
+        return (
+          <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+            <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget) || t(locale, key)}</h2>
+            <ul class="widget-list">
+              {items.slice(0, 8).map((item) => (
+                <li>
+                  <a href={`${base}/${encodeURIComponent(item.slug)}`}>
+                    <span>{item.name}</span>
+                    <span class="widget-count">{item.count}</span>
+                  </a>
+                </li>
+              ))}
+              <li><a href={base}><span>{t(locale, 'common.readMore')}</span><Icon name="arrow-right" size={13} /></a></li>
+            </ul>
+          </section>
+        )
+      }
+      if (widget.type === 'recent') return (
+        <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+          <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
+          <ul class="widget-list">
+            {recent.map((post) => (
+              <li>
+                <a href={`/posts/${encodeURIComponent(post.slug)}`}>
+                  <span>{post.title || t(locale, 'common.untitled')}</span>
+                  <Icon name="arrow-right" size={13} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+      if (widget.type === 'stats') return (
+        <section class="sidebar-card" aria-label={t(locale, 'common.stats')}>
+          <h2 class="sidebar-title">{t(locale, 'common.stats')}</h2>
+          <ul class="widget-list">
+            <li><span>{t(locale, 'common.posts')}</span><span class="widget-count">{blog.site.counts.posts}</span></li>
+            <li><span>{t(locale, 'common.categories')}</span><span class="widget-count">{blog.site.counts.categories}</span></li>
+            <li><span>{t(locale, 'common.tags')}</span><span class="widget-count">{blog.site.counts.tags}</span></li>
+            <li><span>{t(locale, 'common.series')}</span><span class="widget-count">{blog.site.counts.series}</span></li>
+          </ul>
+        </section>
+      )
+      if (widget.type === 'announcement') {
+        const text = announcement(widget)
+        return text ? (
+          <section class="sidebar-card" aria-label={widget.title || 'Announcement'}>
+            {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
+            <p class="profile-bio">{text}</p>
+          </section>
+        ) : null
+      }
+      if (widget.type === 'custom') {
+        const html = customHtml(widget)
+        return html ? (
+          <section class="sidebar-card" aria-label={widget.title || 'Custom'}>
+            {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
+            <div set:html={html} />
+          </section>
+        ) : null
+      }
+      return null
+    })}
+  </aside>
+)}

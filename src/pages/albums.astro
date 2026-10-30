@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { BlogApiError, loadCollection, mediaUrl } from '../lib/blog-api'
+import type { BlogCollectionItem } from '../lib/blog-types'
+import { FALLBACK_SITE } from '../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+let items: BlogCollectionItem[] = []
+let error = ''
+try { items = (await loadCollection('albums')).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
+const cover = (item: BlogCollectionItem): string | null => {
+  const value = item.data.cover_asset_id
+  return typeof value === 'string' && value ? mediaUrl(`/api/blog/assets/${value}`) : null
+}
+---
+<Layout title={t(locale, 'nav.albums')}>
+  <MainGridLayout page="albums">
+    <div class="section-heading"><div><h1>{t(locale, 'nav.albums')}</h1><p>{items.length} {t(locale, 'nav.albums')}</p></div></div>
+    {error ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+    ) : items.length === 0 ? (
+      <div class="empty-state">{t(locale, 'collections.empty')}</div>
+    ) : (
+      <div class="collection-grid">
+        {items.map((item) => {
+          const image = cover(item)
+          return (
+            <article class="collection-card">
+              {image && <img class="post-card-cover" src={image} alt="" loading="lazy" />}
+              <h2><a href={`/albums/${encodeURIComponent(item.slug)}`}>{item.title}</a></h2>
+              {typeof item.data.description === 'string' && item.data.description && <p>{item.data.description}</p>}
+              <p class="muted">{String(item.data.photoCount ?? 0)} {t(locale, 'nav.albums')}</p>
+            </article>
+          )
+        })}
+      </div>
+    )}
+  </MainGridLayout>
+</Layout>

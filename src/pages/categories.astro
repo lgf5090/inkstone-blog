@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { BlogApiError } from '../lib/blog-api'
+import { FALLBACK_SITE } from '../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [] }
+const locale = blogLocale(blog.site.site.locale)
+const categories = blog.categories
+const error = Astro.locals.blogError
+---
+<Layout title={t(locale, 'nav.categories')}>
+  <MainGridLayout page="categories">
+    <div class="section-heading">
+      <div><h1>{t(locale, 'nav.categories')}</h1><p>{categories.length} {t(locale, 'common.categories')}</p></div>
+    </div>
+    {error ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+    ) : categories.length === 0 ? (
+      <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+    ) : (
+      <div class="taxonomy-grid">
+        {categories.map((category) => (
+          <a class="taxonomy-card" href={`/categories/${encodeURIComponent(category.slug)}`}>
+            <strong>{category.name}</strong><span>{category.count}</span>
+          </a>
+        ))}
+      </div>
+    )}
+  </MainGridLayout>
+</Layout>

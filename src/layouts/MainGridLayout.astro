@@ -1,0 +1,38 @@
+---
+import TopAppBar from '../components/shell/TopAppBar.astro'
+import SideBar from '../components/shell/SideBar.astro'
+import Footer from '../components/shell/Footer.astro'
+import HeroBanner from '../components/shell/HeroBanner.astro'
+import { FALLBACK_SITE } from '../server/site-config'
+
+interface Props {
+  page?: string
+  hero?: boolean
+  wide?: boolean
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], series: [] }
+const sidebar = blog.site.sidebar
+const dual = sidebar.arrangement === 'dual'
+const showSidebar = sidebar.enable
+const { page = 'home', hero = false } = Astro.props
+---
+
+<div class="site-shell" data-page={page}>
+  <TopAppBar />
+  {hero && <HeroBanner />}
+  <main class="site-main">
+    <div
+      class="layout-grid"
+      data-sidebar={dual ? 'dual' : 'single'}
+      data-side={sidebar.side}
+      data-has-sidebar={showSidebar ? 'true' : 'false'}
+    >
+      {showSidebar && <SideBar column={dual ? 'primary' : 'all'} />}
+      <div class="content-column">
+        <slot />
+      </div>
+      {showSidebar && dual && <SideBar column="secondary" />}
+    </div>
+  </main>
+  <Footer />
+</div>

@@ -1,0 +1,44 @@
+---
+import Icon from '../Icon.astro'
+import { mediaUrl } from '../../lib/blog-api'
+import { formatDate, postUrl } from '../../lib/format'
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+import type { BlogPostSummary } from '../../lib/blog-types'
+
+interface Props {
+  post: BlogPostSummary
+  mode?: 'list' | 'grid'
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const { post, mode = 'list' } = Astro.props
+const cover = mediaUrl(post.coverUrl)
+const tags = post.tags.slice(0, 4)
+---
+<article class="post-card" data-layout={mode}>
+  {cover && <img class="post-card-cover" src={cover} alt="" loading="lazy" decoding="async" />}
+  <div class="post-card-meta">
+    {post.pinned && <span class="chip"><Icon name="pin" size={12} />{t(locale, 'common.pinned')}</span>}
+    {post.category && <span>{post.category}</span>}
+    {post.publishedAt && (
+      <time datetime={new Date(post.publishedAt).toISOString()}>
+        {formatDate(post.publishedAt, locale, blog.site.site.timeZone)}
+      </time>
+    )}
+    <span>{post.readingMinutes} {t(locale, 'common.minRead')}</span>
+  </div>
+  <h2 class="post-card-title">
+    <a href={postUrl(post.slug)}>{post.title || t(locale, 'common.untitled')}</a>
+  </h2>
+  {(post.excerpt || post.description) && (
+    <p class="post-card-excerpt">{post.excerpt || post.description}</p>
+  )}
+  {tags.length > 0 && (
+    <div class="post-card-tags">
+      {tags.map((tag) => (
+        <a class="chip" href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>
+      ))}
+    </div>
+  )}
+</article>

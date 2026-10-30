@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import PostCard from '../../components/blog/PostCard.astro'
+import Pagination from '../../components/blog/Pagination.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadPosts } from '../../lib/blog-api'
+import type { BlogPage, BlogPostSummary } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, display: { pageSize: 10, postListMode: 'list' as const } }
+const locale = blogLocale(blog.site.site.locale)
+const requested = Number(Astro.params.page)
+if (!Number.isInteger(requested) || requested < 2) return Astro.redirect('/')
+const limit = blog.display.pageSize
+let page: BlogPage<BlogPostSummary> | null = null
+let error = Astro.locals.blogError ?? ''
+try {
+  page = await loadPosts({ page: requested, limit })
+  if (page.total > 0 && requested > Math.ceil(page.total / limit)) {
+    Astro.response.status = 404
+    error = t(locale, 'blog.notFound')
+  }
+} catch (cause) {
+  error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+}
+const posts = page?.items ?? []
+const mode = blog.display.postListMode
+---
+<Layout title={`${t(locale, 'common.page')} ${requested}`} noIndex>
+  <MainGridLayout page="home">
+    <section aria-labelledby="posts-heading">
+      <div class="section-heading">
+        <div>
+          <h1 id="posts-heading">{t(locale, 'common.page')} {requested}</h1>
+          <p>{blog.site.counts.posts} {t(locale, 'common.posts')}</p>
+        </div>
+        <a class="chip" href="/">{t(locale, 'nav.home')}</a>
+      </div>
+      {error ? (
+        <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+      ) : posts.length === 0 ? (
+        <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+      ) : (
+        <div class="post-list" data-mode={mode}>
+          {posts.map((post) => <PostCard post={post} mode={mode} />)}
+        </div>
+      )}
+      {page && page.total > 0 && <Pagination page={page.page} total={page.total} limit={page.limit} />}
+    </section>
+  </MainGridLayout>
+</Layout>

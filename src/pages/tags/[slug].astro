@@ -1,0 +1,54 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import PostCard from '../../components/blog/PostCard.astro'
+import Pagination from '../../components/blog/Pagination.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadPosts } from '../../lib/blog-api'
+import type { BlogPage, BlogPostSummary } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, tags: [], display: { pageSize: 10, postListMode: 'list' as const } }
+const locale = blogLocale(blog.site.site.locale)
+const raw = Astro.params.slug ?? ''
+let needle = raw
+try { needle = decodeURIComponent(raw) } catch { needle = raw }
+const tag = blog.tags.find((item) => item.slug === needle || item.name === needle)
+const pageNumber = Math.max(1, Math.trunc(Number(Astro.url.searchParams.get('page')) || 1))
+let page: BlogPage<BlogPostSummary> | null = null
+let error = ''
+if (!tag) {
+  Astro.response.status = 404
+  error = t(locale, 'blog.notFound')
+} else {
+  try {
+    page = await loadPosts({ tag: tag.slug, page: pageNumber, limit: blog.display.pageSize })
+  } catch (cause) {
+    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  }
+}
+const mode = blog.display.postListMode
+---
+<Layout title={tag ? `#${tag.name}` : t(locale, 'nav.tags')} noIndex={!tag}>
+  <MainGridLayout page="tags">
+    <div class="section-heading">
+      <div>
+        <h1>{tag ? `#${tag.name}` : t(locale, 'blog.notFound')}</h1>
+        <p>{tag ? `${tag.count} ${t(locale, 'common.posts')}` : t(locale, 'blog.notFoundHint')}</p>
+      </div>
+      <a class="chip" href="/tags">{t(locale, 'nav.tags')}</a>
+    </div>
+    {error ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+    ) : !page || page.items.length === 0 ? (
+      <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+    ) : (
+      <>
+        <div class="post-list" data-mode={mode}>
+          {page.items.map((post) => <PostCard post={post} mode={mode} />)}
+        </div>
+        <Pagination page={page.page} total={page.total} limit={page.limit} basePath={`/tags/${encodeURIComponent(tag!.slug)}`} />
+      </>
+    )}
+  </MainGridLayout>
+</Layout>

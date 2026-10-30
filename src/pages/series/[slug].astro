@@ -1,0 +1,55 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import PostCard from '../../components/blog/PostCard.astro'
+import Pagination from '../../components/blog/Pagination.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadPosts } from '../../lib/blog-api'
+import type { BlogPage, BlogPostSummary } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, series: [], display: { pageSize: 10, postListMode: 'list' as const } }
+const locale = blogLocale(blog.site.site.locale)
+const raw = Astro.params.slug ?? ''
+let needle = raw
+try { needle = decodeURIComponent(raw) } catch { needle = raw }
+const series = blog.series.find((item) => item.slug === needle || item.name === needle)
+const pageNumber = Math.max(1, Math.trunc(Number(Astro.url.searchParams.get('page')) || 1))
+let page: BlogPage<BlogPostSummary> | null = null
+let error = ''
+if (!series) {
+  Astro.response.status = 404
+  error = t(locale, 'blog.notFound')
+} else {
+  try {
+    page = await loadPosts({ series: series.slug, page: pageNumber, limit: blog.display.pageSize })
+  } catch (cause) {
+    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  }
+}
+const mode = blog.display.postListMode
+---
+<Layout title={series?.name ?? t(locale, 'nav.series')} description={series?.description} noIndex={!series}>
+  <MainGridLayout page="series">
+    <div class="section-heading">
+      <div>
+        <h1>{series?.name ?? t(locale, 'blog.notFound')}</h1>
+        <p>{series?.description || `${series?.count ?? 0} ${t(locale, 'common.posts')}`}</p>
+      </div>
+      <a class="chip" href="/series">{t(locale, 'nav.series')}</a>
+    </div>
+    {series?.overview && <div class="sidebar-card" style="margin-bottom:1rem"><p class="post-card-excerpt">{series.overview}</p></div>}
+    {error ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
+    ) : !page || page.items.length === 0 ? (
+      <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+    ) : (
+      <>
+        <div class="post-list" data-mode={mode}>
+          {page.items.map((post) => <PostCard post={post} mode={mode} />)}
+        </div>
+        <Pagination page={page.page} total={page.total} limit={page.limit} basePath={`/series/${encodeURIComponent(series!.slug)}`} />
+      </>
+    )}
+  </MainGridLayout>
+</Layout>

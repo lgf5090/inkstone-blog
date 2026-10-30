@@ -1,0 +1,18 @@
+---
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+---
+<section class="hero-banner" aria-labelledby="hero-title">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">{t(locale, 'nav.home')}</span>
+    <h1 id="hero-title" class="hero-title">{blog.site.site.title}</h1>
+    {blog.site.site.subtitle && <p class="hero-subtitle">{blog.site.site.subtitle}</p>}
+    <div class="hero-meta">
+      <span>{blog.site.counts.posts} {t(locale, 'common.posts')}</span>
+      <span>{blog.site.counts.tags} {t(locale, 'common.tags')}</span>
+      <span>{blog.site.counts.categories} {t(locale, 'common.categories')}</span>
+    </div>
+  </div>
+</section>

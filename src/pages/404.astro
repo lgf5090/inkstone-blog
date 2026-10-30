@@ -1,20 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { loadSite } from '../lib/blog-api'
-import type { BlogSitePublic } from '../lib/blog-types'
-
-const site: BlogSitePublic | null = await loadSite().catch(() => null)
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { FALLBACK_SITE } from '../server/site-config'
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+Astro.response.status = 404
 ---
-
-<Layout site={site} title="Page not found · Inkstone Blog">
-  <section class="mx-auto max-w-xl py-10">
-    <p class="text-xs font-medium tracking-[0.2em] text-sky-400 uppercase">404</p>
-    <h1 class="mt-3 text-3xl font-semibold tracking-tight text-white">This page is not here.</h1>
-    <p class="mt-3 text-sm leading-relaxed text-slate-400">
-      The post may have been unpublished, renamed, or never existed.
-    </p>
-    <a href="/" class="mt-6 inline-block rounded-full border border-white/15 px-4 py-2 text-sm hover:bg-white/10">
-      Back to posts
-    </a>
-  </section>
+<Layout title={t(locale, 'blog.notFound')} noIndex>
+  <MainGridLayout page="404">
+    <div class="article-shell">
+      <header class="article-header">
+        <span class="chip">404</span>
+        <h1 class="article-title">{t(locale, 'blog.notFound')}</h1>
+        <p class="post-card-excerpt">{t(locale, 'blog.notFoundHint')}</p>
+      </header>
+      <div class="article-body" style="padding:1.4rem">
+        <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+      </div>
+    </div>
+  </MainGridLayout>
 </Layout>

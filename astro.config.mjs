@@ -12,6 +12,7 @@ export default defineConfig({
   output: 'server',
   adapter: cloudflare(),
   integrations: [svelte()],
+  devToolbar: { enabled: false },
 
   vite: {
     plugins: [tailwindcss()]

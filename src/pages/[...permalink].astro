@@ -1,0 +1,8 @@
+---
+import { resolveRedirect } from '../lib/blog-api'
+
+const path = Astro.url.pathname
+const redirect = await resolveRedirect(path).catch(() => ({ found: false } as import('../lib/blog-types').BlogRedirectResult))
+if (redirect.found && redirect.to) return Astro.redirect(redirect.to, (redirect.status ?? 301) as 301 | 302)
+return Astro.rewrite('/404')
+---

@@ -1,0 +1,33 @@
+---
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+interface Props {
+  page: number
+  total: number
+  limit: number
+  basePath?: string
+  baseQuery?: string
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const { page, total, limit, basePath, baseQuery = '' } = Astro.props
+const totalPages = Math.max(1, Math.ceil(total / Math.max(1, limit)))
+const href = (value: number): string => basePath
+  ? (value <= 1 ? `${basePath}${baseQuery}` : `${basePath}${baseQuery ? `${baseQuery}&` : '?'}page=${value}`)
+  : (value <= 1 ? '/' : `/page/${value}`)
+const pages: number[] = []
+for (let value = Math.max(1, page - 2); value <= Math.min(totalPages, page + 2); value += 1) pages.push(value)
+---
+{totalPages > 1 && (
+  <nav class="pagination" aria-label={t(locale, 'common.page')}>
+    {page > 1 && <a href={href(page - 1)} rel="prev" aria-label={t(locale, 'common.previous')}>←</a>}
+    {pages[0] > 1 && <a href={href(1)}>1</a>}
+    {pages[0] > 2 && <span aria-hidden="true">…</span>}
+    {pages.map((value) => value === page
+      ? <span aria-current="page">{value}</span>
+      : <a href={href(value)}>{value}</a>)}
+    {pages[pages.length - 1] < totalPages - 1 && <span aria-hidden="true">…</span>}
+    {pages[pages.length - 1] < totalPages && <a href={href(totalPages)}>{totalPages}</a>}
+    {page < totalPages && <a href={href(page + 1)} rel="next" aria-label={t(locale, 'common.next')}>→</a>}
+  </nav>
+)}

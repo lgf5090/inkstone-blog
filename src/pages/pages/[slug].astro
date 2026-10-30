@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import '../../styles/reading.css'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadPage, resolveRedirect } from '../../lib/blog-api'
+import { renderPageMarkdown } from '../../lib/markdown'
+import type { BlogPageItem } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const slug = Astro.params.slug ?? ''
+let page: BlogPageItem | null = null
+let error = ''
+try {
+  page = await loadPage(slug)
+} catch (cause) {
+  if (cause instanceof BlogApiError && cause.status === 404) {
+    const redirect: import('../../lib/blog-types').BlogRedirectResult = await resolveRedirect(`/pages/${slug}`).catch(() => ({ found: false }))
+    if (redirect.found && redirect.to) return Astro.redirect(redirect.to, (redirect.status ?? 301) as 301 | 302)
+    Astro.response.status = 404
+    error = t(locale, 'blog.notFound')
+  } else {
+    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  }
+}
+const html = page ? renderPageMarkdown(page.body) : ''
+---
+<Layout title={page?.title ?? t(locale, 'blog.notFound')} noIndex={!page}>
+  <MainGridLayout page="about">
+    {error || !page ? (
+      <div class="error-state" role="alert">
+        <strong>{t(locale, 'blog.notFound')}</strong><p>{error || t(locale, 'blog.notFoundHint')}</p>
+        <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+      </div>
+    ) : (
+      <article class="article-shell">
+        <header class="article-header">
+          <span class="chip">{page.kind === 'about' ? t(locale, 'page.about') : t(locale, 'nav.home')}</span>
+          <h1 class="article-title">{page.title}</h1>
+          {page.updatedAt && <p class="article-meta">{new Date(page.updatedAt).toLocaleDateString(locale)}</p>}
+        </header>
+        <div class="article-body">
+          <div class="ink-prose" set:html={html} />
+        </div>
+      </article>
+    )}
+  </MainGridLayout>
+</Layout>

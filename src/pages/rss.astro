@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { FALLBACK_SITE } from '../server/site-config'
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+---
+<Layout title="RSS / Atom">
+  <MainGridLayout page="rss">
+    <div class="section-heading"><div><h1>RSS / Atom</h1><p>{blog.site.site.title}</p></div></div>
+    <div class="collection-grid">
+      <a class="collection-card" href="/rss.xml"><h2>RSS 2.0</h2><p>/rss.xml</p></a>
+      <a class="collection-card" href="/atom.xml"><h2>Atom</h2><p>/atom.xml</p></a>
+    </div>
+    <p class="muted" style="margin-top:1rem">{t(locale, 'blog.poweredBy')}</p>
+  </MainGridLayout>
+</Layout>

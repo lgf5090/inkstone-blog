@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadAlbum, mediaUrl } from '../../lib/blog-api'
+import type { BlogAlbumDetail } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const slug = Astro.params.slug ?? ''
+let album: BlogAlbumDetail | null = null
+let error = ''
+try { album = await loadAlbum(slug) } catch (cause) {
+  if (cause instanceof BlogApiError && cause.status === 403) error = t(locale, 'nav.albums')
+  else if (cause instanceof BlogApiError && cause.status === 404) { Astro.response.status = 404; error = t(locale, 'blog.notFound') }
+  else error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+}
+const cover = album?.album.coverUrl ? mediaUrl(album.album.coverUrl) : null
+---
+<Layout title={album?.album.title ?? t(locale, 'nav.albums')} noIndex={!album}>
+  <MainGridLayout page="albums">
+    {error || !album ? (
+      <div class="error-state" role="alert"><strong>{t(locale, 'blog.notFound')}</strong><p>{error}</p><a class="chip" href="/albums">{t(locale, 'nav.albums')}</a></div>
+    ) : (
+      <article class="article-shell">
+        <header class="article-header">
+          <a class="chip" href="/albums">{t(locale, 'nav.albums')}</a>
+          <h1 class="article-title">{album.album.title}</h1>
+          {album.album.description && <p class="post-card-excerpt">{album.album.description}</p>}
+          <div class="article-meta">
+            {album.album.date && <span>{album.album.date}</span>}
+            {album.album.location && <span>{album.album.location}</span>}
+            <span>{album.photos.length} {t(locale, 'common.photos')}</span>
+          </div>
+        </header>
+        {cover && <img class="article-cover" src={cover} alt="" loading="eager" />}
+        <div class="article-body" style="padding-block:1.2rem">
+          <div class="photo-grid">
+            {album.photos.map((photo) => (
+              <a href={mediaUrl(photo.url)} target="_blank" rel="noopener noreferrer">
+                <img src={mediaUrl(photo.url)} alt={photo.alt} loading="lazy" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </article>
+    )}
+  </MainGridLayout>
+</Layout>

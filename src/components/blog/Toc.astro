@@ -1,0 +1,43 @@
+---
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+import type { BlogHeading } from '../../lib/blog-types'
+interface Props {
+  headings: BlogHeading[]
+  depth?: number
+}
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const { headings, depth = 3 } = Astro.props
+const items = headings.filter((heading) => heading.depth <= depth)
+---
+{items.length > 0 && (
+  <aside class="toc-card" aria-label={t(locale, 'common.tableOfContents')} data-toc>
+    <h2 class="sidebar-title">{t(locale, 'common.tableOfContents')}</h2>
+    <ol class="toc-list">
+      {items.map((heading) => (
+        <li style={`padding-left:${Math.max(0, heading.depth - 1) * 0.6}rem`}>
+          <a href={`#${heading.slug}`} data-toc-link={heading.slug}>{heading.text}</a>
+        </li>
+      ))}
+    </ol>
+  </aside>
+)}
+<script is:inline>
+  (() => {
+    const links = [...document.querySelectorAll('[data-toc-link]')]
+    if (links.length === 0 || !('IntersectionObserver' in window)) return
+    const byId = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]))
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        links.forEach((link) => link.removeAttribute('aria-current'))
+        byId.get(entry.target.id)?.setAttribute('aria-current', 'location')
+      }
+    }, { rootMargin: '-20% 0px -70% 0px' })
+    for (const id of byId.keys()) {
+      const heading = document.getElementById(id)
+      if (heading) observer.observe(heading)
+    }
+  })()
+</script>
