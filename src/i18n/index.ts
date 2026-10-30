@@ -20,6 +20,7 @@ export type MessageKey =
   | 'common.tocSearch' | 'common.tocFold' | 'common.tocUnfold' | 'common.readingProgress' | 'common.noHeadingsMatch'
   | 'unlock.title' | 'unlock.description' | 'unlock.hintLabel' | 'unlock.password'
   | 'unlock.submit' | 'unlock.wrong' | 'unlock.expired' | 'unlock.unavailable' | 'unlock.notProtected'
+  | 'fab.label' | 'fab.home' | 'fab.toc' | 'fab.comments' | 'fab.top'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
@@ -60,6 +61,7 @@ const en: Dictionary = {
   'unlock.hintLabel': 'Hint', 'unlock.password': 'Password', 'unlock.submit': 'Unlock',
   'unlock.wrong': 'Incorrect password. Try again.', 'unlock.expired': 'Your unlock has expired. Enter the password again.',
   'unlock.unavailable': 'Unlocking is temporarily unavailable. Try again later.', 'unlock.notProtected': 'This article is not protected.',
+  'fab.label': 'Quick actions', 'fab.home': 'Home', 'fab.toc': 'Jump to outline', 'fab.comments': 'Jump to comments', 'fab.top': 'Back to top',
   'common.copied': 'Link copied', 'common.copyFailed': 'Copy failed',
   'search.title': 'Search', 'search.placeholder': 'Search posts', 'search.empty': 'No posts matched this search.',
   'search.results': 'results',
@@ -107,6 +109,7 @@ const zhCN: Dictionary = {
   'unlock.hintLabel': '提示', 'unlock.password': '密码', 'unlock.submit': '解锁',
   'unlock.wrong': '密码不正确，请重试。', 'unlock.expired': '解锁已过期，请重新输入密码。',
   'unlock.unavailable': '暂时无法解锁，请稍后再试。', 'unlock.notProtected': '这篇文章没有访问密码。',
+  'fab.label': '快捷操作', 'fab.home': '首页', 'fab.toc': '跳到目录', 'fab.comments': '跳到评论', 'fab.top': '回到顶部',
   'search.title': '搜索', 'search.placeholder': '搜索文章', 'search.empty': '没有匹配的文章。',
   'search.results': '条结果',
   'theme.toggle': '切换明暗主题', 'blog.poweredBy': '由 Inkstone 笔记驱动',

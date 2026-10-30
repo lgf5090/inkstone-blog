@@ -81,8 +81,11 @@ const siteSchema = z.object({
   integrations: z.object({
     comments: z.string().default('none'),
     music: z.string().default('none'),
-    umami: z.string().default('none'),
-  }).passthrough().default({ comments: 'none', music: 'none', umami: 'none' }),
+    umami: z.object({
+      enabled: z.boolean().default(false),
+      websiteId: z.string().default(''),
+    }).passthrough().default({ enabled: false, websiteId: '' }),
+  }).passthrough().default({ comments: 'none', music: 'none', umami: { enabled: false, websiteId: '' } }),
   counts: z.object({
     posts: z.number().default(0),
     categories: z.number().default(0),
@@ -204,6 +207,10 @@ export function loadComments(slug: string, unlockToken?: string | null): Promise
 
 export function loadArchive(): Promise<{ years: BlogArchiveYear[] }> {
   return getJson<{ years: BlogArchiveYear[] }>('/archive')
+}
+
+export function loadPages(): Promise<{ items: BlogPageItem[] }> {
+  return getJson<{ items: BlogPageItem[] }>('/pages')
 }
 
 export function loadTaxonomy(kind: 'categories' | 'tags' | 'series'): Promise<{ items: (TaxonomyItem | SeriesItem)[] }> {

@@ -16,6 +16,9 @@ export const GET: APIRoute = async ({ url }) => {
     '## Posts',
     ...feed.posts.map((post) => `- [${post.title}](${postLink(origin, post.slug)})${post.description ? ` — ${post.description}` : ''}`),
     '',
+    '## Full text',
+    `- [All posts as Markdown](${origin}/llms-full.txt)`,
+    '',
   ].join('\n')
   return new Response(body, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'public, max-age=0, s-maxage=60' } })
 }

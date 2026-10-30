@@ -1,16 +1,22 @@
 import type { APIRoute } from 'astro'
-import { loadFeeds } from '../lib/blog-api'
+import { loadCollection, loadFeeds, loadPages } from '../lib/blog-api'
 import { escapeXml, postLink, siteOrigin } from '../lib/feed'
 
 export const prerender = false
 
 export const GET: APIRoute = async ({ url }) => {
-  const feed = await loadFeeds().catch(() => null)
+  const [feed, pages, albums] = await Promise.all([
+    loadFeeds().catch(() => null),
+    loadPages().catch(() => ({ items: [] })),
+    loadCollection('albums').catch(() => ({ items: [] })),
+  ])
   if (!feed) return new Response('Sitemap unavailable', { status: 503 })
   const origin = siteOrigin(url, feed.site.site.url)
   const staticPaths = ['/', '/archive', '/categories', '/tags', '/series', '/moments', '/albums', '/friends', '/projects', '/skills', '/devices', '/games', '/anime', '/timeline', '/compass', '/about']
+  const pagePaths = pages.items.map((page) => (page.kind === 'about' ? '/about' : `/pages/${encodeURIComponent(page.slug)}`))
+  const albumPaths = albums.items.map((album) => `/albums/${encodeURIComponent(album.slug)}`)
   const entries = [
-    ...staticPaths.map((path) => `<url><loc>${escapeXml(`${origin}${path}`)}</loc></url>`),
+    ...[...new Set([...staticPaths, ...pagePaths, ...albumPaths])].map((path) => `<url><loc>${escapeXml(`${origin}${path}`)}</loc></url>`),
     ...feed.posts.map((post) => `<url><loc>${escapeXml(postLink(origin, post.slug))}</loc><lastmod>${new Date(post.updatedAt).toISOString()}</lastmod></url>`),
   ].join('\n')
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

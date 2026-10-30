@@ -1591,3 +1591,115 @@ select {
   border: 0;
   cursor: pointer;
 }
+
+/* ── Floating quick actions ───────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1.2rem, calc(env(safe-area-inset-bottom) + 1rem));
+  z-index: var(--z-popover, 40);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.fab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--outline-variant);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow-soft);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.fab-btn:hover {
+  color: var(--primary);
+  background: var(--surface-container);
+}
+
+.fab-btn:active {
+  transform: scale(0.96);
+}
+
+.fab-btn[hidden] {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .fab {
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.9rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+  }
+
+  .fab-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-btn {
+    transition: none;
+  }
+}
+
+/* ── Hero banner texture, waves and typewriter ────────────────────────────── */
+.hero-banner {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner[data-texture]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: radial-gradient(color-mix(in oklab, var(--primary) 28%, transparent) 0.7px, transparent 0.7px);
+  background-size: 14px 14px;
+  mask-image: linear-gradient(to bottom, transparent, #000 30%, transparent 92%);
+}
+
+.hero-waves {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 92px;
+  pointer-events: none;
+}
+
+.hero-waves svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-waves svg:first-child {
+  fill: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+.hero-waves svg:last-child {
+  fill: color-mix(in oklab, var(--page-bg) 68%, transparent);
+}
+
+.hero-banner:not([data-waves]) .hero-waves {
+  display: none;
+}
+
+.hero-subtitle {
+  min-height: 1.4em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-waves {
+    display: none;
+  }
+}

@@ -10,6 +10,9 @@ export interface BlogRuntimeConfig {
     subtitle: string
     hue: number
     gradient: boolean
+    typewriter: boolean
+    waves: boolean
+    texture: boolean
   }
   display: {
     postListMode: 'list' | 'grid'
@@ -48,7 +51,7 @@ export const FALLBACK_SITE: BlogSitePublic = {
     autoCloseDays: 0,
   },
   display: {},
-  integrations: { comments: 'none', music: 'none', umami: 'none' },
+  integrations: { comments: 'none', music: 'none', umami: { enabled: false, websiteId: '' } },
   counts: { posts: 0, categories: 0, tags: 0, series: 0 },
 }
 
@@ -74,6 +77,9 @@ export function buildRuntimeConfig(
       subtitle: site.site.subtitle || site.site.description,
       hue: numberSetting(site.site.themeColor?.hue, 315, 0, 360),
       gradient: true,
+      typewriter: display.bannerTypewriter !== false,
+      waves: display.bannerWaves !== false,
+      texture: display.bannerTexture !== false,
     },
     display: {
       postListMode: display.postListMode === 'grid' ? 'grid' : 'list',

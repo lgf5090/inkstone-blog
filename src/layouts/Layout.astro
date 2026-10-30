@@ -2,6 +2,7 @@
 import '../styles/global.css'
 import { blogLocale } from '../i18n'
 import { FALLBACK_SITE } from '../server/site-config'
+import FloatingActions from '../components/shell/FloatingActions.astro'
 
 interface Props {
   title?: string
@@ -60,6 +61,9 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
       <script type="application/ld+json" set:html={JSON.stringify(item)} />
     ))}
     <slot name="head" />
+    {blog.site.integrations.umami.enabled && /^[0-9a-f-]{8,}$/i.test(blog.site.integrations.umami.websiteId) && (
+      <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={blog.site.integrations.umami.websiteId}></script>
+    )}
     <script is:inline define:vars={{ hue }}>
       (() => {
         const stored = localStorage.getItem('theme')
@@ -81,5 +85,6 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
   </head>
   <body>
     <slot />
+    <FloatingActions />
   </body>
 </html>
