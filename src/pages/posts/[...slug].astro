@@ -1,16 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
-import { BlogApiError, loadPost, loadSite } from '../../lib/blog-api'
-import type { BlogPostDetail, BlogSitePublic } from '../../lib/blog-types'
+import Comments from '../../components/Comments.svelte'
+import { BlogApiError, loadComments, loadPost, loadSite } from '../../lib/blog-api'
+import type { BlogCommentsResponse, BlogPostDetail, BlogSitePublic } from '../../lib/blog-types'
 
 const slug = Astro.params.slug ?? ''
 let site: BlogSitePublic | null = null
 let post: BlogPostDetail | null = null
+let comments: BlogCommentsResponse | null = null
 let error = ''
 
 try {
   ;[site, post] = await Promise.all([loadSite(), loadPost(slug)])
+  comments = await loadComments(slug).catch(() => null)
 } catch (cause) {
   if (cause instanceof BlogApiError && cause.status === 404) return Astro.redirect('/404')
   error = cause instanceof BlogApiError && cause.status === 403
@@ -19,6 +22,12 @@ try {
 }
 
 const headings = post?.headings.filter((heading) => heading.depth <= 3) ?? []
+const discussion = comments?.discussion ?? {
+  requireNameEmail: true,
+  requireApproval: true,
+  allowReplies: true,
+  maxLength: 4000,
+}
 
 function formatDate(value: number | null): string {
   if (!value || !post) return ''
@@ -74,6 +83,14 @@ function formatDate(value: number | null): string {
             This post has no public render yet. Publish it from the blog admin to build one.
           </div>
         )}
+
+        <Comments
+          client:load
+          slug={post.slug}
+          enabled={comments?.enabled ?? false}
+          discussion={discussion}
+          initial={comments?.items ?? []}
+        />
       </article>
 
       {headings.length > 0 && (

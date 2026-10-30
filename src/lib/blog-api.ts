@@ -1,4 +1,4 @@
-import type { BlogPage, BlogPostDetail, BlogPostSummary, BlogSitePublic } from './blog-types'
+import type { BlogCommentsResponse, BlogPage, BlogPostDetail, BlogPostSummary, BlogSitePublic } from './blog-types'
 
 const ORIGIN = (import.meta.env.BLOG_API_ORIGIN ?? '').replace(/\/+$/, '')
 const PROXY_KEY = import.meta.env.BLOG_PROXY_KEY ?? ''
@@ -33,4 +33,8 @@ export function loadPosts(page = 1, limit = 20): Promise<BlogPage<BlogPostSummar
 
 export function loadPost(slug: string): Promise<BlogPostDetail> {
   return getJson<BlogPostDetail>(`/posts/${encodeURIComponent(slug)}`)
+}
+
+export function loadComments(slug: string): Promise<BlogCommentsResponse> {
+  return getJson<BlogCommentsResponse>(`/posts/${encodeURIComponent(slug)}/comments`)
 }

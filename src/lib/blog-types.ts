@@ -67,8 +67,37 @@ export interface BlogSitePublic {
   }
   nav: { label: string; href: string; children?: { label: string; href: string }[] }[]
   sidebar: { enable: boolean; arrangement: 'single' | 'dual'; side: 'left' | 'right'; widgets: string[] }
+  discussion: {
+    enabled: boolean
+    requireNameEmail: boolean
+    requireApproval: boolean
+    allowReplies: boolean
+    maxLength: number
+    autoCloseDays: number
+  }
   integrations: { comments: string; music: string; umami: string }
   counts: { posts: number; categories: number; tags: number; series: number }
+}
+
+export interface PublicBlogComment {
+  id: string
+  parentId: string | null
+  authorName: string
+  authorUrl: string
+  content: string
+  createdAt: number
+  replies: PublicBlogComment[]
+}
+
+export interface BlogCommentsResponse {
+  enabled: boolean
+  discussion: {
+    requireNameEmail: boolean
+    requireApproval: boolean
+    allowReplies: boolean
+    maxLength: number
+  }
+  items: PublicBlogComment[]
 }
 
 export interface BlogPage<T> {
