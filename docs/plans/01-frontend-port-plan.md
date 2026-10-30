@@ -1,6 +1,6 @@
 # 博客前端移植计划 v2（独立仓库 `inkstone-blog`）
 
-> 状态：**待审核；未开始写代码**。本文件取代 `01-frontend-port-plan-1.md`（v1 假设同库 React 重写）。
+> 状态：**执行中**；FE-00 完成，FE-01~FE-05 基础链路已通，其余按进度表继续。本文件取代 `01-frontend-port-plan-1.md`（v1 假设同库 React 重写）。
 > 目标仓库：`/home/kubuntu/code/cloudflare/inkstone-blog`（全新独立 git 仓库，**从零初始化提交**）；仓库内分支 `feat/blog`。
 > 初始化：Cloudflare 官方 C3 脚手架（`create-cloudflare` 的 Astro Workers 模板），避免手写 adapter/wrangler 配置。
 > 源码参考：Shirone `dd1b7826`（只读；Astro 7 + Svelte 5 + Tailwind 4 + M3E；MIT）；不导入其 git 历史/示例内容/大资产。

@@ -1,6 +1,6 @@
 # Blog 移植共享契约 v2（独立前端仓库 + 同源渲染产物）
 
-> 状态：**待审核；未开始写代码**。
+> 状态：**执行中**；FE-00 完成，FE-01~FE-05 基础链路已通，其余按进度表继续。
 > 基线：Inkstone `bd0bfe9dd1349c1f6e25a1b6ba492194816b8007`（`test`，2026-10-30）；Shirone `dd1b7826af653a6db5429d5a9860ebfd9843bd46`（2026-10-27）。
 > 本文件取代 `00-shared-contract-1.md` 的仓库形态假设。v1（同库 React 重写）保留为历史草案，不再作为实施依据。
 > 两份执行台账：`01-frontend-port-plan-2.md`（独立博客前端）、`02-admin-port-plan-2.md`（Inkstone 后台 app）。
