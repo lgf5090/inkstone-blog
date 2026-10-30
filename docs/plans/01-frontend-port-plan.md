@@ -378,11 +378,11 @@ pnpm check:i18n
 | ID | 任务 | 状态 | 提交 | 验证证据 | 偏差/后续 |
 | --- | --- | --- | --- | --- | --- |
 | FE-00 | C3 初始化/脚手架/依赖/SSR | [x] | 8f60e90 | create-cloudflare 2.74.5 → Astro 7.4.4/adapter 14.4.3/wrangler 4.156.0；pnpm install --frozen-lockfile / check / type-check / build 全绿；TS 7 被 astro check 拒绝，固定 6.0.3 | Svelte/Tailwind 由 astro add 接入；功能移植未开始 |
-| FE-01 | 运行时配置/API/Zod/mock | [ ] | | | |
-| FE-02 | 外壳/主题/显示设置 | [ ] | | | |
-| FE-03 | 列表/归档/分类/标签 | [ ] | | | |
-| FE-04 | 文章页壳/SEO | [ ] | | | |
-| FE-05 | runtime/大纲/wiki/资产 | [ ] | | | |
+| FE-01 | 运行时配置/API/Zod/mock | [~] | 7f64719 | API 类型/site/posts/post 客户端与首页/文章 SSR 已通；运行时配置/Zod/mock 未完成 | 继续 FE-01 的配置运行时化 |
+| FE-02 | 外壳/主题/显示设置 | [~] | 7f64719 | Layout/导航/页脚/暗色壳已通；HCT/显示设置/侧栏 widget 未移植 | 按 FE-02 继续 |
+| FE-03 | 列表/归档/分类/标签 | [~] | 7f64719 | 首页文章列表/空态/错误态已通；归档/分类/标签/分页/瀑布流未完成 | 按 FE-03 继续 |
+| FE-04 | 文章页壳/SEO | [~] | 7f64719 | 文章页/标题/日期/标签/快照注入/静态大纲已通；JSON-LD/OG/alias/permalink 未完成 | 按 FE-04 继续 |
+| FE-05 | runtime/大纲/wiki/资产 | [~] | 7f64719 | 静态快照与静态大纲已通；runtime 水合/wiki/资产改写未完成 | 待 BE-06 runtime |
 | FE-06 | 密码保护 | [ ] | | | |
 | FE-07 | 系列 | [ ] | | | |
 | FE-08 | 瞬间 | [ ] | | | |
