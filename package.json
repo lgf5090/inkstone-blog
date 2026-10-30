@@ -14,7 +14,8 @@
 		"type-check": "svelte-check --tsconfig ./tsconfig.json",
 		"generate-types": "wrangler types",
 		"deploy": "astro build && wrangler deploy",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"test:e2e": "playwright test"
 	},
 	"dependencies": {
 		"@astrojs/cloudflare": "^14.4.3",
@@ -33,6 +34,7 @@
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.12",
+		"@playwright/test": "^1.64.1",
 		"@types/markdown-it": "^14.2.0",
 		"@types/node": "^26.6.6",
 		"@types/sanitize-html": "^2.16.2",
