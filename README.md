@@ -5,7 +5,7 @@ Inkstone 博客的独立公共前端。正式内容与阅读渲染来自 Inkston
 ## 状态
 
 - 已用 Cloudflare 官方 C3 初始化 Astro Workers 项目，并加入 Svelte 5、Tailwind CSS 4、类型检查与 CI。
-- 当前：FE-00 完成；FE-01~FE-05 的基础链路已通（首页/文章/快照/静态大纲）；完整 Shirone 主题、runtime 与其余功能仍按 [前端移植计划](docs/plans/01-frontend-port-plan.md) 推进。
+- 当前：FE-00 完成；首页/文章/快照/静态大纲与本地评论前台已通；完整 Shirone 主题、runtime 与其余功能仍按 [前端移植计划](docs/plans/01-frontend-port-plan.md) 推进。
 - 文章正文与大纲由 Inkstone `feat/blog` 的同一套 `Preview`/`Outline` runtime 提供，本仓库不另写 Markdown 解析器。
 
 ## 技术栈
