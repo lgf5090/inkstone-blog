@@ -17,6 +17,7 @@ export type MessageKey =
   | 'common.backHome' | 'common.untitled' | 'common.pinned' | 'common.updated'
   | 'common.published' | 'common.tableOfContents' | 'common.previousPost'
   | 'common.nextPost' | 'common.share' | 'common.copied' | 'common.postNavigation'
+  | 'common.tocSearch' | 'common.tocFold' | 'common.tocUnfold' | 'common.readingProgress' | 'common.noHeadingsMatch'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
@@ -51,6 +52,8 @@ const en: Dictionary = {
   'common.updated': 'Updated', 'common.published': 'Published', 'common.tableOfContents': 'On this page',
   'common.previousPost': 'Previous post', 'common.nextPost': 'Next post', 'common.share': 'Share',
   'common.postNavigation': 'Post navigation',
+  'common.tocSearch': 'Search headings', 'common.tocFold': 'Collapse', 'common.tocUnfold': 'Expand',
+  'common.readingProgress': 'Reading progress', 'common.noHeadingsMatch': 'No headings match.',
   'common.copied': 'Link copied', 'common.copyFailed': 'Copy failed',
   'search.title': 'Search', 'search.placeholder': 'Search posts', 'search.empty': 'No posts matched this search.',
   'search.results': 'results',
@@ -92,6 +95,8 @@ const zhCN: Dictionary = {
   'common.published': '发布于', 'common.tableOfContents': '本页目录', 'common.previousPost': '上一篇',
   'common.nextPost': '下一篇', 'common.share': '分享', 'common.copied': '链接已复制', 'common.copyFailed': '复制失败',
   'common.postNavigation': '文章导航',
+  'common.tocSearch': '搜索标题', 'common.tocFold': '折叠', 'common.tocUnfold': '展开',
+  'common.readingProgress': '阅读进度', 'common.noHeadingsMatch': '没有匹配的标题。',
   'search.title': '搜索', 'search.placeholder': '搜索文章', 'search.empty': '没有匹配的文章。',
   'search.results': '条结果',
   'theme.toggle': '切换明暗主题', 'blog.poweredBy': '由 Inkstone 笔记驱动',

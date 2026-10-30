@@ -99,6 +99,7 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
       title: post.title,
       content: post.content,
       embeds: post.render.embeds ?? [],
+      assets: post.render.assets ?? [],
       settings: post.render.settings,
       rendererVersion: post.render.rendererVersion,
       wikiLinks: post.render.wikiLinks,

@@ -24,6 +24,17 @@ export interface BlogEmbeddedNote {
   content: string
 }
 
+export interface BlogAssetRef {
+  attachmentId?: string
+  blogAssetId?: string
+  url: string
+  filename?: string
+  mime?: string
+  size?: number
+  width?: number | null
+  height?: number | null
+}
+
 export interface BlogRenderSnapshot {
   version: 1
   rendererVersion: string
@@ -35,6 +46,7 @@ export interface BlogRenderSnapshot {
   features: string[]
   settings: BlogReadingSettings
   embeds?: BlogEmbeddedNote[]
+  assets?: BlogAssetRef[]
   wikiLinks?: Array<{ target: string; slug: string | null }>
   generatedAt?: number
   warnings?: string[]
