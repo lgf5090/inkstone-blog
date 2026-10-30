@@ -1538,3 +1538,56 @@ select {
 .toc-empty[hidden] {
   display: none;
 }
+
+/* ── Protected article ────────────────────────────────────────────────────── */
+.unlock-shell {
+  max-width: 42rem;
+}
+
+.unlock-hint {
+  margin: 0.4rem 0 0;
+  color: var(--on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.unlock-error {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--danger) 45%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+.unlock-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.unlock-label {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+}
+
+.unlock-form input {
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--outline-variant);
+  border-radius: 0.65rem;
+  background: var(--surface-low);
+  color: var(--on-surface);
+  font-size: 1rem;
+}
+
+.unlock-form input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.unlock-submit {
+  border: 0;
+  cursor: pointer;
+}

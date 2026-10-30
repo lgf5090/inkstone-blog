@@ -37,6 +37,15 @@ export function postUrl(slug: string): string {
   return `/posts/${encodeURIComponent(slug)}`
 }
 
+export function unlockCookieName(slug: string): string {
+  let hash = 2166136261
+  for (let index = 0; index < slug.length; index++) {
+    hash ^= slug.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `blog_unlock_${(hash >>> 0).toString(36)}`
+}
+
 export function collectionLabel(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }

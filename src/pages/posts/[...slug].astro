@@ -6,8 +6,8 @@ import Toc from '../../components/blog/Toc.astro'
 import Comments from '../../components/Comments.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
-import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, resolveRedirect } from '../../lib/blog-api'
-import { formatDate, postUrl } from '../../lib/format'
+import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, resolveRedirect, unlockPost } from '../../lib/blog-api'
+import { formatDate, postUrl, unlockCookieName } from '../../lib/format'
 import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -19,12 +19,43 @@ let adjacent: AdjacentPosts = { previous: null, next: null }
 let comments: BlogCommentsResponse | null = null
 let error = ''
 let protectedPost = false
+let unlockHint = ''
+let unlockError = ''
+const unlockCookie = unlockCookieName(slug)
+let unlockToken = Astro.cookies.get(unlockCookie)?.value ?? ''
+
+if (Astro.request.method === 'POST') {
+  try {
+    const form = await Astro.request.formData()
+    const password = typeof form.get('password') === 'string' ? String(form.get('password')) : ''
+    const result = await unlockPost(slug, password)
+    if (!result.token) {
+      unlockError = t(locale, 'unlock.notProtected')
+    } else {
+      const maxAge = Math.max(60, Math.floor(((result.expiresAt ?? 0) - Date.now()) / 1000))
+      Astro.cookies.set(unlockCookie, result.token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        maxAge,
+        secure: Astro.url.protocol === 'https:',
+      })
+      return Astro.redirect(Astro.url.pathname, 303)
+    }
+  } catch (cause) {
+    unlockError = cause instanceof BlogApiError && cause.status === 403
+      ? t(locale, 'unlock.wrong')
+      : cause instanceof BlogApiError && cause.status === 429
+        ? cause.message
+        : t(locale, 'unlock.unavailable')
+  }
+}
 
 try {
-  post = await loadPost(slug)
+  post = await loadPost(slug, unlockToken)
   ;[adjacent, comments] = await Promise.all([
     loadAdjacent(slug).catch(() => ({ previous: null, next: null })),
-    loadComments(slug).catch(() => null),
+    loadComments(slug, unlockToken).catch(() => null),
   ])
 } catch (cause) {
   if (cause instanceof BlogApiError && cause.status === 404) {
@@ -34,7 +65,14 @@ try {
     error = t(locale, 'blog.notFound')
   } else if (cause instanceof BlogApiError && cause.status === 403) {
     protectedPost = true
-    error = t(locale, 'blog.notFoundHint')
+    const details = cause.details as { hint?: unknown } | undefined
+    unlockHint = typeof details?.hint === 'string' ? details.hint : ''
+    const hadToken = Boolean(unlockToken)
+    if (hadToken) {
+      Astro.cookies.delete(unlockCookie, { path: '/' })
+      unlockToken = ''
+    }
+    unlockError = unlockError || (hadToken ? t(locale, 'unlock.expired') : '')
   } else {
     error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
   }
@@ -85,7 +123,7 @@ const jsonLd = post ? {
 ---
 
 <Layout
-  title={post?.title || t(locale, 'blog.notFound')}
+  title={post?.title || (protectedPost ? t(locale, 'unlock.title') : t(locale, 'blog.notFound'))}
   description={post?.description || post?.excerpt}
   image={cover}
   type="article"
@@ -94,13 +132,19 @@ const jsonLd = post ? {
 >
   <MainGridLayout page="post">
     {protectedPost ? (
-      <div class="article-shell">
+      <div class="article-shell unlock-shell">
         <header class="article-header">
-          <h1 class="article-title">{t(locale, 'blog.notFound')}</h1>
-          <p class="post-card-excerpt">{error}</p>
+          <h1 class="article-title">{t(locale, 'unlock.title')}</h1>
+          <p class="post-card-excerpt">{t(locale, 'unlock.description')}</p>
+          {unlockHint && <p class="unlock-hint">{t(locale, 'unlock.hintLabel')}: {unlockHint}</p>}
         </header>
         <div class="article-body">
-          <div class="empty-state">{t(locale, 'blog.notFoundHint')}</div>
+          {unlockError && <p class="unlock-error" role="alert">{unlockError}</p>}
+          <form method="post" class="unlock-form">
+            <label class="unlock-label" for="unlock-password">{t(locale, 'unlock.password')}</label>
+            <input id="unlock-password" name="password" type="password" required autocomplete="current-password" />
+            <button type="submit" class="chip unlock-submit">{t(locale, 'unlock.submit')}</button>
+          </form>
         </div>
       </div>
     ) : !post ? (

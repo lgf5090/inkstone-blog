@@ -1,10 +1,12 @@
 import type { APIRoute } from 'astro'
+import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
 
 const ALLOWED = /^posts\/[^/]+\/comments$/
 
-async function proxy({ params, request }: { params: Record<string, string | undefined>; request: Request }): Promise<Response> {
+async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
+  const { params, request, cookies } = context
   const path = params.path ?? ''
   if (!ALLOWED.test(path)) return Response.json({ error: 'not_found' }, { status: 404 })
   const origin = (import.meta.env.BLOG_API_ORIGIN ?? '').replace(/\/+$/, '')
@@ -17,6 +19,17 @@ async function proxy({ params, request }: { params: Record<string, string | unde
   if (contentType) headers.set('content-type', contentType)
   const accept = request.headers.get('accept')
   if (accept) headers.set('accept', accept)
+  const slugMatch = /^posts\/([^/]+)\/comments$/.exec(path)
+  if (slugMatch) {
+    let postSlug = slugMatch[1]!
+    try {
+      postSlug = decodeURIComponent(postSlug)
+    } catch {
+      return Response.json({ error: 'not_found' }, { status: 404 })
+    }
+    const token = cookies.get(unlockCookieName(postSlug))?.value
+    if (token) headers.set('x-blog-unlock', token)
+  }
   try {
     const upstream = await fetch(`${origin}/api/blog/${path}`, {
       method: request.method,

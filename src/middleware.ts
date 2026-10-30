@@ -1,6 +1,7 @@
 import { defineMiddleware } from 'astro:middleware'
 import { loadPost, loadSite, loadTaxonomy } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
+import { unlockCookieName } from './lib/format'
 import { blogLocale, LOCALES } from './i18n'
 
 const PASSTHROUGH = /^\/(?:_astro|_blog|api|favicon|robots\.txt|sitemap\.xml|rss\.xml|atom\.xml|llms)/
@@ -93,7 +94,7 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
     return new Response(null, { status: 400 })
   }
   try {
-    const post = await loadPost(slug)
+    const post = await loadPost(slug, context.cookies.get(unlockCookieName(slug))?.value)
     if (!post.content || !post.render) return new Response(null, { status: 404 })
     return new Response(JSON.stringify({
       title: post.title,

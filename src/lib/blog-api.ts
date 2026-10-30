@@ -28,6 +28,7 @@ export class BlogApiError extends Error {
     readonly status: number,
     message: string,
     readonly code?: string,
+    readonly details?: unknown,
   ) {
     super(message)
     this.name = 'BlogApiError'
@@ -90,7 +91,34 @@ const siteSchema = z.object({
   }).passthrough().default({ posts: 0, categories: 0, tags: 0, series: 0 }),
 }).passthrough()
 
-async function getJson<T>(path: string, query?: Record<string, string | number | boolean | undefined | null>): Promise<T> {
+function apiHeaders(extra?: Record<string, string>): Record<string, string> {
+  return {
+    ...(PROXY_KEY ? { 'x-blog-proxy-key': PROXY_KEY } : {}),
+    'x-inkstone-client': '1',
+    ...extra,
+  }
+}
+
+async function failed(response: Response): Promise<BlogApiError> {
+  let message = response.statusText
+  let code: string | undefined
+  let details: unknown
+  try {
+    const body = (await response.json()) as { error?: { message?: string; code?: string; details?: unknown } }
+    message = body.error?.message ?? message
+    code = body.error?.code
+    details = body.error?.details
+  } catch {
+    message = await response.text().catch(() => message)
+  }
+  return new BlogApiError(response.status, message, code, details)
+}
+
+async function getJson<T>(
+  path: string,
+  query?: Record<string, string | number | boolean | undefined | null>,
+  headers?: Record<string, string>,
+): Promise<T> {
   if (!ORIGIN) throw new BlogApiError(503, 'BLOG_API_ORIGIN is not configured', 'blog_api_not_configured')
   const url = new URL(`${ORIGIN}/api/blog${path}`)
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -99,27 +127,30 @@ async function getJson<T>(path: string, query?: Record<string, string | number |
   let response: Response
   try {
     response = await fetch(url, {
-      headers: {
-        ...(PROXY_KEY ? { 'x-blog-proxy-key': PROXY_KEY } : {}),
-        'x-inkstone-client': '1',
-      },
+      headers: apiHeaders(headers),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch (cause) {
     throw new BlogApiError(503, cause instanceof Error ? cause.message : String(cause), 'blog_api_unreachable')
   }
-  if (!response.ok) {
-    let message = response.statusText
-    let code: string | undefined
-    try {
-      const body = (await response.json()) as { error?: { message?: string; code?: string } }
-      message = body.error?.message ?? message
-      code = body.error?.code
-    } catch {
-      message = await response.text().catch(() => message)
-    }
-    throw new BlogApiError(response.status, message, code)
+  if (!response.ok) throw await failed(response)
+  return (await response.json()) as T
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  if (!ORIGIN) throw new BlogApiError(503, 'BLOG_API_ORIGIN is not configured', 'blog_api_not_configured')
+  let response: Response
+  try {
+    response = await fetch(`${ORIGIN}/api/blog${path}`, {
+      method: 'POST',
+      headers: apiHeaders({ 'content-type': 'application/json' }),
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    })
+  } catch (cause) {
+    throw new BlogApiError(503, cause instanceof Error ? cause.message : String(cause), 'blog_api_unreachable')
   }
+  if (!response.ok) throw await failed(response)
   return (await response.json()) as T
 }
 
@@ -147,16 +178,28 @@ export function loadPosts(query: PostQuery = {}): Promise<BlogPage<BlogPostSumma
   return getJson<BlogPage<BlogPostSummary>>('/posts', { ...query })
 }
 
-export function loadPost(slug: string): Promise<BlogPostDetail> {
-  return getJson<BlogPostDetail>(`/posts/${encodeURIComponent(slug)}`)
+export function loadPost(slug: string, unlockToken?: string | null): Promise<BlogPostDetail> {
+  return getJson<BlogPostDetail>(
+    `/posts/${encodeURIComponent(slug)}`,
+    undefined,
+    unlockToken ? { 'x-blog-unlock': unlockToken } : undefined,
+  )
+}
+
+export function unlockPost(slug: string, password: string): Promise<{ token: string | null; expiresAt: number | null }> {
+  return postJson(`/posts/${encodeURIComponent(slug)}/unlock`, { password })
 }
 
 export function loadAdjacent(slug: string): Promise<AdjacentPosts> {
   return getJson<AdjacentPosts>(`/posts/${encodeURIComponent(slug)}/adjacent`)
 }
 
-export function loadComments(slug: string): Promise<BlogCommentsResponse> {
-  return getJson<BlogCommentsResponse>(`/posts/${encodeURIComponent(slug)}/comments`)
+export function loadComments(slug: string, unlockToken?: string | null): Promise<BlogCommentsResponse> {
+  return getJson<BlogCommentsResponse>(
+    `/posts/${encodeURIComponent(slug)}/comments`,
+    undefined,
+    unlockToken ? { 'x-blog-unlock': unlockToken } : undefined,
+  )
 }
 
 export function loadArchive(): Promise<{ years: BlogArchiveYear[] }> {
