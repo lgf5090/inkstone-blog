@@ -1,6 +1,7 @@
 ---
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
+import { blogRuntimeOrigin } from '../../server/origins'
 import type { BlogMusicConfig } from '../../lib/blog-types'
 
 const blog = Astro.locals.blog ?? {
@@ -11,7 +12,7 @@ const blog = Astro.locals.blog ?? {
 const locale = blogLocale(blog.site.site.locale)
 const music = blog.music ?? { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' } as BlogMusicConfig
 const runtimeVersion = blog.runtimeVersion ?? 'inkstone-blog-v3'
-const runtimeOrigin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')
+const runtimeOrigin = blogRuntimeOrigin()
 const runtimeUrl = import.meta.env.DEV
   ? (runtimeOrigin ? `${runtimeOrigin}/src/blog-runtime/music.tsx` : '')
   : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/music/music.js`

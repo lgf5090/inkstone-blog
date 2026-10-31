@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { blogApiOrigin } from '../../../server/origins'
 import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
@@ -9,7 +10,7 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   const { params, request, cookies } = context
   const path = params.path ?? ''
   if (!ALLOWED.test(path)) return Response.json({ error: 'not_found' }, { status: 404 })
-  const origin = (import.meta.env.BLOG_API_ORIGIN ?? '').replace(/\/+$/, '')
+  const origin = blogApiOrigin()
   if (!origin) return Response.json({ error: 'blog_api_not_configured' }, { status: 503 })
   const headers = new Headers()
   const key = import.meta.env.BLOG_PROXY_KEY

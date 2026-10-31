@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
+import { blogApiOrigin, blogRuntimeOrigin } from './server/origins'
 import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { unlockCookieName } from './lib/format'
@@ -18,7 +19,7 @@ async function loadTaxonomies() {
 async function mediaProxy(context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]): Promise<Response> {
   const id = context.url.pathname.slice('/_blog/media/'.length)
   if (!/^[A-Za-z0-9_-]{1,120}$/.test(id)) return new Response(null, { status: 404 })
-  const origin = (import.meta.env.BLOG_API_ORIGIN ?? '').replace(/\/+$/, '')
+  const origin = blogApiOrigin()
   if (!origin) return new Response(null, { status: 503 })
   const headers = new Headers({ 'x-inkstone-client': '1' })
   const key = import.meta.env.BLOG_PROXY_KEY
@@ -59,7 +60,7 @@ async function runtimeProxy(context: Parameters<Parameters<typeof defineMiddlewa
   }
   const [version, ...tail] = rest.split('/')
   if (!version || !RUNTIME_VERSION.test(version) || tail.length === 0) return new Response(null, { status: 404 })
-  const origin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')
+  const origin = blogRuntimeOrigin()
   if (!origin) return new Response(null, { status: 503 })
   const upstreamPath = tail[0] === 'vendor'
     ? `/vendor/${tail.slice(1).join('/')}`

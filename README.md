@@ -8,6 +8,10 @@ Inkstone 博客的独立公共前端。正式内容与阅读渲染来自 Inkston
 - 当前：FE-00 完成；首页/文章/快照/静态大纲与本地评论前台已通；完整 Shirone 主题、runtime 与其余功能仍按 [前端移植计划](docs/plans/01-frontend-port-plan.md) 推进。
 - 文章正文与大纲由 Inkstone `feat/blog` 的同一套 `Preview`/`Outline` runtime 提供，本仓库不另写 Markdown 解析器。
 
+## 部署
+
+Cloudflare Workers 部署、后端 API 地址、代理密钥和自定义域名见 [docs/DEPLOY.md](docs/DEPLOY.md)。
+
 ## 技术栈
 
 - Astro 7.4.4 + `@astrojs/cloudflare` 14.4.3 + Wrangler 4.156.0（Cloudflare Workers SSR）

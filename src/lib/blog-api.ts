@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { blogApiOrigin } from '../server/origins'
 import type {
   AdjacentPosts,
   BlogAlbumDetail,
@@ -21,7 +22,7 @@ import type {
   TaxonomyItem,
 } from './blog-types'
 
-const ORIGIN = (import.meta.env.BLOG_API_ORIGIN ?? '').replace(/\/+$/, '')
+const ORIGIN = blogApiOrigin()
 const PROXY_KEY = import.meta.env.BLOG_PROXY_KEY ?? ''
 const TIMEOUT_MS = Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')
 
@@ -208,7 +209,6 @@ async function getJson<T>(
   query?: Record<string, string | number | boolean | undefined | null>,
   headers?: Record<string, string>,
 ): Promise<T> {
-  if (!ORIGIN) throw new BlogApiError(503, 'BLOG_API_ORIGIN is not configured', 'blog_api_not_configured')
   const url = new URL(`${ORIGIN}/api/blog${path}`)
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value))
@@ -227,7 +227,6 @@ async function getJson<T>(
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  if (!ORIGIN) throw new BlogApiError(503, 'BLOG_API_ORIGIN is not configured', 'blog_api_not_configured')
   let response: Response
   try {
     response = await fetch(`${ORIGIN}/api/blog${path}`, {
