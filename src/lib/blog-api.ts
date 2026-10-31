@@ -34,6 +34,15 @@ export class BlogApiError extends Error {
   }
 }
 
+export function userFacingError(cause: unknown, fallback: string): string {
+  if (cause instanceof BlogApiError) {
+    console.warn('[blog] request failed', cause.status, cause.code ?? '', cause.message)
+  } else {
+    console.warn('[blog] request failed', cause)
+  }
+  return fallback
+}
+
 const siteSchema = z.object({
   site: z.object({
     title: z.string(),
@@ -261,6 +270,15 @@ export interface PostQuery {
 
 export function loadPosts(query: PostQuery = {}): Promise<BlogPage<BlogPostSummary>> {
   return getJson<BlogPage<BlogPostSummary>>('/posts', { ...query })
+}
+
+let discoveryCache: { value: BlogPostSummary[]; at: number } | null = null
+
+export async function loadDiscoveryCandidates(): Promise<BlogPostSummary[]> {
+  if (discoveryCache && Date.now() - discoveryCache.at < 30_000) return discoveryCache.value
+  const value = (await loadPosts({ limit: 50 })).items
+  discoveryCache = { value, at: Date.now() }
+  return value
 }
 
 export function loadPost(slug: string, unlockToken?: string | null): Promise<BlogPostDetail> {

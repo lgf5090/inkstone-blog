@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import MomentFeed from '../components/blog/MomentFeed.svelte'
 import { blogLocale, t } from '../i18n'
-import { BlogApiError, loadCollection } from '../lib/blog-api'
+import { loadCollection, userFacingError } from '../lib/blog-api'
 import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
@@ -11,7 +11,7 @@ const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
 let items: BlogCollectionItem[] = []
 let error = ''
-try { items = (await loadCollection('moments')).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
+try { items = (await loadCollection('moments')).items } catch (cause) { error = userFacingError(cause, t(locale, 'common.loadError')) }
 const author = {
   name: blog.site.profile?.name || blog.site.site.title,
   avatar: blog.site.profile?.avatar || '',

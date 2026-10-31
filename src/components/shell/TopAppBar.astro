@@ -2,6 +2,7 @@
 import Icon from '../Icon.astro'
 import AppearanceMenu from './AppearanceMenu.svelte'
 import { blogLocale, t, LOCALES, LOCALE_LABELS, type MessageKey } from '../../i18n'
+import { safeUrl } from '../../lib/format'
 import { FALLBACK_SITE } from '../../server/site-config'
 
 interface Props {
@@ -11,6 +12,7 @@ const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
 const pathname = Astro.props.activePath ?? Astro.url.pathname
 const links = blog.site.nav.length ? blog.site.nav : [{ label: t(locale, 'nav.home'), href: '/' }]
+const hrefOf = (href: string): string => safeUrl(href) ?? '/'
 const isActive = (href: string): boolean => href === '/'
   ? pathname === '/' || pathname.startsWith('/page/')
   : pathname === href || pathname.startsWith(`${href.replace(/\/$/, '')}/`)
@@ -63,7 +65,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
             </summary>
             <div class="nav-menu-panel">
               {item.children.map((child) => (
-                <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>
+                <a href={hrefOf(child.href)} aria-current={isActive(child.href) ? 'page' : undefined}>
                   {iconFor(child.href) && <Icon name={iconFor(child.href)!} size={13} />}
                   {fallbackLabel(child.href, child.label)}
                 </a>
@@ -72,7 +74,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
           </details>
         ) : (
           <a
-            href={item.href}
+            href={hrefOf(item.href)}
             class="nav-link"
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
@@ -115,12 +117,12 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
           </summary>
           <div class="mobile-nav-children">
             {item.children.map((child) => (
-              <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{fallbackLabel(child.href, child.label)}</a>
+              <a href={hrefOf(child.href)} aria-current={isActive(child.href) ? 'page' : undefined}>{fallbackLabel(child.href, child.label)}</a>
             ))}
           </div>
         </details>
       ) : (
-        <a href={item.href} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+        <a href={hrefOf(item.href)} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
           {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
           {fallbackLabel(item.href, item.label)}
         </a>
@@ -158,9 +160,29 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     let opener = null
     let timer = 0
     let controller = null
+    let inerted = []
+    const setBackgroundInert = (on) => {
+      if (on) {
+        let node = overlay
+        while (node && node !== document.body) {
+          const parent = node.parentElement
+          if (!parent) break
+          for (const sibling of parent.children) {
+            if (sibling === node || !(sibling instanceof HTMLElement)) continue
+            inerted.push({ element: sibling, was: sibling.inert })
+            sibling.inert = true
+          }
+          node = parent
+        }
+      } else {
+        for (const entry of inerted) entry.element.inert = entry.was
+        inerted = []
+      }
+    }
     const close = () => {
       if (overlay.hidden) return
       overlay.hidden = true
+      setBackgroundInert(false)
       document.documentElement.style.removeProperty('overflow')
       opener?.focus()
       opener = null
@@ -168,6 +190,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     const open = (event) => {
       opener = event.currentTarget
       overlay.hidden = false
+      setBackgroundInert(true)
       document.documentElement.style.overflow = 'hidden'
       input.focus()
       if (input.value.trim()) void run(input.value.trim())
@@ -263,6 +286,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     window.__blogRegisterCleanup?.('instant-search', () => {
       controller?.abort()
       clearTimeout(timer)
+      setBackgroundInert(false)
       document.removeEventListener('keydown', onKey)
     })
   })()

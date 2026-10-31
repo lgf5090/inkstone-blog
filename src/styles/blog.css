@@ -282,8 +282,8 @@ select {
 .icon-button {
   display: inline-grid;
   place-items: center;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -1274,6 +1274,7 @@ select {
 .article-cover {
   display: block;
   width: 100%;
+  aspect-ratio: 16 / 9;
   max-height: 26rem;
   object-fit: cover;
   border-bottom: 1px solid var(--outline-variant);
@@ -1548,7 +1549,7 @@ select {
 
 .appearance-label {
   margin: 0 0 0.35rem;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1565,7 +1566,7 @@ select {
 
 .appearance-segment button {
   flex: 1;
-  min-height: 2rem;
+  min-height: 2.25rem;
   padding: 0.32rem 0.35rem;
   border: 0;
   border-radius: 999px;
@@ -1602,8 +1603,8 @@ select {
 }
 
 .appearance-swatch {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.8rem;
+  height: 1.8rem;
   border-radius: 999px;
   border: 2px solid transparent;
   background: var(--swatch);

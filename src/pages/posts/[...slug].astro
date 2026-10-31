@@ -7,7 +7,7 @@ import Comments from '../../components/Comments.svelte'
 import SharePoster from '../../components/blog/SharePoster.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
-import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, loadPosts, resolveRedirect, unlockPost } from '../../lib/blog-api'
+import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadDiscoveryCandidates, loadPost, loadPosts, resolveRedirect, unlockPost, userFacingError } from '../../lib/blog-api'
 import { formatDate, postUrl, safeRedirectTarget, unlockCookieName } from '../../lib/format'
 import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail, BlogPostSummary, SeriesItem } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
@@ -86,7 +86,7 @@ try {
     }
     unlockError = unlockError || (hadToken ? t(locale, 'unlock.expired') : '')
   } else {
-    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+    error = userFacingError(cause, t(locale, 'common.loadError'))
   }
 }
 
@@ -126,7 +126,7 @@ if (post) {
   if (blog.article.relatedCount > 0 || blog.article.randomCount > 0) {
     let candidates: BlogPostSummary[] = []
     try {
-      candidates = (await loadPosts({ limit: 50 })).items.filter((item) => item.slug !== post!.slug)
+      candidates = (await loadDiscoveryCandidates()).filter((item) => item.slug !== post!.slug)
     } catch (cause) {
       console.warn('[blog] discovery candidates failed', cause)
     }

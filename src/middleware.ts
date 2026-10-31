@@ -3,7 +3,7 @@ import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey, blogRuntimeOrigin } from
 import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { unlockCookieName } from './lib/format'
-import { blogLocale, LOCALES } from './i18n'
+import { blogLocale, LOCALES, t } from './i18n'
 
 const PASSTHROUGH = /^\/(?:_astro|_blog|api|favicon|robots\.txt|sitemap\.xml|rss\.xml|atom\.xml|llms)/
 
@@ -159,8 +159,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       context.locals.blog = blog
       context.locals.blogError = null
     } catch (cause) {
+      console.warn('[blog] site bootstrap failed', cause)
       context.locals.blog = buildRuntimeConfig(FALLBACK_SITE, [], [], [])
-      context.locals.blogError = cause instanceof Error ? cause.message : String(cause)
+      context.locals.blogError = t(blogLocale(context.cookies.get('blog-locale')?.value), 'common.loadError')
     }
   }
   const response = await next()

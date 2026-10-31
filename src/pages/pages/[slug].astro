@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadPage, loadPosts, resolveRedirect } from '../../lib/blog-api'
+import { BlogApiError, loadPage, loadPosts, resolveRedirect, userFacingError } from '../../lib/blog-api'
 import { renderPageMarkdown } from '../../lib/markdown'
 import { postUrl, safeRedirectTarget } from '../../lib/format'
 import type { BlogPageItem, BlogPostSummary } from '../../lib/blog-types'
@@ -29,7 +29,7 @@ try {
       error = t(locale, 'blog.notFound')
     }
   } else {
-    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+    error = userFacingError(cause, t(locale, 'common.loadError'))
   }
 }
 if (isAbout && !page) {

@@ -4,7 +4,7 @@ import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import PostCard from '../../components/blog/PostCard.astro'
 import Pagination from '../../components/blog/Pagination.astro'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadPosts } from '../../lib/blog-api'
+import { loadPosts, userFacingError } from '../../lib/blog-api'
 import type { BlogPage, BlogPostSummary } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -22,7 +22,7 @@ try {
     error = t(locale, 'blog.notFound')
   }
 } catch (cause) {
-  error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  error = userFacingError(cause, t(locale, 'common.loadError'))
 }
 const posts = page?.items ?? []
 const mode = blog.display.postListMode

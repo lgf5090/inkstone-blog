@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import AlbumGallery from '../../components/blog/AlbumGallery.svelte'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadAlbum, mediaUrl, unlockAlbum } from '../../lib/blog-api'
+import { BlogApiError, loadAlbum, mediaUrl, unlockAlbum, userFacingError } from '../../lib/blog-api'
 import { albumUnlockCookieName } from '../../lib/format'
 import type { BlogAlbumDetail } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
@@ -54,7 +54,7 @@ try {
     Astro.response.status = 404
     error = t(locale, 'blog.notFound')
   } else {
-    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+    error = userFacingError(cause, t(locale, 'common.loadError'))
   }
 }
 

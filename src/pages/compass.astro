@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import CompassSection from '../components/blog/CompassSection.svelte'
 import { blogLocale, t } from '../i18n'
-import { BlogApiError, loadCompass } from '../lib/blog-api'
+import { loadCompass, userFacingError } from '../lib/blog-api'
 import type { BlogCompassShelf } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
@@ -11,7 +11,7 @@ const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
 let shelves: BlogCompassShelf[] = []
 let error = ''
-try { shelves = (await loadCompass()).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
+try { shelves = (await loadCompass()).items } catch (cause) { error = userFacingError(cause, t(locale, 'common.loadError')) }
 ---
 <Layout title={t(locale, 'nav.compass')}>
   <MainGridLayout page="compass">

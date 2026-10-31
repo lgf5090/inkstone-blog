@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import PostCard from '../components/blog/PostCard.astro'
 import { blogLocale, t } from '../i18n'
-import { BlogApiError, loadArchive, loadPosts } from '../lib/blog-api'
+import { loadArchive, loadPosts, userFacingError } from '../lib/blog-api'
 import { postUrl } from '../lib/format'
 import type { BlogArchiveYear, BlogPage, BlogPostSummary } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -31,7 +31,7 @@ try {
     limit: 50,
   })).items
 } catch (cause) {
-  error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  error = userFacingError(cause, t(locale, 'common.loadError'))
 }
 const mode = blog.display.postListMode
 const queryHref = (overrides: Record<string, string | null>) => {
