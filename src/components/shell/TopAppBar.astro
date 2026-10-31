@@ -25,11 +25,19 @@ const labelKey = (href: string): MessageKey | null => {
     '/series': 'nav.series', '/friends': 'nav.friends', '/moments': 'nav.moments', '/albums': 'nav.albums',
     '/projects': 'nav.projects', '/skills': 'nav.skills', '/devices': 'nav.devices', '/games': 'nav.games',
     '/anime': 'nav.anime', '/timeline': 'nav.timeline', '/compass': 'nav.compass', '/about': 'nav.about',
-    '/search': 'nav.search',
+    '/search': 'nav.search', '/more': 'nav.more',
   }
   return map[href.replace(/\/$/, '') || '/'] ?? null
 }
 const fallbackLabel = (href: string, label: string): string => labelKey(href) ? t(locale, labelKey(href)!) : label
+type NavIconName = 'home' | 'archive' | 'link' | 'sparkles' | 'tv' | 'compass' | 'photo' | 'apps'
+const iconByHref: Record<string, NavIconName> = {
+  '/': 'home', '/archive': 'archive', '/friends': 'link', '/moments': 'sparkles',
+  '/anime': 'tv', '/compass': 'compass', '/albums': 'photo', '/more': 'apps',
+}
+const iconFor = (href: string): NavIconName | null => iconByHref[href.replace(/\/$/, '') || '/'] ?? null
+const groupActive = (item: { href: string; children?: { href: string }[] }): boolean =>
+  isActive(item.href) || Boolean(item.children?.some((child) => isActive(child.href)))
 ---
 
 <header class="top-app-bar">
@@ -48,12 +56,16 @@ const fallbackLabel = (href: string, label: string): string => labelKey(href) ? 
       {links.map((item) => (
         item.children?.length ? (
           <details class="nav-menu">
-            <summary class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+            <summary class="nav-link" aria-current={groupActive(item) ? 'page' : undefined}>
+              {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
               {fallbackLabel(item.href, item.label)}
             </summary>
             <div class="nav-menu-panel">
               {item.children.map((child) => (
-                <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a>
+                <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>
+                  {iconFor(child.href) && <Icon name={iconFor(child.href)!} size={13} />}
+                  {fallbackLabel(child.href, child.label)}
+                </a>
               ))}
             </div>
           </details>
@@ -63,6 +75,7 @@ const fallbackLabel = (href: string, label: string): string => labelKey(href) ? 
             class="nav-link"
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
+            {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
             {fallbackLabel(item.href, item.label)}
           </a>
         )
@@ -87,9 +100,24 @@ const fallbackLabel = (href: string, label: string): string => labelKey(href) ? 
 
   <nav class="mobile-nav" aria-label={t(locale, 'nav.home')}>
     {links.map((item) => (
-      <a href={item.href} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
-        {fallbackLabel(item.href, item.label)}
-      </a>
+      item.children?.length ? (
+        <details class="mobile-nav-group">
+          <summary class="nav-link" aria-current={groupActive(item) ? 'page' : undefined}>
+            {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
+            {fallbackLabel(item.href, item.label)}
+          </summary>
+          <div class="mobile-nav-children">
+            {item.children.map((child) => (
+              <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{fallbackLabel(child.href, child.label)}</a>
+            ))}
+          </div>
+        </details>
+      ) : (
+        <a href={item.href} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+          {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
+          {fallbackLabel(item.href, item.label)}
+        </a>
+      )
     ))}
     <a href="/search" class="nav-link">{t(locale, 'nav.search')}</a>
   </nav>

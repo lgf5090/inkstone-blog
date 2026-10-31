@@ -10,7 +10,7 @@ export type MessageKey =
   | 'nav.home' | 'nav.archive' | 'nav.categories' | 'nav.tags' | 'nav.series'
   | 'nav.friends' | 'nav.moments' | 'nav.albums' | 'nav.projects' | 'nav.skills'
   | 'nav.devices' | 'nav.games' | 'nav.anime' | 'nav.timeline' | 'nav.compass'
-  | 'nav.about' | 'nav.search' | 'nav.rss'
+  | 'nav.about' | 'nav.search' | 'nav.rss' | 'nav.more'
   | 'friends.search' | 'friends.all' | 'friends.apply' | 'friends.siteName' | 'friends.siteUrl'
   | 'friends.description' | 'friends.icon' | 'friends.submit' | 'friends.success' | 'friends.error'
   | 'friends.open' | 'friends.copyLink' | 'friends.copyDomain' | 'friends.categories' | 'friends.empty'
@@ -62,7 +62,7 @@ const en: Dictionary = {
   'nav.series': 'Series', 'nav.friends': 'Friends', 'nav.moments': 'Moments', 'nav.albums': 'Albums',
   'nav.projects': 'Projects', 'nav.skills': 'Skills', 'nav.devices': 'Devices', 'nav.games': 'Games',
   'nav.anime': 'Anime', 'nav.timeline': 'Timeline', 'nav.compass': 'Compass', 'nav.about': 'About',
-  'nav.search': 'Search', 'nav.rss': 'Subscribe',
+  'nav.search': 'Search', 'nav.rss': 'Subscribe', 'nav.more': 'More',
   'friends.search': 'Search friends', 'friends.all': 'All', 'friends.apply': 'Apply for a link',
   'friends.siteName': 'Site name', 'friends.siteUrl': 'Site URL', 'friends.description': 'Description',
   'friends.icon': 'Icon URL', 'friends.submit': 'Send application',
@@ -156,7 +156,7 @@ const zhCN: Dictionary = {
   'nav.series': '系列', 'nav.friends': '友链', 'nav.moments': '瞬间', 'nav.albums': '相册',
   'nav.projects': '项目', 'nav.skills': '技能', 'nav.devices': '设备', 'nav.games': '游戏',
   'nav.anime': '番剧', 'nav.timeline': '时间线', 'nav.compass': '罗盘', 'nav.about': '关于',
-  'nav.search': '搜索', 'nav.rss': '订阅',
+  'nav.search': '搜索', 'nav.rss': '订阅', 'nav.more': '更多',
   'friends.search': '搜索友链', 'friends.all': '全部', 'friends.apply': '申请友链',
   'friends.siteName': '站点名称', 'friends.siteUrl': '站点地址', 'friends.description': '简介',
   'friends.icon': '图标地址', 'friends.submit': '提交申请',
@@ -257,7 +257,7 @@ const zhTW: Dictionary = { ...zhCN,
   'collections.albums': '相簿', 'collections.games': '遊戲', 'collections.devices': '裝置',
   'page.archiveTitle': '歸檔',
 
-  'nav.rss': '訂閱',
+  'nav.rss': '訂閱', 'nav.more': '更多',
   'friends.search': '搜尋友鏈', 'friends.all': '全部', 'friends.apply': '申請友鏈',
   'friends.siteName': '站點名稱', 'friends.siteUrl': '站點地址', 'friends.description': '簡介',
   'friends.icon': '圖標地址', 'friends.submit': '提交申請',
@@ -422,7 +422,7 @@ const ja: Dictionary = { ...en,
   'albums.protected': '保護されたアルバム', 'albums.protectedHint': 'このアルバムはパスワードで保護されています。閲覧するにはパスワードを入力してください。', 'page.about': 'About', 'page.archiveTitle': 'アーカイブ',
   'page.archiveHint': '公開された記事を年別に表示します。',
 
-  'nav.rss': '購読',
+  'nav.rss': '購読', 'nav.more': 'もっと',
   'friends.search': '友達リンクを検索', 'friends.all': 'すべて', 'friends.apply': '友達リンクを申請',
   'friends.siteName': 'サイト名', 'friends.siteUrl': 'サイトURL', 'friends.description': '説明',
   'friends.icon': 'アイコンURL', 'friends.submit': '申請する',
@@ -572,7 +572,7 @@ const ko: Dictionary = { ...en,
   'albums.protected': '보호된 앨범', 'albums.protectedHint': '이 앨범은 비밀번호로 보호되어 있습니다. 비밀번호를 입력하세요.',
   'page.archiveHint': '발행된 모든 글을 연도별로 봅니다.',
 
-  'nav.rss': '구독',
+  'nav.rss': '구독', 'nav.more': '더보기',
   'friends.search': '친구 링크 검색', 'friends.all': '전체', 'friends.apply': '친구 링크 신청',
   'friends.siteName': '사이트 이름', 'friends.siteUrl': '사이트 주소', 'friends.description': '설명',
   'friends.icon': '아이콘 URL', 'friends.submit': '신청하기',
@@ -722,7 +722,7 @@ const es: Dictionary = { ...en,
   'albums.protected': 'Álbum protegido', 'albums.protectedHint': 'Este álbum está protegido. Introduce la contraseña para verlo.',
   'page.archiveHint': 'Todo lo publicado, por año.',
 
-  'nav.rss': 'Suscribirse',
+  'nav.rss': 'Suscribirse', 'nav.more': 'Más',
   'friends.search': 'Buscar amigos', 'friends.all': 'Todos', 'friends.apply': 'Solicitar enlace',
   'friends.siteName': 'Nombre del sitio', 'friends.siteUrl': 'URL del sitio', 'friends.description': 'Descripción',
   'friends.icon': 'URL del icono', 'friends.submit': 'Enviar solicitud',
@@ -872,7 +872,7 @@ const id: Dictionary = { ...en,
   'albums.protected': 'Album terlindungi', 'albums.protectedHint': 'Album ini dilindungi kata sandi. Masukkan kata sandi untuk melihatnya.',
   'page.archiveHint': 'Semua yang diterbitkan, per tahun.',
 
-  'nav.rss': 'Berlangganan',
+  'nav.rss': 'Berlangganan', 'nav.more': 'Lainnya',
   'friends.search': 'Cari teman', 'friends.all': 'Semua', 'friends.apply': 'Ajukan tautan',
   'friends.siteName': 'Nama situs', 'friends.siteUrl': 'URL situs', 'friends.description': 'Deskripsi',
   'friends.icon': 'URL ikon', 'friends.submit': 'Kirim permohonan',
@@ -1022,7 +1022,7 @@ const th: Dictionary = { ...en,
   'albums.protected': 'อัลบั้มที่ป้องกัน', 'albums.protectedHint': 'อัลบั้มนี้ต้องใช้รหัสผ่านในการดู', 'page.about': 'เกี่ยวกับ', 'page.archiveTitle': 'คลัง',
   'page.archiveHint': 'ทุกอย่างที่เผยแพร่ แยกตามปี',
 
-  'nav.rss': 'สมัครรับข้อมูล',
+  'nav.rss': 'สมัครรับข้อมูล', 'nav.more': 'เพิ่มเติม',
   'friends.search': 'ค้นหาเพื่อน', 'friends.all': 'ทั้งหมด', 'friends.apply': 'ขอลิงก์เพื่อน',
   'friends.siteName': 'ชื่อเว็บไซต์', 'friends.siteUrl': 'URL เว็บไซต์', 'friends.description': 'คำอธิบาย',
   'friends.icon': 'URL ไอคอน', 'friends.submit': 'ส่งคำขอ',
@@ -1172,7 +1172,7 @@ const tr: Dictionary = { ...en,
   'albums.protected': 'Korumalı albüm', 'albums.protectedHint': 'Bu albüm parola ile korunuyor. Görmek için parolayı girin.',
   'page.archiveHint': 'Yayınlanan her şey, yıla göre.',
 
-  'nav.rss': 'Abone ol',
+  'nav.rss': 'Abone ol', 'nav.more': 'Daha fazla',
   'friends.search': 'Arkadaş ara', 'friends.all': 'Tümü', 'friends.apply': 'Bağlantı iste',
   'friends.siteName': 'Site adı', 'friends.siteUrl': 'Site URL\'si', 'friends.description': 'Açıklama',
   'friends.icon': 'Simge URL\'si', 'friends.submit': 'İstek gönder',
@@ -1322,7 +1322,7 @@ const vi: Dictionary = { ...en,
   'albums.protected': 'Album được bảo vệ', 'albums.protectedHint': 'Album này được bảo vệ bằng mật khẩu. Nhập mật khẩu để xem.',
   'page.archiveHint': 'Tất cả nội dung đã xuất bản, theo năm.',
 
-  'nav.rss': 'Đăng ký',
+  'nav.rss': 'Đăng ký', 'nav.more': 'Thêm',
   'friends.search': 'Tìm bạn bè', 'friends.all': 'Tất cả', 'friends.apply': 'Yêu cầu liên kết',
   'friends.siteName': 'Tên trang', 'friends.siteUrl': 'URL trang', 'friends.description': 'Mô tả',
   'friends.icon': 'URL biểu tượng', 'friends.submit': 'Gửi yêu cầu',

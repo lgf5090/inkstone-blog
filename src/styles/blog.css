@@ -204,12 +204,6 @@ select {
   align-items: center;
   gap: 0.2rem;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.top-nav::-webkit-scrollbar {
-  display: none;
 }
 
 .nav-link {
@@ -217,6 +211,7 @@ select {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 0.35rem;
   padding: 0.5rem 0.75rem;
   border-radius: 999px;
   color: var(--on-surface-variant);
@@ -261,7 +256,9 @@ select {
 }
 
 .nav-menu-panel a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.5rem 0.65rem;
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
@@ -308,16 +305,12 @@ select {
   margin: 0.4rem auto 0;
   padding: 0.35rem;
   gap: 0.2rem;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  pointer-events: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--outline-variant);
   background: color-mix(in oklab, var(--surface) 86%, transparent);
   backdrop-filter: blur(16px);
-  scrollbar-width: none;
-}
-
-.mobile-nav::-webkit-scrollbar {
-  display: none;
 }
 
 .site-main {
@@ -971,6 +964,16 @@ select {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (max-width: 1120px) {
+  .top-nav {
+    gap: 0.1rem;
+  }
+  .top-nav .nav-link {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1720,3 +1723,11 @@ select {
     columns: 1;
   }
 }
+
+.mobile-nav-group { flex: none; }
+.mobile-nav-group[open] { flex: 1 0 100%; }
+.mobile-nav-group > summary { list-style: none; cursor: pointer; }
+.mobile-nav-group > summary::-webkit-details-marker { display: none; }
+.mobile-nav-children { display: flex; flex-wrap: wrap; gap: 0.15rem; padding: 0.15rem 0.25rem 0.25rem; }
+.mobile-nav-children a { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.55rem; border-radius: 999px; background: var(--surface-container); color: var(--on-surface-variant); font-size: 0.8rem; }
+.mobile-nav-children a:hover { background: var(--primary-container); color: var(--on-primary-container); }
