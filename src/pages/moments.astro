@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
+import MomentFeed from '../components/blog/MomentFeed.svelte'
 import { blogLocale, t } from '../i18n'
-import { BlogApiError, loadCollection, mediaUrl } from '../lib/blog-api'
-import { formatDateTime } from '../lib/format'
+import { BlogApiError, loadCollection } from '../lib/blog-api'
 import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
@@ -12,42 +12,17 @@ const locale = blogLocale(blog.site.site.locale)
 let items: BlogCollectionItem[] = []
 let error = ''
 try { items = (await loadCollection('moments')).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
-const str = (data: Record<string, unknown>, key: string): string => typeof data[key] === 'string' ? data[key] as string : ''
-const arr = (data: Record<string, unknown>, key: string): unknown[] => Array.isArray(data[key]) ? data[key] as unknown[] : []
-const imageUrl = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null
-  if (value.startsWith('/api/blog/assets/')) return mediaUrl(value)
-  if (/^[A-Za-z0-9_-]{16,}$/.test(value)) return mediaUrl(`/api/blog/assets/${value}`)
-  return value
+const author = {
+  name: blog.site.profile?.name || blog.site.site.title,
+  avatar: blog.site.profile?.avatar || '',
 }
 ---
 <Layout title={t(locale, 'nav.moments')}>
   <MainGridLayout page="moments">
-    <div class="section-heading"><div><h1>{t(locale, 'nav.moments')}</h1><p>{items.length} {t(locale, 'nav.moments')}</p></div></div>
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
-    ) : items.length === 0 ? (
-      <div class="empty-state">{t(locale, 'collections.empty')}</div>
     ) : (
-      <div class="post-list">
-        {items.map((item) => {
-          const images = arr(item.data, 'images').map(imageUrl).filter((value): value is string => Boolean(value))
-          const tags = arr(item.data, 'tags')
-          const meta = [str(item.data, 'location'), str(item.data, 'mood')].filter(Boolean).join(' · ')
-          return (
-            <article class="moment-card">
-              <div class="post-card-meta">
-                {item.publishedAt && <time datetime={new Date(item.publishedAt).toISOString()}>{formatDateTime(item.publishedAt, locale, blog.site.site.timeZone)}</time>}
-                {item.data.pinned === 1 && <span class="chip">{t(locale, 'common.pinned')}</span>}
-                {meta && <span>{meta}</span>}
-              </div>
-              <div class="moment-content">{str(item.data, 'content')}</div>
-              {images.length > 0 && <div class="photo-grid">{images.map((image) => <a href={image} target="_blank" rel="noopener noreferrer"><img src={image} alt="" loading="lazy" /></a>)}</div>}
-              {tags.length > 0 && <div class="post-card-tags">{tags.map((tag) => <span class="chip">#{String(tag)}</span>)}</div>}
-            </article>
-          )
-        })}
-      </div>
+      <MomentFeed items={items} {locale} timeZone={blog.site.site.timeZone} {author} client:visible />
     )}
   </MainGridLayout>
 </Layout>

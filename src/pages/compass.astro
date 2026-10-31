@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
+import CompassSection from '../components/blog/CompassSection.svelte'
 import { blogLocale, t } from '../i18n'
 import { BlogApiError, loadCompass } from '../lib/blog-api'
 import type { BlogCompassShelf } from '../lib/blog-types'
@@ -14,25 +15,10 @@ try { shelves = (await loadCompass()).items } catch (cause) { error = cause inst
 ---
 <Layout title={t(locale, 'nav.compass')}>
   <MainGridLayout page="compass">
-    <div class="section-heading"><div><h1>{t(locale, 'nav.compass')}</h1><p>{shelves.length} {t(locale, 'nav.compass')}</p></div></div>
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
-    ) : shelves.length === 0 ? (
-      <div class="empty-state">{t(locale, 'collections.empty')}</div>
     ) : (
-      <div class="post-list">
-        {shelves.map((shelf) => (
-          <section class="sidebar-card" aria-labelledby={`shelf-${shelf.id}`}>
-            <h2 class="sidebar-title" id={`shelf-${shelf.id}`}>{shelf.name}</h2>
-            {shelf.blurb && <p class="post-card-excerpt">{shelf.blurb}</p>}
-            <ul class="widget-list">
-              {shelf.entries.map((entry) => (
-                <li><a href={entry.href} target={entry.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"><span>{entry.label}{entry.note ? ` · ${entry.note}` : ''}</span><span>→</span></a></li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+      <CompassSection {shelves} {locale} client:visible />
     )}
   </MainGridLayout>
 </Layout>

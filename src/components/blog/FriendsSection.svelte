@@ -36,8 +36,10 @@
   let qrLink = $state<BlogFriendLink | null>(null)
   let qrDialog = $state<HTMLDivElement | null>(null)
   let iconBusy = $state(false)
+  let iconUploadBusy = $state(false)
   let iconError = $state('')
   let iconPreviewFailed = $state(false)
+  let iconFileInput = $state<HTMLInputElement | null>(null)
 
   const root = $derived(friends.categories.find((category) => category.id === friends.rootId) ?? null)
   const byId = $derived(new Map(friends.categories.map((category) => [category.id, category])))
@@ -310,6 +312,33 @@
     }
   }
 
+  async function uploadIcon(event: Event): Promise<void> {
+    const input = event.currentTarget as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+    iconError = ''
+    if (file.size > 256 * 1024) {
+      iconError = t(locale, 'friends.iconUploadFailed')
+      input.value = ''
+      return
+    }
+    iconUploadBusy = true
+    const form = new FormData()
+    form.set('file', file)
+    try {
+      const response = await fetch('/api/blog/friends/icon-upload', { method: 'POST', body: form })
+      const body = await response.json().catch(() => null) as { icon?: unknown } | null
+      if (!response.ok || typeof body?.icon !== 'string') throw new Error('icon_upload_failed')
+      icon = body.icon
+      iconPreviewFailed = false
+    } catch {
+      iconError = t(locale, 'friends.iconUploadFailed')
+    } finally {
+      iconUploadBusy = false
+      input.value = ''
+    }
+  }
+
   onMount(() => {
     const params = new URLSearchParams(window.location.search)
     query = params.get('q') ?? ''
@@ -505,14 +534,18 @@
           <div class="friend-icon-field">
             <span class="friend-icon-preview" aria-hidden="true">
               {#if icon && !iconPreviewFailed}
-                <img src={icon} alt="" referrerpolicy="no-referrer" onerror={() => (iconPreviewFailed = true)} />
+                <img src={iconSrc(icon) ?? icon} alt="" referrerpolicy="no-referrer" onerror={() => (iconPreviewFailed = true)} />
               {:else}
                 <span>{initial(name || '?')}</span>
               {/if}
             </span>
-            <input id="friend-icon" bind:value={icon} oninput={() => { iconPreviewFailed = false; iconError = '' }} type="url" maxlength="2048" placeholder="https://" autocomplete="off" />
+            <input id="friend-icon" bind:value={icon} oninput={() => { iconPreviewFailed = false; iconError = '' }} type="text" inputmode="url" maxlength="2048" placeholder="https://" autocomplete="off" />
             <button type="button" class="friend-icon-fetch" onclick={() => void fetchIcon()} disabled={iconBusy || !url.trim()}>
               {iconBusy ? t(locale, 'friends.fetchingIcon') : t(locale, 'friends.fetchIcon')}
+            </button>
+            <input bind:this={iconFileInput} class="friend-sr" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" onchange={uploadIcon} />
+            <button type="button" class="friend-icon-fetch" onclick={() => iconFileInput?.click()} disabled={iconUploadBusy}>
+              {iconUploadBusy ? t(locale, 'friends.uploadingIcon') : t(locale, 'friends.uploadIcon')}
             </button>
           </div>
           {#if iconError}<p class="friend-dialog__error" role="alert">{iconError}</p>{/if}
@@ -628,7 +661,7 @@
   .friend-qr { width: min(100%, 18rem); max-height: 90dvh; overflow: auto; border-radius: 1rem; background: var(--surface, #fff); color: var(--on-surface, #1d1b1e); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3); padding: 1rem; }
   .friend-qr__image { display: block; width: 100%; height: auto; border-radius: 0.75rem; background: #fff; }
   .friend-qr__url { margin: 0.6rem 0 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.68rem; line-height: 1.4; text-align: center; word-break: break-all; }
-  .friend-icon-field { display: flex; align-items: center; gap: 0.4rem; }
+  .friend-icon-field { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
   .friend-icon-preview { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none; overflow: hidden; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.45rem; background: var(--surface-container-low, #f7f3f6); color: var(--on-surface, #1d1b1e); font-size: 0.8rem; font-weight: 700; }
   .friend-icon-preview img { width: 100%; height: 100%; object-fit: contain; }
   .friend-icon-field input { flex: 1; min-width: 0; }

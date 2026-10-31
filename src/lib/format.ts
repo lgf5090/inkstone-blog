@@ -46,6 +46,10 @@ export function unlockCookieName(slug: string): string {
   return `blog_unlock_${(hash >>> 0).toString(36)}`
 }
 
+export function albumUnlockCookieName(slug: string): string {
+  return `album_${unlockCookieName(slug)}`
+}
+
 export function collectionLabel(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }

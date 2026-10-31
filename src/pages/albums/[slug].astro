@@ -1,26 +1,85 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import AlbumGallery from '../../components/blog/AlbumGallery.svelte'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadAlbum, mediaUrl } from '../../lib/blog-api'
+import { BlogApiError, loadAlbum, mediaUrl, unlockAlbum } from '../../lib/blog-api'
+import { albumUnlockCookieName } from '../../lib/format'
 import type { BlogAlbumDetail } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
 const slug = Astro.params.slug ?? ''
+const cookieName = albumUnlockCookieName(slug)
 let album: BlogAlbumDetail | null = null
 let error = ''
-try { album = await loadAlbum(slug) } catch (cause) {
-  if (cause instanceof BlogApiError && cause.status === 403) error = t(locale, 'nav.albums')
-  else if (cause instanceof BlogApiError && cause.status === 404) { Astro.response.status = 404; error = t(locale, 'blog.notFound') }
-  else error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+let protectedAlbum = false
+let unlockHint = ''
+let unlockError = ''
+let token = Astro.cookies.get(cookieName)?.value ?? ''
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData()
+  const password = typeof form.get('password') === 'string' ? String(form.get('password')) : ''
+  try {
+    const result = await unlockAlbum(slug, password)
+    if (result.token) {
+      const maxAge = Math.max(60, Math.floor(((result.expiresAt ?? Date.now() + 7 * 24 * 60 * 60 * 1000) - Date.now()) / 1000))
+      Astro.cookies.set(cookieName, result.token, { httpOnly: true, sameSite: 'lax', path: '/', maxAge, secure: Astro.url.protocol === 'https:' })
+      return Astro.redirect(Astro.url.pathname, 303)
+    }
+    if (result.notProtected) return Astro.redirect(Astro.url.pathname, 303)
+    unlockError = t(locale, 'unlock.unavailable')
+  } catch (cause) {
+    if (cause instanceof BlogApiError && cause.status === 403) unlockError = t(locale, 'unlock.wrong')
+    else if (cause instanceof BlogApiError && cause.status === 429) unlockError = cause.message
+    else unlockError = t(locale, 'unlock.unavailable')
+  }
 }
+
+try {
+  album = await loadAlbum(slug, token)
+} catch (cause) {
+  if (cause instanceof BlogApiError && cause.status === 403) {
+    protectedAlbum = true
+    const details = cause.details as { hint?: unknown } | undefined
+    unlockHint = typeof details?.hint === 'string' ? details.hint : ''
+    if (token) {
+      Astro.cookies.delete(cookieName, { path: '/' })
+      token = ''
+      unlockError = unlockError || t(locale, 'unlock.expired')
+    }
+  } else if (cause instanceof BlogApiError && cause.status === 404) {
+    Astro.response.status = 404
+    error = t(locale, 'blog.notFound')
+  } else {
+    error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
+  }
+}
+
 const cover = album?.album.coverUrl ? mediaUrl(album.album.coverUrl) : null
+const photos = album ? album.photos.flatMap((photo) => {
+  const src = mediaUrl(photo.url)
+  return src ? [{ id: photo.id, src, alt: photo.alt || album!.album.title, caption: photo.caption }] : []
+}) : []
 ---
-<Layout title={album?.album.title ?? t(locale, 'nav.albums')} noIndex={!album}>
+<Layout title={album?.album.title ?? (protectedAlbum ? t(locale, 'albums.protected') : t(locale, 'blog.notFound'))} noIndex={!album}>
   <MainGridLayout page="albums">
-    {error || !album ? (
+    {protectedAlbum && !album ? (
+      <div class="article-shell unlock-shell">
+        <h1 class="article-title">{t(locale, 'albums.protected')}</h1>
+        <p class="post-card-excerpt">{t(locale, 'albums.protectedHint')}</p>
+        {unlockHint && <p class="unlock-hint">{t(locale, 'unlock.hintLabel')}: {unlockHint}</p>}
+        {unlockError && <p class="unlock-error" role="alert">{unlockError}</p>}
+        <form method="post" class="unlock-form">
+          <label class="unlock-label" for="unlock-password">{t(locale, 'unlock.password')}</label>
+          <input id="unlock-password" name="password" type="password" required autocomplete="current-password" />
+          <button type="submit" class="chip unlock-submit">{t(locale, 'unlock.submit')}</button>
+        </form>
+        <p><a class="chip" href="/albums">{t(locale, 'nav.albums')}</a></p>
+      </div>
+    ) : error || !album ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'blog.notFound')}</strong><p>{error}</p><a class="chip" href="/albums">{t(locale, 'nav.albums')}</a></div>
     ) : (
       <article class="article-shell">
@@ -35,16 +94,14 @@ const cover = album?.album.coverUrl ? mediaUrl(album.album.coverUrl) : null
           </div>
         </header>
         {cover && <img class="article-cover" src={cover} alt="" loading="eager" />}
-        <div class="article-body" style="padding-block:1.2rem">
-          <div class="photo-grid">
-            {album.photos.map((photo) => (
-              <a href={mediaUrl(photo.url)} target="_blank" rel="noopener noreferrer">
-                <img src={mediaUrl(photo.url)} alt={photo.alt} loading="lazy" />
-              </a>
-            ))}
-          </div>
+        <div class="article-body album-body">
+          <AlbumGallery photos={photos} layout={album.album.layout} columns={album.album.columns} {locale} client:visible />
         </div>
       </article>
     )}
   </MainGridLayout>
 </Layout>
+
+<style>
+  .album-body { padding-block: 1.2rem; }
+</style>

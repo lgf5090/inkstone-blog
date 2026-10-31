@@ -254,8 +254,16 @@ export function loadFriends(): Promise<BlogFriends> {
   return getJson<BlogFriends>('/friends')
 }
 
-export function loadAlbum(slug: string): Promise<BlogAlbumDetail> {
-  return getJson<BlogAlbumDetail>(`/collections/albums/${encodeURIComponent(slug)}`)
+export function loadAlbum(slug: string, token?: string): Promise<BlogAlbumDetail> {
+  return getJson<BlogAlbumDetail>(
+    `/collections/albums/${encodeURIComponent(slug)}`,
+    undefined,
+    token ? { 'x-blog-album-unlock': token } : undefined,
+  )
+}
+
+export function unlockAlbum(slug: string, password: string): Promise<{ token: string | null; notProtected?: boolean; expiresAt?: number }> {
+  return postJson<{ token: string | null; notProtected?: boolean; expiresAt?: number }>(`/collections/albums/${encodeURIComponent(slug)}/unlock`, { password })
 }
 
 export function loadCompass(): Promise<{ items: BlogCompassShelf[] }> {

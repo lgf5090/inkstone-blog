@@ -3,7 +3,7 @@ import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
 
-const ALLOWED = /^posts\/[^/]+\/comments$|^friends\/apply$|^friends\/icon$|^friends\/qr$/
+const ALLOWED = /^posts\/[^/]+\/comments$|^friends\/apply$|^friends\/icon$|^friends\/icon-upload$|^friends\/qr$/
 
 async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   const { params, request, cookies } = context
@@ -34,7 +34,8 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
     const upstream = await fetch(`${origin}/api/blog/${path}${context.url.search}`, {
       method: request.method,
       headers,
-      body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text(),
+      // Multipart uploads must keep their bytes: reading the body as text corrupts image data.
+      body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer(),
       signal: AbortSignal.timeout(Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')),
     })
     const responseHeaders = new Headers()

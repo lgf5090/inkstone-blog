@@ -1,28 +1,24 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
-import CollectionView from '../components/blog/CollectionView.astro'
+import TimelineSection from '../components/blog/TimelineSection.svelte'
 import { blogLocale, t } from '../i18n'
 import { BlogApiError, loadCollection } from '../lib/blog-api'
-import type { BlogCollectionItem, BlogCollectionKind } from '../lib/blog-types'
+import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
-const kind: BlogCollectionKind = 'timeline'
 let items: BlogCollectionItem[] = []
 let error = ''
-try { items = (await loadCollection(kind)).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
+try { items = (await loadCollection('timeline')).items } catch (cause) { error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError') }
 ---
 <Layout title={t(locale, 'nav.timeline')}>
   <MainGridLayout page="timeline">
-    <div class="section-heading"><div><h1>{t(locale, 'nav.timeline')}</h1><p>{items.length} {t(locale, 'nav.timeline')}</p></div></div>
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
-    ) : items.length === 0 ? (
-      <div class="empty-state">{t(locale, 'collections.empty')}</div>
     ) : (
-      <CollectionView kind={kind} items={items} />
+      <TimelineSection {items} {locale} client:visible />
     )}
   </MainGridLayout>
 </Layout>
