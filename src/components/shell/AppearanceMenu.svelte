@@ -80,7 +80,7 @@
     ['--secondary', 'm3-secondary'],
   ] as const
 
-  function applyPalette() {
+  function applyPalette(persist = true) {
     const style = styles.find((item) => item.id === m3Style) ?? styles[0]!
     const root = document.documentElement
     const dark = root.classList.contains('dark')
@@ -95,7 +95,7 @@
     }
     for (const [variable, key] of M3_VARS) {
       root.style.setProperty(variable, values[variable]!)
-      localStorage.setItem(key, values[variable]!)
+      if (persist) localStorage.setItem(key, values[variable]!)
     }
     root.dataset.m3Style = m3Style
     root.dataset.m3Spec = m3Spec
@@ -170,7 +170,7 @@
     wallpaper = localStorage.getItem('wallpaper') === 'banner' ? 'banner' : 'plain'
     reduceMotion = localStorage.getItem('reduce-motion') === '1'
     m3Enabled = Boolean(localStorage.getItem('m3-primary'))
-    if (!m3Enabled) applyPalette()
+    if (!m3Enabled) applyPalette(false)
     document.documentElement.dataset.texture = texture
     document.documentElement.dataset.wallpaper = wallpaper
     document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false'
@@ -185,7 +185,7 @@
       prefersDark = media.matches
       if (theme === 'auto') {
         applyTheme('auto')
-        if (m3Enabled) applyPalette()
+        if (m3Enabled) applyPalette(localStorage.getItem('m3-style') !== null)
       }
     })
     rootDataset()
@@ -202,7 +202,7 @@
   function setTheme(next: Theme) {
     theme = next
     persist()
-    if (m3Enabled) applyPalette()
+    if (m3Enabled) applyPalette(localStorage.getItem('m3-style') !== null)
   }
 
   function setAccent(next: Accent) {
