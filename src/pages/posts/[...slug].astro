@@ -296,7 +296,8 @@ const jsonLd = post ? {
         }
         let detail
         try {
-          const response = await fetch('/_blog/post/' + encodeURIComponent(postSlug), { headers: { accept: 'application/json' } })
+          // Not the HTTP cache: the snapshot beside this fetch can already be a newer revision.
+          const response = await fetch('/_blog/post/' + encodeURIComponent(postSlug), { headers: { accept: 'application/json' }, cache: 'no-store' })
           if (!response.ok) throw new Error('post body ' + response.status)
           detail = await response.json()
         } catch (error) {

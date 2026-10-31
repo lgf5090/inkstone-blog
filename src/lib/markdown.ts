@@ -2,9 +2,10 @@ import MarkdownIt from 'markdown-it'
 import sanitizeHtml from 'sanitize-html'
 
 const md = new MarkdownIt({ html: true, linkify: true, breaks: false })
+const FRONT_MATTER = /^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/
 
 export function renderPageMarkdown(source: string): string {
-  const rendered = md.render(source)
+  const rendered = md.render(source.replace(FRONT_MATTER, ''))
   return sanitizeHtml(rendered, {
     allowedTags: [
       'a', 'abbr', 'b', 'blockquote', 'br', 'code', 'del', 'details', 'div', 'em', 'figcaption', 'figure',

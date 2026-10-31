@@ -108,7 +108,9 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
       status: 200,
       headers: {
         'content-type': 'application/json; charset=utf-8',
-        'cache-control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+        // The runtime re-renders this body over a snapshot that can already be the new revision;
+        // a cached body would show the previous article under the new headings and TOC.
+        'cache-control': 'no-store',
         'x-content-type-options': 'nosniff',
       },
     })
