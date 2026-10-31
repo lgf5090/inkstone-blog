@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
+
 const richSlug = process.env.BLOG_E2E_RICH_SLUG ?? ''
 
 test('home lists the blog and its navigation', async ({ page }) => {
@@ -49,4 +51,60 @@ test('a narrow viewport does not scroll sideways', async ({ page }) => {
   await page.goto('/')
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
   expect(overflow).toBe(false)
+})
+
+test('client navigation keeps one reading surface and its outline', async ({ page }) => {
+  await page.goto('/')
+  const first = page.locator('.post-card a').first()
+  test.skip((await first.count()) === 0, 'the blog has no posts')
+  await first.click()
+  await page.waitForURL(/\/posts\//)
+  const stage = page.locator('.blog-runtime-stage')
+  if (await stage.count()) await expect(stage).toHaveClass(/is-ready/, { timeout: 45_000 })
+  const home = page.locator('a[href="/"]').first()
+  await home.click()
+  await page.waitForURL(/\/$/)
+  await expect(page.locator('.hero-banner')).toBeVisible()
+  await page.goBack()
+  await page.waitForURL(/\/posts\//)
+  await page.waitForTimeout(1200)
+  expect(await page.locator('.blog-runtime-stage').count()).toBeLessThanOrEqual(1)
+  expect(await page.locator('[data-fab]').count()).toBe(1)
+})
+
+test('reading overlays expose hover, table copy and a read-only menu', async ({ page }) => {
+  await page.goto('/')
+  const first = page.locator('.post-card a').first()
+  test.skip((await first.count()) === 0, 'the blog has no posts')
+  await first.click()
+  await page.waitForURL(/\/posts\//)
+  const host = page.locator('[data-preview-content]')
+  await expect(host).toBeVisible()
+  const wiki = host.locator('[data-wikilink]').first()
+  if (await wiki.count()) {
+    await wiki.hover()
+    await expect(page.locator('.blog-hover-card')).toBeVisible()
+  }
+  const table = host.locator('table').first()
+  if (await table.count()) {
+    await table.scrollIntoViewIfNeeded()
+    await table.hover()
+    const copy = page.locator('.blog-table-copy')
+    await expect(copy).toBeVisible()
+    await copy.click()
+    await expect(copy).toHaveText(/Copied|已复制|已複製|コピー|복사|Copiado|Disalin|คัดลอก|Kopyalandı|sao chép/i)
+    await table.click({ button: 'right' })
+    await expect(page.locator('.blog-context-menu')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.blog-context-menu')).toHaveCount(0)
+  }
+})
+
+test('a configured music card plays', async ({ page }) => {
+  await page.goto('/')
+  const card = page.locator('[data-blog-music]')
+  test.skip((await card.count()) === 0, 'music is not configured')
+  await expect(card.locator('.blog-music__button--primary')).toBeVisible({ timeout: 30_000 })
+  await card.locator('.blog-music__button--primary').click()
+  await expect(card.locator('.blog-music__button--primary')).toHaveAttribute('aria-label', /Pause|暂停|一時停止|일시정지|Pausar|Jeda|หยุด|Duraklat|Tạm dừng/i, { timeout: 10_000 })
 })

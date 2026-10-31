@@ -80,12 +80,32 @@ const siteSchema = z.object({
   display: z.record(z.string(), z.unknown()).default({}),
   integrations: z.object({
     comments: z.string().default('none'),
-    music: z.string().default('none'),
+    music: z.object({
+      enabled: z.boolean().default(false),
+      provider: z.enum(['none', 'local', 'meting', 'custom', 'mixed']).default('none'),
+      tracks: z.array(z.object({
+        id: z.string(),
+        title: z.string(),
+        artist: z.string().optional(),
+        source: z.string(),
+        cover: z.string().optional(),
+        duration: z.number().optional(),
+      })).default([]),
+      meting: z.object({
+        server: z.enum(['netease', 'tencent', 'kugou', 'xiami', 'baidu']).default('netease'),
+        type: z.enum(['playlist', 'song', 'album', 'artist']).default('playlist'),
+        id: z.string().default(''),
+        api: z.string().optional(),
+      }).optional(),
+      defaultVolume: z.number().default(0.7),
+      defaultMode: z.enum(['sequence', 'repeat-one', 'shuffle']).default('sequence'),
+    }).passthrough().default({ enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' }),
     umami: z.object({
       enabled: z.boolean().default(false),
       websiteId: z.string().default(''),
     }).passthrough().default({ enabled: false, websiteId: '' }),
-  }).passthrough().default({ comments: 'none', music: 'none', umami: { enabled: false, websiteId: '' } }),
+  }).passthrough().default({ comments: 'none', music: { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' }, umami: { enabled: false, websiteId: '' } }),
+  runtimeVersion: z.string().optional(),
   counts: z.object({
     posts: z.number().default(0),
     categories: z.number().default(0),

@@ -26,6 +26,8 @@ export interface BlogRuntimeConfig {
     randomCount: number
     share: boolean
   }
+  music: BlogSitePublic['integrations']['music']
+  runtimeVersion: string
 }
 
 export const FALLBACK_SITE: BlogSitePublic = {
@@ -51,7 +53,8 @@ export const FALLBACK_SITE: BlogSitePublic = {
     autoCloseDays: 0,
   },
   display: {},
-  integrations: { comments: 'none', music: 'none', umami: { enabled: false, websiteId: '' } },
+  integrations: { comments: 'none', music: { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' }, umami: { enabled: false, websiteId: '' } },
+  runtimeVersion: 'inkstone-blog-v3',
   counts: { posts: 0, categories: 0, tags: 0, series: 0 },
 }
 
@@ -93,5 +96,7 @@ export function buildRuntimeConfig(
       randomCount: numberSetting(display.randomCount, 2, 0, 12),
       share: display.articleShare !== false,
     },
+    music: site.integrations.music,
+    runtimeVersion: site.runtimeVersion ?? 'inkstone-blog-v3',
   }
 }

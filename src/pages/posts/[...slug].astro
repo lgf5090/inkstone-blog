@@ -103,6 +103,17 @@ const runtimeUrl = !post?.render
   : import.meta.env.DEV
     ? (runtimeOrigin ? `${runtimeOrigin}/src/blog-runtime/main.tsx` : '')
     : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/runtime.js`
+const runtimeLabels = {
+  copyTable: t(locale, 'runtime.copyTable'),
+  copied: t(locale, 'runtime.copied'),
+  copyFailed: t(locale, 'common.copyFailed'),
+  copySelection: t(locale, 'runtime.copySelection'),
+  copyLink: t(locale, 'runtime.copyLink'),
+  openImage: t(locale, 'runtime.openImage'),
+  copyImage: t(locale, 'runtime.copyImage'),
+  backToTop: t(locale, 'runtime.backToTop'),
+  article: t(locale, 'runtime.article'),
+}
 const runtimeAssetBase = !post?.render
   ? ''
   : import.meta.env.DEV
@@ -219,7 +230,7 @@ const jsonLd = post ? {
   </MainGridLayout>
 </Layout>
 
-<script is:inline>
+<script is:inline data-astro-rerun>
   document.querySelectorAll('[data-share-link]').forEach((button) => {
     button.addEventListener('click', async () => {
       const link = button.getAttribute('data-share-link')
@@ -238,15 +249,29 @@ const jsonLd = post ? {
 </script>
 
 {post?.render && runtimeNeeded && runtimeUrl && (
-  <script is:inline define:vars={{ runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug: post.slug, readerLocale: locale, devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '' }}>
+  <script is:inline data-astro-rerun define:vars={{ runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug: post.slug, readerLocale: locale, runtimeLabels, devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '' }}>
     (() => {
       const host = document.querySelector('[data-blog-reading-host]')
       const snapshot = host && host.querySelector('[data-blog-snapshot]')
       if (!host || !snapshot || !runtimeUrl) return
+      let cancelled = false
+      let stage = null
+      let handle = null
+      window.__blogRegisterCleanup?.('reading', () => {
+        cancelled = true
+        try {
+          handle?.unmount()
+        } catch (error) {
+          console.warn('[blog] reading runtime cleanup failed', error)
+        }
+        handle = null
+        stage?.remove()
+      })
       const keepSnapshot = (error) => {
         console.warn('[blog] reading runtime unavailable; keeping the stored snapshot', error)
       }
       const boot = async () => {
+        if (cancelled || !document.contains(host)) return
         try {
           if (devRuntimeOrigin) {
             // The runtime is served by the Inkstone dev server, whose React plugin expects its
@@ -263,6 +288,7 @@ const jsonLd = post ? {
           keepSnapshot(error)
           return
         }
+        if (cancelled || !document.contains(host)) return
         const reading = window.InkstoneReading
         if (!reading || reading.version !== runtimeVersion) {
           keepSnapshot(new Error('reading runtime version mismatch'))
@@ -288,7 +314,8 @@ const jsonLd = post ? {
           style.setAttribute('data-blog-runtime-style', '')
           document.head.appendChild(style)
         }
-        const stage = document.createElement('div')
+        if (cancelled || !document.contains(host)) return
+        stage = document.createElement('div')
         stage.className = 'blog-runtime-stage'
         host.appendChild(stage)
         const selfPost = '/posts/' + encodeURIComponent(postSlug)
@@ -297,7 +324,6 @@ const jsonLd = post ? {
           if (!link || !link.slug || !link.target) continue
           wikiLinks.push({ target: link.target, href: '/posts/' + encodeURIComponent(link.slug) })
         }
-        let handle = null
         try {
           handle = await reading.mount({
             container: stage,
@@ -309,15 +335,25 @@ const jsonLd = post ? {
             locale: readerLocale,
             assetBase: runtimeAssetBase,
             wikiLinks,
+            labels: runtimeLabels,
             tagHref: (name) => '/tags/' + encodeURIComponent(name),
           })
         } catch (error) {
           stage.remove()
+          stage = null
           keepSnapshot(error)
+          return
+        }
+        if (cancelled) {
+          handle?.unmount()
+          handle = null
+          stage.remove()
+          stage = null
           return
         }
         let attempts = 0
         const reveal = () => {
+          if (cancelled) return
           if (!stage.querySelector('[data-preview-content]')) {
             if (++attempts > 120) {
               if (handle) handle.unmount()

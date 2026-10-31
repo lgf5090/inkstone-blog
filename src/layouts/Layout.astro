@@ -3,6 +3,7 @@ import '../styles/global.css'
 import { blogLocale } from '../i18n'
 import { FALLBACK_SITE } from '../server/site-config'
 import FloatingActions from '../components/shell/FloatingActions.astro'
+import { ClientRouter } from 'astro:transitions'
 
 interface Props {
   title?: string
@@ -46,6 +47,7 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
     <link rel="alternate" type="application/atom+xml" title={siteTitle} href="/atom.xml" />
+    <ClientRouter />
     <meta property="og:site_name" content={siteTitle} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description || pageTitle} />
@@ -84,6 +86,30 @@ const hue = Number(blog.site.site.themeColor?.hue ?? 315)
     </script>
   </head>
   <body>
+    <script is:inline>
+      (() => {
+        if (window.__blogSwapCleanupInstalled) return
+        window.__blogSwapCleanupInstalled = true
+        window.__blogCleanups = new Map()
+        document.addEventListener('astro:after-swap', () => {
+          if (window.umami && typeof window.umami.track === 'function') window.umami.track()
+        })
+        document.addEventListener('astro:before-swap', () => {
+          for (const cleanup of window.__blogCleanups.values()) {
+            try {
+              cleanup()
+            } catch (error) {
+              console.warn('[blog] page cleanup failed', error)
+            }
+          }
+          window.__blogCleanups.clear()
+        })
+        window.__blogRegisterCleanup = (key, cleanup) => {
+          window.__blogCleanups.get(key)?.()
+          window.__blogCleanups.set(key, cleanup)
+        }
+      })()
+    </script>
     <slot />
     <FloatingActions />
   </body>

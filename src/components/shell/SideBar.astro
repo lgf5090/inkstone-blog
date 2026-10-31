@@ -4,11 +4,19 @@ import { loadPosts, mediaUrl } from '../../lib/blog-api'
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
 import type { BlogPostSummary, BlogWidget } from '../../lib/blog-types'
+import MusicPlayer from './MusicPlayer.astro'
 
 interface Props {
   column?: 'primary' | 'secondary' | 'all'
 }
-const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], series: [] }
+const blog = Astro.locals.blog ?? {
+  site: FALLBACK_SITE,
+  categories: [],
+  tags: [],
+  series: [],
+  music: { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' },
+  runtimeVersion: 'inkstone-blog-v3',
+}
 const locale = blogLocale(blog.site.site.locale)
 const column = Astro.props.column ?? 'primary'
 const widgets = blog.site.widgets ?? []
@@ -46,7 +54,7 @@ const customHtml = (widget: (typeof all)[number]): string => typeof widget.confi
 const announcement = (widget: (typeof all)[number]): string => typeof widget.config.text === 'string' ? widget.config.text : ''
 ---
 
-{visible.length > 0 && (
+{(visible.length > 0 || blog.music?.enabled) && (
   <aside class="sidebar" aria-label={t(locale, 'common.categories')}>
     {visible.map((widget) => {
       if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
@@ -141,5 +149,6 @@ const announcement = (widget: (typeof all)[number]): string => typeof widget.con
       }
       return null
     })}
+    {blog.music?.enabled && <MusicPlayer />}
   </aside>
 )}

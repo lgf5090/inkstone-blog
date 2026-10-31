@@ -18,7 +18,7 @@ const locale = blogLocale(blog.site.site.locale)
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
   </button>
 </div>
-<script is:inline>
+<script is:inline data-astro-rerun>
   (() => {
     const fab = document.querySelector('[data-fab]')
     if (!fab) return
@@ -36,12 +36,21 @@ const locale = blogLocale(blog.site.site.locale)
     window.addEventListener('resize', sync)
     document.addEventListener('blog:reading-ready', sync)
     sync()
-    top?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' }))
-    toc?.addEventListener('click', () => {
+    const toTop = () => window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' })
+    const toToc = () => {
       const card = document.querySelector('[data-toc]')
       if (!card) return
       card.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' })
       card.querySelector('[data-toc-filter]')?.focus()
+    }
+    top?.addEventListener('click', toTop)
+    toc?.addEventListener('click', toToc)
+    window.__blogRegisterCleanup?.('fab', () => {
+      window.removeEventListener('scroll', sync)
+      window.removeEventListener('resize', sync)
+      document.removeEventListener('blog:reading-ready', sync)
+      top?.removeEventListener('click', toTop)
+      toc?.removeEventListener('click', toToc)
     })
   })()
 </script>

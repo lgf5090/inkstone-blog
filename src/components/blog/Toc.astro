@@ -41,7 +41,7 @@ const hasChildren = (index: number) => (items[index + 1]?.depth ?? 0) > items[in
     <p class="toc-empty" data-toc-empty hidden>{t(locale, 'common.noHeadingsMatch')}</p>
   </aside>
 )}
-<script is:inline>
+<script is:inline data-astro-rerun>
   (() => {
     const toc = document.querySelector('[data-toc]')
     const list = toc && toc.querySelector('[data-toc-list]')
@@ -147,5 +147,12 @@ const hasChildren = (index: number) => (items[index + 1]?.depth ?? 0) > items[in
     bindSpy()
     document.addEventListener('blog:reading-ready', bindSpy)
     document.addEventListener('blog:reading-ready', updateProgress)
+    window.__blogRegisterCleanup?.('toc', () => {
+      observer?.disconnect()
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+      document.removeEventListener('blog:reading-ready', bindSpy)
+      document.removeEventListener('blog:reading-ready', updateProgress)
+    })
   })()
 </script>

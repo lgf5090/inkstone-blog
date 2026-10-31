@@ -92,6 +92,31 @@ export interface BlogWidget {
   config: Record<string, unknown>
 }
 
+export interface BlogMusicTrack {
+  id: string
+  title: string
+  artist?: string
+  source: string
+  cover?: string
+  duration?: number
+}
+
+export interface BlogMusicMeting {
+  server: 'netease' | 'tencent' | 'kugou' | 'xiami' | 'baidu'
+  type: 'playlist' | 'song' | 'album' | 'artist'
+  id: string
+  api?: string
+}
+
+export interface BlogMusicConfig {
+  enabled: boolean
+  provider: 'none' | 'local' | 'meting' | 'custom' | 'mixed'
+  tracks: BlogMusicTrack[]
+  meting?: BlogMusicMeting
+  defaultVolume: number
+  defaultMode: 'sequence' | 'repeat-one' | 'shuffle'
+}
+
 export interface BlogSitePublic {
   site: {
     title: string
@@ -120,7 +145,8 @@ export interface BlogSitePublic {
     autoCloseDays: number
   }
   display: Record<string, unknown>
-  integrations: { comments: string; music: string; umami: { enabled: boolean; websiteId: string } }
+  integrations: { comments: string; music: BlogMusicConfig; umami: { enabled: boolean; websiteId: string } }
+  runtimeVersion?: string
   counts: { posts: number; categories: number; tags: number; series: number }
 }
 
