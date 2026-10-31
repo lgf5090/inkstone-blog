@@ -21,6 +21,7 @@ export type MessageKey =
   | 'friends.uploadIcon' | 'friends.uploadingIcon' | 'friends.iconUploadFailed'
   | 'common.readMore' | 'common.minRead' | 'common.posts' | 'common.tags'
   | 'common.categories' | 'common.series' | 'common.views' | 'common.noPosts' | 'common.loadError'
+  | 'profile.location' | 'profile.email' | 'profile.links'
   | 'common.retry' | 'common.page' | 'common.previous' | 'common.next'
   | 'common.backHome' | 'common.untitled' | 'common.pinned' | 'common.updated'
   | 'common.published' | 'common.tableOfContents' | 'common.previousPost'
@@ -97,6 +98,7 @@ const en: Dictionary = {
   'friends.iconUploadFailed': 'Could not upload the icon.',
   'common.recentPosts': 'Recent posts', 'common.stats': 'At a glance', 'common.language': 'Language', 'common.latest': 'Latest posts', 'common.link': 'Link', 'common.repository': 'Repository', 'common.episodes': 'episodes', 'common.photos': 'photos', 'common.readMore': 'Read more', 'common.minRead': 'min read', 'common.posts': 'posts',
   'common.tags': 'tags', 'common.categories': 'categories', 'common.series': 'series', 'common.views': 'views',
+  'profile.location': 'Location', 'profile.email': 'Email', 'profile.links': 'Links',
   'common.noPosts': 'No posts have been published yet.', 'common.loadError': 'The blog could not load.',
   'common.retry': 'Try again', 'common.page': 'Page', 'common.previous': 'Previous', 'common.next': 'Next',
   'common.backHome': 'Back to home', 'common.untitled': 'Untitled', 'common.pinned': 'Pinned',
@@ -233,6 +235,7 @@ const zhCN: Dictionary = {
   'poster.generating': '正在生成海报…', 'poster.failed': '海报生成失败。', 'poster.close': '关闭',
   'common.recentPosts': '最近文章', 'common.stats': '站点概览', 'common.language': '语言', 'common.latest': '最新文章', 'common.link': '链接', 'common.repository': '仓库', 'common.episodes': '集', 'common.photos': '张照片', 'common.readMore': '阅读全文', 'common.minRead': '分钟阅读', 'common.posts': '篇文章',
   'common.tags': '个标签', 'common.categories': '个分类', 'common.series': '个系列', 'common.views': '次浏览',
+  'profile.location': '所在地', 'profile.email': '邮箱', 'profile.links': '链接',
   'common.noPosts': '还没有发布文章。', 'common.loadError': '博客加载失败。', 'common.retry': '重试',
   'common.page': '第', 'common.previous': '上一页', 'common.next': '下一页', 'common.backHome': '返回首页',
   'common.untitled': '未命名', 'common.pinned': '置顶', 'common.updated': '更新于',

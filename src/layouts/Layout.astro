@@ -3,6 +3,7 @@ import '../styles/global.css'
 import { blogLocale } from '../i18n'
 import { FALLBACK_SITE } from '../server/site-config'
 import FloatingActions from '../components/shell/FloatingActions.astro'
+import MusicPlayer from '../components/shell/MusicPlayer.astro'
 import { ClientRouter } from 'astro:transitions'
 
 interface Props {
@@ -130,6 +131,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     )}
     <slot />
     <FloatingActions />
+    <MusicPlayer />
     <script is:inline data-astro-rerun>
       (() => {
         const valid = new Set(['list', 'grid', 'masonry'])

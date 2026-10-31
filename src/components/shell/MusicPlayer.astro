@@ -36,87 +36,78 @@ const labels = {
   error: t(locale, 'music.error'),
   nowPlaying: t(locale, 'music.nowPlaying'),
 }
-const options = { music, labels }
+const options = { music, labels, locale }
 ---
-{!music.enabled && (
-  <section class="sidebar-card music-card" aria-label={labels.title}>
-    <h2 class="sidebar-title">{labels.title}</h2>
-    <p class="music-empty">{t(locale, 'music.empty')}</p>
-  </section>
-)}
 {music.enabled && runtimeUrl && (
-  <section class="sidebar-card music-card" aria-label={labels.title} data-blog-music data-runtime-url={runtimeUrl} data-runtime-css={runtimeCss} data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''} data-options={JSON.stringify(options)}>
-    <h2 class="sidebar-title">{labels.title}</h2>
-    <div data-blog-music-mount>
-      <p class="blog-music__status">{labels.loading}</p>
-    </div>
-    <script is:inline data-astro-rerun>
-      (() => {
-        const card = document.querySelector('[data-blog-music]')
-        if (!card) return
-        const mount = card.querySelector('[data-blog-music-mount]')
-        const runtimeUrl = card.getAttribute('data-runtime-url')
-        let options = null
-        try {
-          options = JSON.parse(card.getAttribute('data-options') || '{}')
-        } catch {
-          options = null
-        }
-        if (!mount || !runtimeUrl || !options) return
-        const devOrigin = card.getAttribute('data-dev-origin') || ''
-        let cancelled = false
-        let playerHandle = null
-        window.__blogRegisterCleanup?.('music', () => {
-          cancelled = true
-          try {
-            playerHandle?.unmount()
-          } catch (error) {
-            console.warn('[blog] music player cleanup failed', error)
-          }
-        })
-        const fail = (error) => {
-          mount.textContent = options.labels.error
-          console.warn('[blog] music player unavailable', error)
-        }
-        const boot = async () => {
-          if (cancelled || !document.contains(card)) return
-          try {
-            if (devOrigin) {
-              const refresh = await import(devOrigin + '/@react-refresh')
-              refresh.injectIntoGlobalHook(window)
-              window.$RefreshReg$ = () => {}
-              window.$RefreshSig$ = () => (type) => type
-              window.__vite_plugin_react_preamble_installed__ = true
-            }
-            const css = card.getAttribute('data-runtime-css')
-            if (css && !document.querySelector('link[data-blog-music-style]')) {
-              const link = document.createElement('link')
-              link.rel = 'stylesheet'
-              link.href = css
-              link.setAttribute('data-blog-music-style', '')
-              document.head.appendChild(link)
-            }
-            await import(runtimeUrl)
-          } catch (error) {
-            fail(error)
-            return
-          }
-          const api = window.InkstoneBlogMusic
-          if (!api) {
-            fail(new Error('music runtime missing'))
-            return
-          }
-          if (cancelled || !document.contains(card)) return
-          try {
-            playerHandle = await api.mount({ container: mount, music: options.music, labels: options.labels })
-            if (cancelled) playerHandle.unmount()
-          } catch (error) {
-            fail(error)
-          }
-        }
-        if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 2500 })
-        else window.setTimeout(boot, 200)
-      })()
-    </script>
-  </section>
+  <div
+    data-blog-music
+    hidden
+    data-runtime-url={runtimeUrl}
+    data-runtime-css={runtimeCss}
+    data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''}
+    data-options={JSON.stringify(options)}
+  ></div>
 )}
+<script is:inline data-astro-rerun>
+  (() => {
+    const card = document.querySelector('[data-blog-music]')
+    if (!card) return
+    const runtimeUrl = card.getAttribute('data-runtime-url')
+    let options = null
+    try {
+      options = JSON.parse(card.getAttribute('data-options') || '{}')
+    } catch {
+      options = null
+    }
+    if (!runtimeUrl || !options) return
+    const devOrigin = card.getAttribute('data-dev-origin') || ''
+    let cancelled = false
+    let playerHandle = null
+    window.__blogRegisterCleanup?.('music', () => {
+      cancelled = true
+      try {
+        playerHandle?.unmount()
+      } catch (error) {
+        console.warn('[blog] music player cleanup failed', error)
+      }
+    })
+    const boot = async () => {
+      if (cancelled || !document.contains(card)) return
+      try {
+        if (devOrigin) {
+          const refresh = await import(devOrigin + '/@react-refresh')
+          refresh.injectIntoGlobalHook(window)
+          window.$RefreshReg$ = () => {}
+          window.$RefreshSig$ = () => (type) => type
+          window.__vite_plugin_react_preamble_installed__ = true
+        }
+        const css = card.getAttribute('data-runtime-css')
+        if (css && !document.querySelector('link[data-blog-music-style]')) {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = css
+          link.setAttribute('data-blog-music-style', '')
+          document.head.appendChild(link)
+        }
+        await import(runtimeUrl)
+      } catch (error) {
+        console.warn('[blog] music player unavailable', error)
+        return
+      }
+      const api = window.InkstoneBlogMusic
+      if (!api?.mountFloating) {
+        console.warn('[blog] music runtime missing mountFloating')
+        return
+      }
+      if (cancelled || !document.contains(card)) return
+      try {
+        playerHandle = await api.mountFloating({ music: options.music, labels: options.labels })
+        if (cancelled) playerHandle.unmount()
+      } catch (error) {
+        console.warn('[blog] music player mount failed', error)
+      }
+    }
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 2500 })
+    else window.setTimeout(boot, 200)
+  })()
+</script>

@@ -2647,3 +2647,63 @@ html[data-reduce-motion='true'] *::after {
   background: var(--primary-container);
   color: var(--on-primary-container);
 }
+
+.secondary-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.article-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.8rem;
+  margin: 0.5rem 0 0;
+  color: var(--on-surface-variant);
+  font-size: 0.7rem;
+}
+
+.profile-meta span,
+.profile-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.profile-social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--outline-variant);
+}
+
+.profile-social-btn {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--outline-variant);
+  border-radius: 999px;
+  background: var(--surface-low);
+  color: var(--on-surface-variant);
+}
+
+.profile-social-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.profile-social-glyph {
+  font-size: 0.7rem;
+  font-weight: 700;
+}

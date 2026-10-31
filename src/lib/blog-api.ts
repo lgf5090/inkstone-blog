@@ -57,8 +57,10 @@ const siteSchema = z.object({
     name: z.string().default(''),
     bio: z.string().default(''),
     avatar: z.string().default(''),
+    email: z.string().default(''),
+    location: z.string().default(''),
     links: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
-  }).passthrough().default({ name: '', bio: '', avatar: '', links: [] }),
+  }).passthrough().default({ name: '', bio: '', avatar: '', email: '', location: '', links: [] }),
   nav: z.array(z.object({
     label: z.string(),
     href: z.string(),

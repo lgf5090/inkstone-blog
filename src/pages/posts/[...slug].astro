@@ -204,6 +204,7 @@ const runtimeAssetBase = !post?.render
   : import.meta.env.DEV
     ? `${runtimeOrigin}/`
     : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/`
+const dualSidebar = blog.site.sidebar?.enable !== false && blog.site.sidebar?.arrangement === 'dual'
 const contextMenuConfig = blog.site.contextMenu ?? { enable: true, actions: ['copySelection', 'copyLink', 'openImage', 'copyImage', 'backToTop'] }
 const jsonLd = post ? {
   '@context': 'https://schema.org',
@@ -252,7 +253,7 @@ const jsonLd = post ? {
         <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
       </div>
     ) : (
-      <div class="article-layout">
+      <div class:list={['article-layout', dualSidebar && 'article-layout--single']}>
         <div>
           <article class="article-shell" aria-labelledby="post-title">
             <header class="article-header">
@@ -403,9 +404,10 @@ const jsonLd = post ? {
             providerConfig={blog.site.comment}
           />
         </div>
-        <Toc headings={headings} depth={blog.display.tocDepth ?? 3} />
+        {!dualSidebar && <Toc headings={headings} depth={blog.display.tocDepth ?? 3} />}
       </div>
     )}
+    {dualSidebar && <Toc slot="aside" headings={headings} depth={blog.display.tocDepth ?? 3} />}
   </MainGridLayout>
 </Layout>
 

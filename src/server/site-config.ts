@@ -43,7 +43,7 @@ export const FALLBACK_SITE: BlogSitePublic = {
     themeColor: { hue: 315, style: 'tonalSpot', spec: '2025' },
     banner: { desktopLight: '', desktopDark: '', mobileLight: '', mobileDark: '' },
   },
-  profile: { name: '', bio: '', avatar: '', links: [] },
+  profile: { name: '', bio: '', avatar: '', email: '', location: '', links: [] },
   nav: [{ label: 'Posts', href: '/' }],
   sidebar: { enable: true, arrangement: 'single', side: 'left' },
   widgets: [],

@@ -138,6 +138,8 @@ export interface BlogSitePublic {
     name: string
     bio: string
     avatar: string
+    email: string
+    location: string
     links: { label: string; url: string }[]
   }
   nav: { label: string; href: string; children?: { label: string; href: string }[] }[]

@@ -31,7 +31,12 @@ const { page = 'home', hero = false } = Astro.props
       <div class="content-column">
         <slot />
       </div>
-      {showSidebar && dual && <SideBar page={page} column="secondary" />}
+      {showSidebar && dual && (
+        <div class="secondary-column">
+          <SideBar page={page} column="secondary" />
+          <slot name="aside" />
+        </div>
+      )}
     </div>
   </main>
   <Footer />
