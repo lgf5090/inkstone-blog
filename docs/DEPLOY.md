@@ -117,6 +117,31 @@ curl -s -o /dev/null -w '%{http_code}\n' https://blog.example.com/rss.xml
 
 再打开浏览器检查：首页分页、文章正文由 runtime 水合、评论、友链申请、图片代理、明暗主题。
 
+## 6. GitHub + Workers Builds 自动部署
+
+和 Inkstone 一样，用 Cloudflare Workers Builds 连接 GitHub，推送到 `main` 自动构建部署。
+
+1. 在 GitHub 创建仓库（建议 `lgf5090/inkstone-blog`，私有），并推送：
+   ```bash
+   git remote add origin git@github.com:lgf5090/inkstone-blog.git
+   git push -u origin main
+   ```
+2. Cloudflare Dashboard → Workers & Pages → Create → **Import a Git repository**，选择该仓库。
+3. 生产分支：`main`；根目录：`/`。
+4. 构建配置：
+   - 构建命令：`pnpm build`
+   - 部署命令：`pnpm exec wrangler deploy`
+   - 也可以把部署命令填 `pnpm deploy`（会重新构建一次）
+5. 在“变量和机密”添加 **构建变量**（必须添加在构建配置里，不是运行时变量）：
+   - `BLOG_SITE_URL=https://blog.example.com`
+   - `BLOG_API_ORIGIN=https://inkstone.454470.xyz`（可不填，代码默认就是这个）
+   - `BLOG_PROXY_KEY=<与后端相同的 secret>`（类型选 Secret）
+   - `BLOG_API_TIMEOUT_MS=8000`
+   - `NODE_VERSION=22.23.4`
+6. 保存并首次部署；之后每次 push 到 `main` 自动重建部署。Dashboard 的 Deployments 可回滚。
+
+如果仓库使用 npm 而不是 pnpm，构建/部署命令改为 `npm run build` / `npx wrangler deploy`；但本仓库只有 `pnpm-lock.yaml`，推荐保持 pnpm，且 `packageManager` 已固定。
+
 ## 6. 常见问题
 
 - **`/api/blog/site` 404**：后端没部署博客模块，或请求被后端路由拦到 404；先修正后端，不是前端问题。
