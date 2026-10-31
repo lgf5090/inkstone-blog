@@ -8,6 +8,7 @@ import type {
   BlogCommentsResponse,
   BlogCompassShelf,
   BlogFeedData,
+  BlogFriends,
   BlogPage,
   BlogPageItem,
   BlogPostDetail,
@@ -247,6 +248,10 @@ export function loadFeeds(): Promise<BlogFeedData> {
 
 export function loadCollection(kind: BlogCollectionKind): Promise<{ items: BlogCollectionItem[] }> {
   return getJson<{ items: BlogCollectionItem[] }>(`/collections/${kind}`)
+}
+
+export function loadFriends(): Promise<BlogFriends> {
+  return getJson<BlogFriends>('/friends')
 }
 
 export function loadAlbum(slug: string): Promise<BlogAlbumDetail> {

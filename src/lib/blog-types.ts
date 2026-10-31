@@ -290,3 +290,33 @@ export interface BlogRedirectResult {
   to?: string
   status?: number
 }
+
+export interface BlogFriendCategory {
+  id: string
+  name: string
+  icon: string
+  parentId: string | null
+  depth: number
+  count: number
+}
+
+export interface BlogFriendLink {
+  id: string
+  title: string
+  url: string
+  icon: string | null
+  description: string
+  categoryId: string
+  pinned: boolean
+}
+
+export interface BlogFriends {
+  rootId: string
+  categories: BlogFriendCategory[]
+  links: BlogFriendLink[]
+  cardStyle: 'detailed' | 'simple'
+  search: {
+    mode: 'internal' | 'external'
+    sources: { id: string; name: string; url: string }[]
+  }
+}

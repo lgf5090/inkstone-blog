@@ -3,7 +3,7 @@ import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
 
-const ALLOWED = /^posts\/[^/]+\/comments$/
+const ALLOWED = /^posts\/[^/]+\/comments$|^friends\/apply$|^friends\/icon$|^friends\/qr$/
 
 async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   const { params, request, cookies } = context
@@ -31,7 +31,7 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
     if (token) headers.set('x-blog-unlock', token)
   }
   try {
-    const upstream = await fetch(`${origin}/api/blog/${path}`, {
+    const upstream = await fetch(`${origin}/api/blog/${path}${context.url.search}`, {
       method: request.method,
       headers,
       body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text(),
