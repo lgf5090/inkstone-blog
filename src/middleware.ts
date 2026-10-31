@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
-import { loadPost, loadSite, loadTaxonomy } from './lib/blog-api'
+import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { unlockCookieName } from './lib/format'
 import { blogLocale, LOCALES } from './i18n'
@@ -120,6 +120,26 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.url.pathname === '/_blog/search') {
+    const q = (context.url.searchParams.get('q') ?? '').trim().slice(0, 120)
+    if (!q) return Response.json({ items: [] }, { headers: { 'cache-control': 'no-store' } })
+    try {
+      const result = await searchPosts(q, 1, 8)
+      return Response.json({
+        items: result.items.map((item) => ({
+          slug: item.slug,
+          permalink: item.permalink ?? '',
+          title: item.title,
+          excerpt: item.excerpt || item.description || '',
+          category: item.category,
+          publishedAt: item.publishedAt,
+        })),
+      }, { headers: { 'cache-control': 'no-store' } })
+    } catch (cause) {
+      console.warn('[blog] instant search failed', cause)
+      return Response.json({ error: 'search_failed' }, { status: 502 })
+    }
+  }
   if (context.url.pathname.startsWith('/_blog/runtime/')) return runtimeProxy(context)
   if (context.url.pathname.startsWith('/_blog/post/')) return readingData(context)
   if (context.url.pathname.startsWith('/_blog/media/')) return mediaProxy(context)

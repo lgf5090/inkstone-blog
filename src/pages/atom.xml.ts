@@ -10,7 +10,7 @@ export const GET: APIRoute = async ({ url }) => {
   const origin = siteOrigin(url, feed.site.site.url)
   const updated = feed.posts[0]?.updatedAt ? new Date(feed.posts[0].updatedAt).toISOString() : new Date().toISOString()
   const entries = feed.posts.slice(0, 50).map((post) => {
-    const link = postLink(origin, post.slug)
+    const link = postLink(origin, post.slug, post.permalink, feed.site.permalink.enable)
     return `<entry>
       <title>${escapeXml(post.title)}</title>
       <link href="${escapeXml(link)}"/>

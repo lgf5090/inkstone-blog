@@ -4,6 +4,7 @@ import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import Toc from '../../components/blog/Toc.astro'
 import Comments from '../../components/Comments.svelte'
+import SharePoster from '../../components/blog/SharePoster.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
 import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, loadPosts, resolveRedirect, unlockPost } from '../../lib/blog-api'
@@ -170,7 +171,8 @@ const discussion = comments?.discussion ?? {
   maxLength: 4000,
 }
 const origin = (import.meta.env.BLOG_SITE_URL ?? Astro.url.origin).replace(/\/+$/, '')
-const canonical = `${origin}${postUrl(slug)}`
+const permalinkEnabled = Boolean(blog.site.permalink?.enable)
+const canonical = `${origin}${postUrl(slug, post?.permalink, permalinkEnabled)}`
 const runtimeOrigin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')
 const runtimeVersion = post?.render?.rendererVersion ?? ''
 // A plain article keeps its stored still: the runtime is 2 MiB of interactive block code, and the
@@ -202,6 +204,7 @@ const runtimeAssetBase = !post?.render
   : import.meta.env.DEV
     ? `${runtimeOrigin}/`
     : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/`
+const contextMenuConfig = blog.site.contextMenu ?? { enable: true, actions: ['copySelection', 'copyLink', 'openImage', 'copyImage', 'backToTop'] }
 const jsonLd = post ? {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -221,6 +224,7 @@ const jsonLd = post ? {
   description={post?.description || post?.excerpt}
   image={cover}
   type="article"
+  canonicalUrl={canonical}
   noIndex={!post}
   jsonLd={jsonLd}
 >
@@ -262,11 +266,25 @@ const jsonLd = post ? {
                   <span>{t(locale, 'common.updated')} {formatDate(post.updatedAt, locale, blog.site.site.timeZone)}</span>
                 )}
                 <span>{post.readingMinutes} {t(locale, 'common.minRead')}</span>
+                <span>{post.viewCount} {t(locale, 'common.views')}</span>
                 {post.category && <a href={`/categories/${encodeURIComponent(post.category)}`}>{post.category}</a>}
                 {blog.article.share && (
-                  <button type="button" class="article-share" data-share-link={canonical} data-copied-label={t(locale, 'common.copied')} data-copy-failed={t(locale, 'common.copyFailed')}>
-                    <Icon name="link" size={12} /> {t(locale, 'common.share')}
-                  </button>
+                  <>
+                    <button type="button" class="article-share" data-share-link={canonical} data-copied-label={t(locale, 'common.copied')} data-copy-failed={t(locale, 'common.copyFailed')}>
+                      <Icon name="link" size={12} /> {t(locale, 'common.share')}
+                    </button>
+                    <SharePoster
+                      client:load
+                      title={post.title}
+                      description={post.description || post.excerpt}
+                      author={blog.site.profile.name || blog.site.site.title}
+                      published={post.publishedAt ? formatDate(post.publishedAt, locale, blog.site.site.timeZone) : ''}
+                      siteTitle={blog.site.site.title}
+                      url={canonical}
+                      coverUrl={cover}
+                      locale={locale}
+                    />
+                  </>
                 )}
               </div>
               {post.tags.length > 0 && (
@@ -305,10 +323,10 @@ const jsonLd = post ? {
               {(seriesCard.prev || seriesCard.next) && (
                 <nav class="article-nav" aria-label={t(locale, 'article.series')}>
                   {seriesCard.prev
-                    ? <a href={postUrl(seriesCard.prev.slug)}>{t(locale, 'common.previousPost')}<strong>{seriesCard.prev.title}</strong></a>
+                    ? <a href={postUrl(seriesCard.prev.slug, seriesCard.prev.permalink, permalinkEnabled)}>{t(locale, 'common.previousPost')}<strong>{seriesCard.prev.title}</strong></a>
                     : <span />}
                   {seriesCard.next
-                    ? <a href={postUrl(seriesCard.next.slug)}>{t(locale, 'common.nextPost')}<strong>{seriesCard.next.title}</strong></a>
+                    ? <a href={postUrl(seriesCard.next.slug, seriesCard.next.permalink, permalinkEnabled)}>{t(locale, 'common.nextPost')}<strong>{seriesCard.next.title}</strong></a>
                     : <span />}
                 </nav>
               )}
@@ -339,7 +357,7 @@ const jsonLd = post ? {
                     <ul>
                       {related.map((item) => (
                         <li>
-                          <a href={postUrl(item.slug)}>{item.title || t(locale, 'common.untitled')}</a>
+                          <a href={postUrl(item.slug, item.permalink, permalinkEnabled)}>{item.title || t(locale, 'common.untitled')}</a>
                           <span class="muted">{item.category || formatDate(item.publishedAt ?? 0, locale, blog.site.site.timeZone)}</span>
                         </li>
                       ))}
@@ -352,7 +370,7 @@ const jsonLd = post ? {
                     <ul>
                       {random.map((item) => (
                         <li>
-                          <a href={postUrl(item.slug)}>{item.title || t(locale, 'common.untitled')}</a>
+                          <a href={postUrl(item.slug, item.permalink, permalinkEnabled)}>{item.title || t(locale, 'common.untitled')}</a>
                           <span class="muted">{item.category || formatDate(item.publishedAt ?? 0, locale, blog.site.site.timeZone)}</span>
                         </li>
                       ))}
@@ -366,10 +384,10 @@ const jsonLd = post ? {
           {(adjacent.previous || adjacent.next) && (
             <nav class="article-nav" aria-label={t(locale, 'common.postNavigation')}>
               {adjacent.previous
-                ? <a href={postUrl(adjacent.previous.slug)}>{t(locale, 'common.previousPost')}<strong>{adjacent.previous.title}</strong></a>
+                ? <a href={postUrl(adjacent.previous.slug, adjacent.previous.permalink, permalinkEnabled)}>{t(locale, 'common.previousPost')}<strong>{adjacent.previous.title}</strong></a>
                 : <span />}
               {adjacent.next
-                ? <a href={postUrl(adjacent.next.slug)}>{t(locale, 'common.nextPost')}<strong>{adjacent.next.title}</strong></a>
+                ? <a href={postUrl(adjacent.next.slug, adjacent.next.permalink, permalinkEnabled)}>{t(locale, 'common.nextPost')}<strong>{adjacent.next.title}</strong></a>
                 : <span />}
             </nav>
           )}
@@ -381,6 +399,8 @@ const jsonLd = post ? {
             discussion={discussion}
             initial={comments?.items ?? []}
             locale={locale}
+            provider={blog.site.comment?.provider ?? 'none'}
+            providerConfig={blog.site.comment}
           />
         </div>
         <Toc headings={headings} depth={blog.display.tocDepth ?? 3} />
@@ -408,7 +428,7 @@ const jsonLd = post ? {
 </script>
 
 {post?.render && runtimeNeeded && runtimeUrl && (
-  <script is:inline data-astro-rerun define:vars={{ runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug: post.slug, readerLocale: locale, runtimeLabels, devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '' }}>
+  <script is:inline data-astro-rerun define:vars={{ runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug: post.slug, readerLocale: locale, runtimeLabels, contextMenuConfig, devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '' }}>
     (() => {
       const host = document.querySelector('[data-blog-reading-host]')
       const snapshot = host && host.querySelector('[data-blog-snapshot]')
@@ -496,6 +516,7 @@ const jsonLd = post ? {
             assetBase: runtimeAssetBase,
             wikiLinks,
             labels: runtimeLabels,
+            contextMenu: contextMenuConfig,
             tagHref: (name) => '/tags/' + encodeURIComponent(name),
           })
         } catch (error) {

@@ -41,6 +41,7 @@ export const FALLBACK_SITE: BlogSitePublic = {
     locale: 'en',
     timeZone: 'UTC',
     themeColor: { hue: 315, style: 'tonalSpot', spec: '2025' },
+    banner: { desktopLight: '', desktopDark: '', mobileLight: '', mobileDark: '' },
   },
   profile: { name: '', bio: '', avatar: '', links: [] },
   nav: [{ label: 'Posts', href: '/' }],
@@ -60,10 +61,18 @@ export const FALLBACK_SITE: BlogSitePublic = {
   fab: { enable: true, items: ['home', 'toc', 'comment', 'top'] },
   announcement: { enable: false, text: '', closable: true },
   llms: { enable: true, excludeTags: [] },
+  comment: {
+    provider: 'none',
+    twikoo: { envId: '' },
+    giscus: { repo: '', repoId: '', category: '', categoryId: '' },
+    waline: { serverURL: '' },
+  },
+  contextMenu: { enable: true, actions: ['copySelection', 'copyLink', 'openImage', 'copyImage', 'backToTop'] },
+  permalink: { enable: false },
   display: {},
   integrations: { comments: 'none', music: { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' }, umami: { enabled: false, websiteId: '' } },
   runtimeVersion: 'inkstone-blog-v3',
-  counts: { posts: 0, categories: 0, tags: 0, series: 0 },
+  counts: { posts: 0, categories: 0, tags: 0, series: 0, views: 0 },
 }
 
 function numberSetting(value: unknown, fallback: number, min: number, max: number): number {

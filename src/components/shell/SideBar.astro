@@ -9,6 +9,7 @@ import MusicPlayer from './MusicPlayer.astro'
 
 interface Props {
   column?: 'primary' | 'secondary' | 'all'
+  page?: string
 }
 const blog = Astro.locals.blog ?? {
   site: FALLBACK_SITE,
@@ -20,6 +21,7 @@ const blog = Astro.locals.blog ?? {
 }
 const locale = blogLocale(blog.site.site.locale)
 const column = Astro.props.column ?? 'primary'
+const page = Astro.props.page ?? 'home'
 const widgets = blog.site.widgets ?? []
 const fallbackWidgets = [
   { id: 'profile', type: 'profile', title: '', enabled: true, config: {} },
@@ -30,7 +32,9 @@ const fallbackWidgets = [
 ]
 const all: BlogWidget[] = widgets.length ? widgets : fallbackWidgets
 const secondaryTypes = new Set(['categories', 'tags', 'series', 'stats', 'calendar'])
-const visible = all.filter((widget) => widget.enabled && (column === 'all' || (column === 'secondary' ? secondaryTypes.has(widget.type) : !secondaryTypes.has(widget.type))))
+const visible = all.filter((widget) => widget.enabled
+  && (!widget.pages?.length || widget.pages.includes(page))
+  && (column === 'all' || (column === 'secondary' ? secondaryTypes.has(widget.type) : !secondaryTypes.has(widget.type))))
 const recentWidget = visible.some((widget) => widget.type === 'recent')
 let recent: BlogPostSummary[] = []
 if (recentWidget) {
@@ -77,7 +81,7 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
     )}
     {visible.map((widget) => {
       if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
-        <section class="sidebar-card profile-card" aria-label={profile.name || t(locale, 'nav.about')}>
+        <section class:list={["sidebar-card profile-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={profile.name || t(locale, 'nav.about')}>
           {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
           {profile.name && <h2 class="profile-name">{profile.name}</h2>}
           {profile.bio && <p class="profile-bio">{profile.bio}</p>}
@@ -91,7 +95,7 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
         </section>
       )
       if (widget.type === 'search') return (
-        <section class="sidebar-card" aria-label={t(locale, 'search.title')}>
+        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={t(locale, 'search.title')}>
           <h2 class="sidebar-title">{widgetTitle(widget)}</h2>
           <form class="search-form" action="/search" method="get" role="search">
             <label class="sr-only" for="sidebar-search">{t(locale, 'search.placeholder')}</label>
@@ -105,25 +109,35 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
         const base = widget.type === 'categories' ? '/categories' : widget.type === 'tags' ? '/tags' : '/series'
         const key = widget.type === 'categories' ? 'nav.categories' : widget.type === 'tags' ? 'nav.tags' : 'nav.series'
         if (items.length === 0) return null
+        const collapseAt = typeof widget.collapseAfter === 'number' && widget.collapseAfter > 0 ? widget.collapseAfter : 8
+        const shown = items.slice(0, collapseAt)
+        const rest = items.slice(collapseAt)
+        const renderItem = (item: (typeof items)[number]) => (
+          <li>
+            <a href={`${base}/${encodeURIComponent(item.slug)}`}>
+              <span>{item.name}</span>
+              <span class="widget-count">{item.count}</span>
+            </a>
+          </li>
+        )
         return (
-          <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
             <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget) || t(locale, key)}</h2>
             <ul class="widget-list">
-              {items.slice(0, 8).map((item) => (
-                <li>
-                  <a href={`${base}/${encodeURIComponent(item.slug)}`}>
-                    <span>{item.name}</span>
-                    <span class="widget-count">{item.count}</span>
-                  </a>
-                </li>
-              ))}
+              {shown.map(renderItem)}
               <li><a href={base}><span>{t(locale, 'common.readMore')}</span><Icon name="arrow-right" size={13} /></a></li>
             </ul>
+            {rest.length > 0 && (
+              <details class="widget-more">
+                <summary>{t(locale, 'common.readMore')} ({rest.length})</summary>
+                <ul class="widget-list">{rest.map(renderItem)}</ul>
+              </details>
+            )}
           </section>
         )
       }
       if (widget.type === 'recent') return (
-        <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
           <ul class="widget-list">
             {recent.map((post) => (
@@ -138,26 +152,27 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
         </section>
       )
       if (widget.type === 'calendar') return (
-        <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
           <CalendarWidget client:visible locale={locale} timeZone={blog.site.site.timeZone} items={calendarItems} />
         </section>
       )
       if (widget.type === 'stats') return (
-        <section class="sidebar-card" aria-label={t(locale, 'common.stats')}>
+        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={t(locale, 'common.stats')}>
           <h2 class="sidebar-title">{t(locale, 'common.stats')}</h2>
           <ul class="widget-list">
             <li><span>{t(locale, 'common.posts')}</span><span class="widget-count">{blog.site.counts.posts}</span></li>
             <li><span>{t(locale, 'common.categories')}</span><span class="widget-count">{blog.site.counts.categories}</span></li>
             <li><span>{t(locale, 'common.tags')}</span><span class="widget-count">{blog.site.counts.tags}</span></li>
             <li><span>{t(locale, 'common.series')}</span><span class="widget-count">{blog.site.counts.series}</span></li>
+            <li><span>{t(locale, 'common.views')}</span><span class="widget-count">{blog.site.counts.views}</span></li>
           </ul>
         </section>
       )
       if (widget.type === 'announcement') {
         const text = announcement(widget)
         return text ? (
-          <section class="sidebar-card" aria-label={widget.title || 'Announcement'}>
+          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Announcement'}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
             <p class="profile-bio">{text}</p>
           </section>
@@ -166,7 +181,7 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
       if (widget.type === 'custom') {
         const html = customHtml(widget)
         return html ? (
-          <section class="sidebar-card" aria-label={widget.title || 'Custom'}>
+          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Custom'}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
             <div set:html={html} />
           </section>

@@ -10,6 +10,7 @@ interface Props {
   description?: string
   image?: string | null
   type?: 'website' | 'article'
+  canonicalUrl?: string
   noIndex?: boolean
   jsonLd?: Record<string, unknown> | Record<string, unknown>[]
 }
@@ -21,6 +22,7 @@ const {
   description = blog.site.site.description,
   image = null,
   type = 'website',
+  canonicalUrl,
   noIndex = false,
   jsonLd,
 } = Astro.props
@@ -29,7 +31,7 @@ const siteTitle = blog.site.site.title || 'Inkstone Blog'
 const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle
 const configuredOrigin = (import.meta.env.BLOG_SITE_URL ?? '').replace(/\/+$/, '')
 const origin = configuredOrigin || Astro.url.origin
-const canonical = new URL(Astro.url.pathname + Astro.url.search, origin)
+const canonical = canonicalUrl ? new URL(canonicalUrl) : new URL(Astro.url.pathname + Astro.url.search, origin)
 const absoluteImage = image ? new URL(image, origin).href : null
 const structured = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).filter(Boolean)
 const hue = Number(blog.site.site.themeColor?.hue ?? 315)
@@ -84,6 +86,17 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         if (accent) root.dataset.accent = accent
         if (background) root.dataset.background = background
         if (density) root.dataset.density = density
+        for (const pair of [['--primary', 'm3-primary'], ['--primary-container', 'm3-primary-container'], ['--on-primary', 'm3-on-primary'], ['--on-primary-container', 'm3-on-primary-container'], ['--secondary', 'm3-secondary']]) {
+          const value = localStorage.getItem(pair[1])
+          if (value) root.style.setProperty(pair[0], value)
+        }
+        const style = localStorage.getItem('m3-style')
+        const spec = localStorage.getItem('m3-spec')
+        if (style) root.dataset.m3Style = style
+        if (spec) root.dataset.m3Spec = spec
+        root.dataset.texture = localStorage.getItem('texture') || 'none'
+        root.dataset.wallpaper = localStorage.getItem('wallpaper') || 'plain'
+        root.dataset.reduceMotion = localStorage.getItem('reduce-motion') === '1' ? 'true' : 'false'
       })()
     </script>
   </head>
@@ -163,6 +176,40 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
           delete window.__blogApplyPostListMode
         })
 
+        const bloomImages = () => {
+          document.querySelectorAll('[data-blog-reading-host] img').forEach((image) => {
+            if (image.closest('.image-bloom')) return
+            const source = image.currentSrc || image.src
+            if (!source) return
+            const wrapper = document.createElement('span')
+            wrapper.className = 'image-bloom'
+            wrapper.style.backgroundImage = `url("${source.replace(/"/g, '%22')}")`
+            image.parentNode?.insertBefore(wrapper, image)
+            wrapper.appendChild(image)
+            const loaded = () => wrapper.classList.add('is-loaded')
+            if (image.complete) loaded()
+            else image.addEventListener('load', loaded, { once: true })
+          })
+        }
+        bloomImages()
+        const onReadingReady = () => bloomImages()
+        document.addEventListener('blog:reading-ready', onReadingReady)
+        let bloomFrame = 0
+        const scheduleBloom = () => {
+          cancelAnimationFrame(bloomFrame)
+          bloomFrame = requestAnimationFrame(bloomImages)
+        }
+        const bloomHost = document.querySelector('[data-blog-reading-host]')
+        const bloomObserver = new MutationObserver(scheduleBloom)
+        if (bloomHost) bloomObserver.observe(bloomHost, { childList: true, subtree: true })
+        const bloomTimers = [600, 1500].map((delay) => window.setTimeout(bloomImages, delay))
+        window.__blogRegisterCleanup?.('image-bloom', () => {
+          document.removeEventListener('blog:reading-ready', onReadingReady)
+          bloomObserver.disconnect()
+          cancelAnimationFrame(bloomFrame)
+          bloomTimers.forEach((timer) => clearTimeout(timer))
+        })
+
         const progress = document.querySelector('[data-reading-progress] span')
         const article = document.querySelector('[data-blog-reading-host]')
         if (progress && article) {
@@ -176,6 +223,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
           update()
           window.__blogRegisterCleanup?.('reading-progress', () => {
             window.removeEventListener('scroll', update)
+            document.removeEventListener('blog:reading-ready', onReadingReady)
           })
         }
       })()

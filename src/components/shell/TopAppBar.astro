@@ -38,6 +38,7 @@ const iconByHref: Record<string, NavIconName> = {
 const iconFor = (href: string): NavIconName | null => iconByHref[href.replace(/\/$/, '') || '/'] ?? null
 const groupActive = (item: { href: string; children?: { href: string }[] }): boolean =>
   isActive(item.href) || Boolean(item.children?.some((child) => isActive(child.href)))
+const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 ---
 
 <header class="top-app-bar">
@@ -83,9 +84,9 @@ const groupActive = (item: { href: string; children?: { href: string }[] }): boo
     </nav>
 
     <div class="top-actions">
-      <a href="/search" class="icon-button" aria-label={t(locale, 'search.title')} title={t(locale, 'search.title')}>
+      <button type="button" class="icon-button" data-search-open aria-label={t(locale, 'search.title')} title={t(locale, 'search.title')}>
         <Icon name="search" size={17} />
-      </a>
+      </button>
       <details class="nav-menu lang-menu">
         <summary class="icon-button" aria-label={t(locale, 'common.language')} title={t(locale, 'common.language')}>文</summary>
         <div class="nav-menu-panel lang-panel">
@@ -119,6 +120,125 @@ const groupActive = (item: { href: string; children?: { href: string }[] }): boo
         </a>
       )
     ))}
-    <a href="/search" class="nav-link">{t(locale, 'nav.search')}</a>
+    <button type="button" class="nav-link" data-search-open>{t(locale, 'nav.search')}</button>
   </nav>
+
+  <div class="search-overlay" data-search-overlay hidden>
+    <div class="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-dialog-title">
+      <h2 id="search-dialog-title" class="sr-only">{t(locale, 'search.title')}</h2>
+      <form class="search-dialog-form" role="search" data-search-form>
+        <label class="sr-only" for="instant-search-input">{t(locale, 'search.placeholder')}</label>
+        <input id="instant-search-input" type="search" data-search-input placeholder={t(locale, 'search.placeholder')} autocomplete="off" />
+        <button type="button" class="icon-button" data-search-close aria-label={t(locale, 'search.close')} title={t(locale, 'search.close')}>×</button>
+      </form>
+      <p class="search-dialog-status" data-search-status aria-live="polite"></p>
+      <ul class="search-dialog-results" data-search-results></ul>
+      <a class="chip" href="/search" data-search-more>{t(locale, 'search.viewAll')}</a>
+    </div>
+  </div>
 </header>
+<script is:inline data-astro-rerun define:vars={{ permalinkEnabled, searchLabels: {
+  empty: t(locale, 'search.empty'),
+  loading: t(locale, 'search.loading'),
+  error: t(locale, 'search.error'),
+} }}>
+  (() => {
+    const overlay = document.querySelector('[data-search-overlay]')
+    if (!overlay) return
+    const input = overlay.querySelector('[data-search-input]')
+    const list = overlay.querySelector('[data-search-results]')
+    const status = overlay.querySelector('[data-search-status]')
+    const more = overlay.querySelector('[data-search-more]')
+    let opener = null
+    let timer = 0
+    let controller = null
+    const close = () => {
+      if (overlay.hidden) return
+      overlay.hidden = true
+      document.documentElement.style.removeProperty('overflow')
+      opener?.focus()
+      opener = null
+    }
+    const open = (event) => {
+      opener = event.currentTarget
+      overlay.hidden = false
+      document.documentElement.style.overflow = 'hidden'
+      input.focus()
+      if (input.value.trim()) void run(input.value.trim())
+    }
+    const postHref = (item) => {
+      if (permalinkEnabled && item.permalink) {
+        return '/' + item.permalink.split('/').filter(Boolean).map(encodeURIComponent).join('/')
+      }
+      return '/posts/' + encodeURIComponent(item.slug)
+    }
+    const render = (items) => {
+      list.replaceChildren()
+      status.textContent = items.length === 0 ? searchLabels.empty : ''
+      for (const item of items) {
+        const li = document.createElement('li')
+        const link = document.createElement('a')
+        link.href = postHref(item)
+        const title = document.createElement('strong')
+        title.textContent = item.title
+        const excerpt = document.createElement('span')
+        excerpt.textContent = item.excerpt || item.category || ''
+        link.append(title, excerpt)
+        li.append(link)
+        list.append(li)
+      }
+    }
+    const run = async (query) => {
+      controller?.abort()
+      if (!query) {
+        list.replaceChildren()
+        status.textContent = ''
+        return
+      }
+      status.textContent = searchLabels.loading
+      controller = new AbortController()
+      try {
+        const response = await fetch('/_blog/search?q=' + encodeURIComponent(query), { signal: controller.signal })
+        const data = await response.json()
+        render(Array.isArray(data.items) ? data.items : [])
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.warn('[blog] instant search failed', error)
+          status.textContent = searchLabels.error
+        }
+      }
+    }
+    input.addEventListener('input', () => {
+      clearTimeout(timer)
+      const query = input.value.trim()
+      more.href = '/search' + (query ? '?q=' + encodeURIComponent(query) : '')
+      timer = window.setTimeout(() => void run(query), 220)
+    })
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) close()
+    })
+    overlay.querySelector('[data-search-close]')?.addEventListener('click', close)
+    document.querySelectorAll('[data-search-open]').forEach((button) => button.addEventListener('click', open))
+    overlay.querySelector('[data-search-form]')?.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const query = input.value.trim()
+      location.href = '/search' + (query ? '?q=' + encodeURIComponent(query) : '')
+    })
+    const onKey = (event) => {
+      if (event.key === 'Escape') close()
+      if (overlay.hidden || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')) return
+      const links = [...list.querySelectorAll('a')]
+      if (links.length === 0) return
+      event.preventDefault()
+      const index = links.indexOf(document.activeElement)
+      const next = event.key === 'ArrowDown' ? (index + 1) % links.length : (index - 1 + links.length) % links.length
+      links[next]?.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    window.__blogRegisterCleanup?.('instant-search', () => {
+      controller?.abort()
+      clearTimeout(timer)
+      document.removeEventListener('keydown', onKey)
+    })
+  })()
+</script>

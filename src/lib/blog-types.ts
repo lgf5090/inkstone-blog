@@ -55,6 +55,7 @@ export interface BlogRenderSnapshot {
 export interface BlogPostSummary {
   id: string
   slug: string
+  permalink?: string
   title: string
   excerpt: string
   description: string
@@ -82,10 +83,14 @@ export interface BlogPostDetail extends BlogPostSummary {
   license: string
   alias: string
   permalink: string
+  viewCount: number
 }
 
 export interface BlogWidget {
   id: string
+  slot?: 'top' | 'sticky'
+  pages?: string[]
+  collapseAfter?: number
   type: string
   title: string
   enabled: boolean
@@ -126,6 +131,7 @@ export interface BlogSitePublic {
     locale: string
     timeZone: string
     themeColor: { hue: number; style: string; spec: string }
+    banner: { desktopLight: string; desktopDark: string; mobileLight: string; mobileDark: string }
   }
   profile: {
     name: string
@@ -156,10 +162,18 @@ export interface BlogSitePublic {
   fab: { enable: boolean; items: string[] }
   announcement: { enable: boolean; text: string; closable: boolean }
   llms: { enable: boolean; excludeTags: string[] }
+  comment: {
+    provider: 'none' | 'local' | 'twikoo' | 'giscus' | 'waline'
+    twikoo: { envId: string }
+    giscus: { repo: string; repoId: string; category: string; categoryId: string }
+    waline: { serverURL: string }
+  }
+  contextMenu: { enable: boolean; actions: string[] }
+  permalink: { enable: boolean }
   display: Record<string, unknown>
   integrations: { comments: string; music: BlogMusicConfig; umami: { enabled: boolean; websiteId: string } }
   runtimeVersion?: string
-  counts: { posts: number; categories: number; tags: number; series: number }
+  counts: { posts: number; categories: number; tags: number; series: number; views: number }
 }
 
 export interface PublicBlogComment {

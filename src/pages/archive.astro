@@ -4,24 +4,64 @@ import MainGridLayout from '../layouts/MainGridLayout.astro'
 import PostCard from '../components/blog/PostCard.astro'
 import { blogLocale, t } from '../i18n'
 import { BlogApiError, loadArchive, loadPosts } from '../lib/blog-api'
-import { formatMonth } from '../lib/format'
+import { formatMonth, postUrl } from '../lib/format'
 import type { BlogArchiveYear, BlogPage, BlogPostSummary } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
-const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, display: { postListMode: 'list' as const } }
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], display: { postListMode: 'list' as const } }
 const locale = blogLocale(blog.site.site.locale)
 const yearParam = Number(Astro.url.searchParams.get('year'))
 const year = Number.isFinite(yearParam) && yearParam > 0 ? yearParam : null
+const groupParam = Astro.url.searchParams.get('group')
+const group: 'year' | 'category' | 'tag' = groupParam === 'category' || groupParam === 'tag' ? groupParam : 'year'
+const category = Astro.url.searchParams.get('category')?.trim().slice(0, 120) ?? ''
+const tag = Astro.url.searchParams.get('tag')?.trim().slice(0, 120) ?? ''
+const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 let years: BlogArchiveYear[] = []
 let posts: BlogPage<BlogPostSummary> | null = null
+let groupPosts: BlogPostSummary[] = []
 let error = Astro.locals.blogError ?? ''
 try {
   years = (await loadArchive()).years
-  if (year) posts = await loadPosts({ year, limit: 100 })
+  if (year && group === 'year' && !category && !tag) posts = await loadPosts({ year, limit: 100 })
+  if (group !== 'year' || category || tag || year) {
+    groupPosts = (await loadPosts({
+      ...(category ? { category } : {}),
+      ...(tag ? { tag } : {}),
+      ...(year ? { year } : {}),
+      limit: 50,
+    })).items
+  }
 } catch (cause) {
   error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
 }
 const mode = blog.display.postListMode
+const queryHref = (overrides: Record<string, string | null>) => {
+  const params = new URLSearchParams()
+  const base: Record<string, string> = {}
+  if (group !== 'year') base.group = group
+  if (category) base.category = category
+  if (tag) base.tag = tag
+  if (year) base.year = String(year)
+  for (const [key, value] of Object.entries({ ...base, ...overrides })) {
+    if (value) params.set(key, value)
+  }
+  const search = params.toString()
+  return '/archive' + (search ? '?' + search : '')
+}
+const groups = new Map<string, BlogPostSummary[]>()
+const groupLabel = (value: string) => value || t(locale, 'archive.uncategorized')
+for (const post of groupPosts) {
+  const keys = group === 'tag'
+    ? (post.tags.length > 0 ? post.tags : [t(locale, 'archive.untagged')])
+    : [group === 'category' ? groupLabel(post.category ?? '') : String(new Date(post.publishedAt ?? post.updatedAt).getUTCFullYear())]
+  for (const key of keys) {
+    const list = groups.get(key) ?? []
+    list.push(post)
+    groups.set(key, list)
+  }
+}
+const sortedGroups = [...groups.entries()].sort((a, b) => group === 'year' ? b[0].localeCompare(a[0]) : a[0].localeCompare(b[0]))
 ---
 <Layout title={t(locale, 'page.archiveTitle')} description={t(locale, 'page.archiveHint')}>
   <MainGridLayout page="archive">
@@ -31,8 +71,27 @@ const mode = blog.display.postListMode
           <h1 id="archive-heading">{t(locale, 'page.archiveTitle')}</h1>
           <p>{t(locale, 'page.archiveHint')}</p>
         </div>
-        {year && <a class="chip" href="/archive">{t(locale, 'nav.archive')}</a>}
+        {(year || category || tag || group !== 'year') && <a class="chip" href="/archive">{t(locale, 'nav.archive')}</a>}
       </div>
+
+      <div class="archive-toolbar">
+        <span class="archive-toolbar-label">{t(locale, 'archive.groupBy')}</span>
+        <a class="chip" aria-current={group === 'year' ? 'page' : undefined} href={queryHref({ group: null })}>{t(locale, 'archive.byYear')}</a>
+        <a class="chip" aria-current={group === 'category' ? 'page' : undefined} href={queryHref({ group: 'category' })}>{t(locale, 'archive.byCategory')}</a>
+        <a class="chip" aria-current={group === 'tag' ? 'page' : undefined} href={queryHref({ group: 'tag' })}>{t(locale, 'archive.byTag')}</a>
+      </div>
+
+      {(blog.categories.length > 0 || blog.tags.length > 0) && (
+        <div class="archive-toolbar">
+          <span class="archive-toolbar-label">{t(locale, 'archive.filter')}</span>
+          {blog.categories.slice(0, 12).map((item) => (
+            <a class="chip" aria-current={category === item.slug ? 'page' : undefined} href={queryHref({ category: category === item.slug ? null : item.slug })}>{item.name}</a>
+          ))}
+          {blog.tags.slice(0, 12).map((item) => (
+            <a class="chip" aria-current={tag === item.slug ? 'page' : undefined} href={queryHref({ tag: tag === item.slug ? null : item.slug })}>#{item.name}</a>
+          ))}
+        </div>
+      )}
 
       {error ? (
         <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
@@ -43,12 +102,12 @@ const mode = blog.display.postListMode
           {years.map((entry) => (
             <section class="sidebar-card" style="margin-bottom:0.8rem" aria-labelledby={`year-${entry.year}`}>
               <h2 class="sidebar-title" id={`year-${entry.year}`}>
-                <a href={`/archive?year=${entry.year}`} aria-current={year === Number(entry.year) ? 'page' : undefined}>{entry.year}</a>
+                <a href={queryHref({ year: String(entry.year), group: group === 'year' ? null : group })} aria-current={year === Number(entry.year) ? 'page' : undefined}>{entry.year}</a>
                 <span class="widget-count">{entry.count}</span>
               </h2>
               <div class="archive-months">
                 {entry.months.map((month) => (
-                  <a class="chip" href={`/archive?year=${entry.year}`}>{formatMonth(month.month, locale)} · {month.count}</a>
+                  <a class="chip" href={queryHref({ year: String(entry.year), group: group === 'year' ? null : group })}>{formatMonth(month.month, locale)} · {month.count}</a>
                 ))}
               </div>
             </section>
@@ -56,7 +115,7 @@ const mode = blog.display.postListMode
         </div>
       )}
 
-      {year && posts && (
+      {group === 'year' && !category && !tag && year && posts && (
         <section aria-labelledby="archive-posts" style="margin-top:1.4rem">
           <div class="section-heading"><h2 id="archive-posts">{year}</h2><span class="muted">{posts.total} {t(locale, 'common.posts')}</span></div>
           {posts.items.length === 0 ? (
@@ -66,6 +125,26 @@ const mode = blog.display.postListMode
               {posts.items.map((post) => <PostCard post={post} mode={mode} />)}
             </div>
           )}
+        </section>
+      )}
+
+      {(group !== 'year' || category || tag) && (
+        <section class="archive-groups" aria-label={t(locale, 'page.archiveTitle')}>
+          {sortedGroups.length === 0 ? (
+            <div class="empty-state">{t(locale, 'common.noPosts')}</div>
+          ) : sortedGroups.map(([key, items]) => (
+            <details class="archive-group" open>
+              <summary>{key}<span class="widget-count">{items.length}</span></summary>
+              <ul>
+                {items.map((post) => (
+                  <li>
+                    <a href={postUrl(post.slug, post.permalink, permalinkEnabled)}>{post.title || t(locale, 'common.untitled')}</a>
+                    <time datetime={new Date(post.publishedAt ?? post.updatedAt).toISOString()}>{new Date(post.publishedAt ?? post.updatedAt).toISOString().slice(0, 10)}</time>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
         </section>
       )}
     </section>

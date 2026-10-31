@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
     feed.site.site.description,
     '',
     '## Posts',
-    ...posts.map((post) => `- [${post.title}](${postLink(origin, post.slug)})${post.description ? ` — ${post.description}` : ''}`),
+    ...posts.map((post) => `- [${post.title}](${postLink(origin, post.slug, post.permalink, feed.site.permalink.enable)})${post.description ? ` — ${post.description}` : ''}`),
     '',
     '## Full text',
     `- [All posts as Markdown](${origin}/llms-full.txt)`,

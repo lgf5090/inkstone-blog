@@ -20,7 +20,7 @@ export type MessageKey =
   | 'friends.qr' | 'friends.fetchIcon' | 'friends.fetchingIcon' | 'friends.iconFetchFailed'
   | 'friends.uploadIcon' | 'friends.uploadingIcon' | 'friends.iconUploadFailed'
   | 'common.readMore' | 'common.minRead' | 'common.posts' | 'common.tags'
-  | 'common.categories' | 'common.series' | 'common.noPosts' | 'common.loadError'
+  | 'common.categories' | 'common.series' | 'common.views' | 'common.noPosts' | 'common.loadError'
   | 'common.retry' | 'common.page' | 'common.previous' | 'common.next'
   | 'common.backHome' | 'common.untitled' | 'common.pinned' | 'common.updated'
   | 'common.published' | 'common.tableOfContents' | 'common.previousPost'
@@ -36,6 +36,7 @@ export type MessageKey =
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
+  | 'search.close' | 'search.loading' | 'search.error' | 'search.viewAll'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
   | 'collections.search' | 'collections.all' | 'collections.noResults' | 'collections.loadMore'
@@ -47,9 +48,20 @@ export type MessageKey =
   | 'common.recentPosts' | 'common.stats' | 'common.language' | 'appearance.title' | 'appearance.theme_auto' | 'appearance.theme_light' | 'appearance.theme_dark'
   | 'appearance.accent' | 'appearance.theme' | 'appearance.background' | 'appearance.density'
   | 'appearance.layout' | 'appearance.layout_list' | 'appearance.layout_grid' | 'appearance.layout_masonry'
+  | 'appearance.hue' | 'appearance.color_style' | 'appearance.spec' | 'appearance.spec_2025' | 'appearance.spec_2021'
+  | 'appearance.wallpaper' | 'appearance.wallpaper_plain' | 'appearance.wallpaper_banner' | 'appearance.texture'
+  | 'appearance.texture_none' | 'appearance.texture_starlight' | 'appearance.texture_cyber_dots'
+  | 'appearance.texture_topography' | 'appearance.texture_geometric' | 'appearance.texture_sakura'
+  | 'appearance.reduce_motion'
+  | 'appearance.style_tonalSpot' | 'appearance.style_vibrant' | 'appearance.style_expressive'
+  | 'appearance.style_fidelity' | 'appearance.style_content' | 'appearance.style_monochrome'
+  | 'appearance.style_neutral' | 'appearance.style_rainbow' | 'appearance.style_fruitSalad'
   | 'article.series' | 'article.partOf' | 'article.relatedReading' | 'article.randomReading'
   | 'article.continueReading' | 'article.daysAgo' | 'article.license' | 'article.author'
   | 'calendar.title' | 'calendar.prevMonth' | 'calendar.nextMonth' | 'calendar.backToday' | 'calendar.posts'
+  | 'archive.groupBy' | 'archive.byYear' | 'archive.byCategory' | 'archive.byTag' | 'archive.filter'
+  | 'archive.uncategorized' | 'archive.untagged'
+  | 'poster.open' | 'poster.title' | 'poster.download' | 'poster.generating' | 'poster.failed' | 'poster.close'
   | 'appearance.background_paper' | 'appearance.background_white'
   | 'appearance.density_comfortable' | 'appearance.density_compact'
   | 'appearance.accent_cinnabar' | 'appearance.accent_indigo' | 'appearance.accent_celadon'
@@ -58,6 +70,7 @@ export type MessageKey =
   | 'comments.email' | 'comments.emailHint' | 'comments.content' | 'comments.posting' | 'comments.submit'
   | 'comments.moderated' | 'comments.closed' | 'comments.replyingTo' | 'comments.cancel'
   | 'comments.pending' | 'comments.published' | 'comments.notPublished' | 'comments.loadFailed'
+  | 'comments.externalMissing'
 
 type Dictionary = Record<MessageKey, string>
 
@@ -83,7 +96,7 @@ const en: Dictionary = {
   'friends.uploadIcon': 'Upload icon', 'friends.uploadingIcon': 'Uploading…',
   'friends.iconUploadFailed': 'Could not upload the icon.',
   'common.recentPosts': 'Recent posts', 'common.stats': 'At a glance', 'common.language': 'Language', 'common.latest': 'Latest posts', 'common.link': 'Link', 'common.repository': 'Repository', 'common.episodes': 'episodes', 'common.photos': 'photos', 'common.readMore': 'Read more', 'common.minRead': 'min read', 'common.posts': 'posts',
-  'common.tags': 'tags', 'common.categories': 'categories', 'common.series': 'series',
+  'common.tags': 'tags', 'common.categories': 'categories', 'common.series': 'series', 'common.views': 'views',
   'common.noPosts': 'No posts have been published yet.', 'common.loadError': 'The blog could not load.',
   'common.retry': 'Try again', 'common.page': 'Page', 'common.previous': 'Previous', 'common.next': 'Next',
   'common.backHome': 'Back to home', 'common.untitled': 'Untitled', 'common.pinned': 'Pinned',
@@ -99,7 +112,8 @@ const en: Dictionary = {
   'fab.label': 'Quick actions', 'fab.home': 'Home', 'fab.toc': 'Jump to outline', 'fab.comments': 'Jump to comments', 'fab.top': 'Back to top',
   'common.copied': 'Link copied', 'common.copyFailed': 'Copy failed',
   'search.title': 'Search', 'search.placeholder': 'Search posts', 'search.empty': 'No posts matched this search.',
-  'search.results': 'results',
+  'search.results': 'results', 'search.close': 'Close search', 'search.loading': 'Searching…',
+  'search.error': 'Search is unavailable right now.', 'search.viewAll': 'Open the search page',
   'theme.toggle': 'Toggle light or dark theme', 'blog.poweredBy': 'Powered by Inkstone notes',
   'blog.notFound': 'Page not found', 'blog.notFoundHint': 'The address may have moved or never existed.',
   'collections.empty': 'Nothing here yet.',
@@ -111,11 +125,25 @@ const en: Dictionary = {
   'collections.compass': 'Compass',
   'page.about': 'About', 'page.archiveTitle': 'Archive', 'page.archiveHint': 'Everything published, by year.',
   'appearance.layout': 'Layout', 'appearance.layout_list': 'List', 'appearance.layout_grid': 'Grid', 'appearance.layout_masonry': 'Masonry',
+  'appearance.hue': 'Hue', 'appearance.color_style': 'Colour style', 'appearance.spec': 'Colour spec',
+  'appearance.spec_2025': '2025', 'appearance.spec_2021': '2021',
+  'appearance.wallpaper': 'Wallpaper', 'appearance.wallpaper_plain': 'Plain', 'appearance.wallpaper_banner': 'Banner',
+  'appearance.texture': 'Texture', 'appearance.texture_none': 'None', 'appearance.texture_starlight': 'Starlight',
+  'appearance.texture_cyber_dots': 'Cyber dots', 'appearance.texture_topography': 'Topography',
+  'appearance.texture_geometric': 'Geometric', 'appearance.texture_sakura': 'Sakura',
+  'appearance.reduce_motion': 'Reduce motion',
+  'appearance.style_tonalSpot': 'Tonal spot', 'appearance.style_vibrant': 'Vibrant', 'appearance.style_expressive': 'Expressive',
+  'appearance.style_fidelity': 'Fidelity', 'appearance.style_content': 'Content', 'appearance.style_monochrome': 'Monochrome',
+  'appearance.style_neutral': 'Neutral', 'appearance.style_rainbow': 'Rainbow', 'appearance.style_fruitSalad': 'Fruit salad',
   'article.series': 'Series', 'article.partOf': 'Part {index} of {total}', 'article.relatedReading': 'Related reading',
   'article.randomReading': 'Random picks', 'article.continueReading': 'Continue reading', 'article.daysAgo': 'days ago',
   'article.license': 'License', 'article.author': 'Author',
   'calendar.title': 'Calendar', 'calendar.prevMonth': 'Previous month', 'calendar.nextMonth': 'Next month',
   'calendar.backToday': 'Back to today', 'calendar.posts': 'posts',
+  'archive.groupBy': 'Group by', 'archive.byYear': 'Year', 'archive.byCategory': 'Category', 'archive.byTag': 'Tag',
+  'archive.filter': 'Filter', 'archive.uncategorized': 'Uncategorized', 'archive.untagged': 'Untagged',
+  'poster.open': 'Share poster', 'poster.title': 'Share poster', 'poster.download': 'Download PNG',
+  'poster.generating': 'Generating poster…', 'poster.failed': 'Could not generate the poster.', 'poster.close': 'Close',
   'appearance.title': 'Appearance', 'appearance.theme': 'Theme', 'appearance.background': 'Background', 'appearance.density': 'Density', 'appearance.theme_auto': 'Auto', 'appearance.theme_light': 'Light',
   'appearance.theme_dark': 'Dark', 'appearance.accent': 'Accent colour', 'appearance.background_paper': 'Paper',
   'appearance.background_white': 'Pure white', 'appearance.density_comfortable': 'Comfortable',
@@ -128,6 +156,7 @@ const en: Dictionary = {
   'comments.posting': 'Posting…', 'comments.submit': 'Post comment', 'comments.moderated': 'Comments are moderated before they appear.',
   'comments.closed': 'Comments are closed on this post.', 'comments.replyingTo': 'Replying to',
   'comments.cancel': 'Cancel', 'comments.pending': 'Your comment is waiting for moderation.',
+  'comments.externalMissing': 'The external comment service is not configured correctly.',
   'comments.published': 'Your comment is published.', 'comments.notPublished': 'Not published.',
   'comments.loadFailed': 'The comment could not be posted.',
 
@@ -183,13 +212,27 @@ const zhCN: Dictionary = {
   'friends.uploadIcon': '上传图标', 'friends.uploadingIcon': '上传中…',
   'friends.iconUploadFailed': '图标上传失败。',
   'appearance.layout': '布局', 'appearance.layout_list': '列表', 'appearance.layout_grid': '网格', 'appearance.layout_masonry': '瀑布流',
+  'appearance.hue': '色相', 'appearance.color_style': '配色风格', 'appearance.spec': '配色规范',
+  'appearance.spec_2025': '2025', 'appearance.spec_2021': '2021',
+  'appearance.wallpaper': '壁纸', 'appearance.wallpaper_plain': '纯色', 'appearance.wallpaper_banner': '横幅',
+  'appearance.texture': '纹理', 'appearance.texture_none': '无', 'appearance.texture_starlight': '星光',
+  'appearance.texture_cyber_dots': '赛博点阵', 'appearance.texture_topography': '等高线',
+  'appearance.texture_geometric': '几何', 'appearance.texture_sakura': '樱花',
+  'appearance.reduce_motion': '减少动效',
+  'appearance.style_tonalSpot': '色调', 'appearance.style_vibrant': '鲜明', 'appearance.style_expressive': '表现力',
+  'appearance.style_fidelity': '还原', 'appearance.style_content': '内容', 'appearance.style_monochrome': '单色',
+  'appearance.style_neutral': '中性', 'appearance.style_rainbow': '彩虹', 'appearance.style_fruitSalad': '水果沙拉',
   'article.series': '系列', 'article.partOf': '第 {index} 篇，共 {total} 篇', 'article.relatedReading': '相关阅读',
   'article.randomReading': '随便看看', 'article.continueReading': '继续阅读', 'article.daysAgo': '天前',
   'article.license': '许可协议', 'article.author': '作者',
   'calendar.title': '日历', 'calendar.prevMonth': '上个月', 'calendar.nextMonth': '下个月',
   'calendar.backToday': '回到今天', 'calendar.posts': '篇',
+  'archive.groupBy': '分组', 'archive.byYear': '按年', 'archive.byCategory': '按分类', 'archive.byTag': '按标签',
+  'archive.filter': '筛选', 'archive.uncategorized': '未分类', 'archive.untagged': '无标签',
+  'poster.open': '分享海报', 'poster.title': '分享海报', 'poster.download': '下载 PNG',
+  'poster.generating': '正在生成海报…', 'poster.failed': '海报生成失败。', 'poster.close': '关闭',
   'common.recentPosts': '最近文章', 'common.stats': '站点概览', 'common.language': '语言', 'common.latest': '最新文章', 'common.link': '链接', 'common.repository': '仓库', 'common.episodes': '集', 'common.photos': '张照片', 'common.readMore': '阅读全文', 'common.minRead': '分钟阅读', 'common.posts': '篇文章',
-  'common.tags': '个标签', 'common.categories': '个分类', 'common.series': '个系列',
+  'common.tags': '个标签', 'common.categories': '个分类', 'common.series': '个系列', 'common.views': '次浏览',
   'common.noPosts': '还没有发布文章。', 'common.loadError': '博客加载失败。', 'common.retry': '重试',
   'common.page': '第', 'common.previous': '上一页', 'common.next': '下一页', 'common.backHome': '返回首页',
   'common.untitled': '未命名', 'common.pinned': '置顶', 'common.updated': '更新于',
@@ -204,7 +247,8 @@ const zhCN: Dictionary = {
   'unlock.unavailable': '暂时无法解锁，请稍后再试。', 'unlock.notProtected': '这篇文章没有访问密码。',
   'fab.label': '快捷操作', 'fab.home': '首页', 'fab.toc': '跳到目录', 'fab.comments': '跳到评论', 'fab.top': '回到顶部',
   'search.title': '搜索', 'search.placeholder': '搜索文章', 'search.empty': '没有匹配的文章。',
-  'search.results': '条结果',
+  'search.results': '条结果', 'search.close': '关闭搜索', 'search.loading': '搜索中…',
+  'search.error': '搜索暂时不可用。', 'search.viewAll': '打开搜索页',
   'theme.toggle': '切换明暗主题', 'blog.poweredBy': '由 Inkstone 笔记驱动',
   'blog.notFound': '页面不存在', 'blog.notFoundHint': '这个地址可能已经移动，或从未存在。',
   'collections.empty': '还没有内容。',
@@ -227,6 +271,7 @@ const zhCN: Dictionary = {
   'comments.posting': '发送中…', 'comments.submit': '发表评论', 'comments.moderated': '评论会在审核后显示。',
   'comments.closed': '这篇文章的评论已关闭。', 'comments.replyingTo': '回复',
   'comments.cancel': '取消', 'comments.pending': '评论已提交，等待审核。',
+  'comments.externalMissing': '外部评论服务配置不完整。',
   'comments.published': '评论已发布。', 'comments.notPublished': '不会公开。',
   'comments.loadFailed': '评论发送失败。',
 

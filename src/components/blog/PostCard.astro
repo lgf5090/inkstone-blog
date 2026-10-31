@@ -29,7 +29,7 @@ const tags = post.tags.slice(0, 4)
     <span>{post.readingMinutes} {t(locale, 'common.minRead')}</span>
   </div>
   <h2 class="post-card-title">
-    <a href={postUrl(post.slug)}>{post.title || t(locale, 'common.untitled')}</a>
+    <a href={postUrl(post.slug, post.permalink, Boolean(blog.site.permalink?.enable))}>{post.title || t(locale, 'common.untitled')}</a>
   </h2>
   {(post.excerpt || post.description) && (
     <p class="post-card-excerpt">{post.excerpt || post.description}</p>

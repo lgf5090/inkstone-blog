@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ url }) => {
       if (summary.encrypted) return null
       const post = await loadPost(summary.slug).catch(() => null)
       if (!post?.content) return null
-      return { title: post.title, link: postLink(origin, post.slug), body: bodyOf(post.content) }
+      return { title: post.title, link: postLink(origin, post.slug, post.permalink, feed.site.permalink.enable), body: bodyOf(post.content) }
     }))
     for (const item of chunk) if (item) posts.push(item)
   }

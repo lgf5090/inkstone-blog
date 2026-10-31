@@ -46,6 +46,12 @@ const siteSchema = z.object({
     locale: z.string().default('en'),
     timeZone: z.string().default('UTC'),
     themeColor: z.object({ hue: z.number(), style: z.string(), spec: z.string() }).default({ hue: 315, style: 'tonalSpot', spec: '2025' }),
+    banner: z.object({
+      desktopLight: z.string().default(''),
+      desktopDark: z.string().default(''),
+      mobileLight: z.string().default(''),
+      mobileDark: z.string().default(''),
+    }).passthrough().default({ desktopLight: '', desktopDark: '', mobileLight: '', mobileDark: '' }),
   }).passthrough(),
   profile: z.object({
     name: z.string().default(''),
@@ -70,7 +76,10 @@ const siteSchema = z.object({
     title: z.string().default(''),
     enabled: z.boolean().default(true),
     config: z.record(z.string(), z.unknown()).default({}),
-  })).default([]),
+    slot: z.enum(['top', 'sticky']).optional(),
+    pages: z.array(z.string()).optional(),
+    collapseAfter: z.number().optional(),
+  }).passthrough()).default([]),
   discussion: z.object({
     enabled: z.boolean().default(true),
     requireNameEmail: z.boolean().default(true),
@@ -108,6 +117,27 @@ const siteSchema = z.object({
     enable: z.boolean().default(true),
     excludeTags: z.array(z.string()).default([]),
   }).passthrough().default({ enable: true, excludeTags: [] }),
+  comment: z.object({
+    provider: z.enum(['none', 'local', 'twikoo', 'giscus', 'waline']).default('none'),
+    twikoo: z.object({ envId: z.string().default('') }).passthrough().default({ envId: '' }),
+    giscus: z.object({
+      repo: z.string().default(''),
+      repoId: z.string().default(''),
+      category: z.string().default(''),
+      categoryId: z.string().default(''),
+    }).passthrough().default({ repo: '', repoId: '', category: '', categoryId: '' }),
+    waline: z.object({ serverURL: z.string().default('') }).passthrough().default({ serverURL: '' }),
+  }).passthrough().default({
+    provider: 'none',
+    twikoo: { envId: '' },
+    giscus: { repo: '', repoId: '', category: '', categoryId: '' },
+    waline: { serverURL: '' },
+  }),
+  contextMenu: z.object({
+    enable: z.boolean().default(true),
+    actions: z.array(z.string()).default(['copySelection', 'copyLink', 'openImage', 'copyImage', 'backToTop']),
+  }).passthrough().default({ enable: true, actions: ['copySelection', 'copyLink', 'openImage', 'copyImage', 'backToTop'] }),
+  permalink: z.object({ enable: z.boolean().default(false) }).passthrough().default({ enable: false }),
   display: z.record(z.string(), z.unknown()).default({}),
   integrations: z.object({
     comments: z.string().default('none'),
@@ -142,7 +172,8 @@ const siteSchema = z.object({
     categories: z.number().default(0),
     tags: z.number().default(0),
     series: z.number().default(0),
-  }).passthrough().default({ posts: 0, categories: 0, tags: 0, series: 0 }),
+    views: z.number().default(0),
+  }).passthrough().default({ posts: 0, categories: 0, tags: 0, series: 0, views: 0 }),
 }).passthrough()
 
 function apiHeaders(extra?: Record<string, string>): Record<string, string> {
@@ -270,6 +301,10 @@ export function loadTaxonomy(kind: 'categories' | 'tags' | 'series'): Promise<{ 
 
 export function loadCalendar(): Promise<{ items: BlogCalendarEntry[] }> {
   return getJson<{ items: BlogCalendarEntry[] }>('/calendar')
+}
+
+export function resolvePostPermalink(path: string): Promise<{ found: boolean; slug?: string }> {
+  return getJson<{ found: boolean; slug?: string }>(`/permalink?path=${encodeURIComponent(path)}`)
 }
 
 export function searchPosts(q: string, page = 1, limit = 10): Promise<BlogSearchResult> {

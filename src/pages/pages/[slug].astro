@@ -3,14 +3,16 @@ import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadPage, resolveRedirect } from '../../lib/blog-api'
+import { BlogApiError, loadPage, loadPosts, mediaUrl, resolveRedirect } from '../../lib/blog-api'
 import { renderPageMarkdown } from '../../lib/markdown'
-import type { BlogPageItem } from '../../lib/blog-types'
+import { postUrl } from '../../lib/format'
+import type { BlogPageItem, BlogPostSummary } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
-const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], series: [] }
 const locale = blogLocale(blog.site.site.locale)
 const slug = Astro.params.slug ?? ''
+const isAbout = slug === 'about'
 let page: BlogPageItem | null = null
 let error = ''
 try {
@@ -19,16 +21,70 @@ try {
   if (cause instanceof BlogApiError && cause.status === 404) {
     const redirect: import('../../lib/blog-types').BlogRedirectResult = await resolveRedirect(`/pages/${slug}`).catch(() => ({ found: false }))
     if (redirect.found && redirect.to) return Astro.redirect(redirect.to, (redirect.status ?? 301) as 301 | 302)
-    Astro.response.status = 404
-    error = t(locale, 'blog.notFound')
+    if (!isAbout) {
+      Astro.response.status = 404
+      error = t(locale, 'blog.notFound')
+    }
   } else {
     error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
   }
 }
+if (isAbout && !page) {
+  page = {
+    id: 'about',
+    slug: 'about',
+    title: t(locale, 'page.about'),
+    kind: 'about',
+    body: '',
+    noteId: null,
+    publishedAt: null,
+    updatedAt: Date.now(),
+  }
+  error = ''
+}
 const html = page ? renderPageMarkdown(page.body) : ''
+const profile = blog.site.profile
+const avatar = profile.avatar ? mediaUrl(profile.avatar) : null
+let recent: BlogPostSummary[] = []
+if (isAbout) {
+  try {
+    recent = (await loadPosts({ limit: 5 })).items
+  } catch (cause) {
+    console.warn('[blog] about recent posts failed', cause)
+  }
+}
+const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 ---
 <Layout title={page?.title ?? t(locale, 'blog.notFound')} noIndex={!page}>
   <MainGridLayout page="about">
+    {isAbout && (
+      <section class="about-profile sidebar-card" aria-label={profile.name || t(locale, 'page.about')}>
+        {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
+        <div class="about-profile-body">
+          {profile.name && <h2 class="profile-name">{profile.name}</h2>}
+          {profile.bio && <p class="profile-bio">{profile.bio}</p>}
+          {profile.links.length > 0 && (
+            <div class="profile-links">
+              {profile.links.map((link) => <a class="chip" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
+            </div>
+          )}
+          <ul class="about-stats">
+            <li>{blog.site.counts.posts} {t(locale, 'common.posts')}</li>
+            <li>{blog.site.counts.categories} {t(locale, 'common.categories')}</li>
+            <li>{blog.site.counts.tags} {t(locale, 'common.tags')}</li>
+            <li>{blog.site.counts.views} {t(locale, 'common.views')}</li>
+          </ul>
+        </div>
+      </section>
+    )}
+    {isAbout && recent.length > 0 && (
+      <section class="about-recent sidebar-card" aria-label={t(locale, 'common.latest')}>
+        <h2 class="sidebar-title">{t(locale, 'common.latest')}</h2>
+        <ul class="widget-list">
+          {recent.map((item) => <li><a href={postUrl(item.slug, item.permalink, permalinkEnabled)}><span>{item.title || t(locale, 'common.untitled')}</span></a></li>)}
+        </ul>
+      </section>
+    )}
     {error || !page ? (
       <div class="error-state" role="alert">
         <strong>{t(locale, 'blog.notFound')}</strong><p>{error || t(locale, 'blog.notFoundHint')}</p>

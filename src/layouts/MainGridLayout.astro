@@ -27,11 +27,11 @@ const { page = 'home', hero = false } = Astro.props
       data-side={sidebar.side}
       data-has-sidebar={showSidebar ? 'true' : 'false'}
     >
-      {showSidebar && <SideBar column={dual ? 'primary' : 'all'} />}
+      {showSidebar && <SideBar page={page} column={dual ? 'primary' : 'all'} />}
       <div class="content-column">
         <slot />
       </div>
-      {showSidebar && dual && <SideBar column="secondary" />}
+      {showSidebar && dual && <SideBar page={page} column="secondary" />}
     </div>
   </main>
   <Footer />

@@ -6,8 +6,18 @@ const blog = Astro.locals.blog ?? {
   banner: { title: FALLBACK_SITE.site.title, subtitle: '', hue: 315, gradient: true, typewriter: true, waves: true, texture: true },
 }
 const locale = blogLocale(blog.site.site.locale)
+const banner = blog.site.site.banner ?? { desktopLight: '', desktopDark: '', mobileLight: '', mobileDark: '' }
+const cssUrl = (value: string) => value ? `url("${value.replace(/"/g, '%22')}")` : ''
+const mediaVars = [
+  banner.desktopLight ? `--banner-desktop:${cssUrl(banner.desktopLight)}` : '',
+  banner.desktopDark ? `--banner-desktop-dark:${cssUrl(banner.desktopDark)}` : '',
+  banner.mobileLight ? `--banner-mobile:${cssUrl(banner.mobileLight)}` : '',
+  banner.mobileDark ? `--banner-mobile-dark:${cssUrl(banner.mobileDark)}` : '',
+].filter(Boolean).join(';')
+const hasBannerImage = Boolean(banner.desktopLight || banner.desktopDark || banner.mobileLight || banner.mobileDark)
 ---
 <section class="hero-banner" aria-labelledby="hero-title" data-texture={blog.banner.texture ? '' : undefined} data-waves={blog.banner.waves ? '' : undefined}>
+  {hasBannerImage && <div class="hero-media" data-hero-media style={mediaVars} aria-hidden="true"></div>}
   <div class="hero-inner">
     <span class="hero-eyebrow">{t(locale, 'nav.home')}</span>
     <h1 id="hero-title" class="hero-title">{blog.site.site.title}</h1>

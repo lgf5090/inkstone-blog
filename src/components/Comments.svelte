@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { BlogCommentsResponse, PublicBlogComment } from '../lib/blog-types'
+  import { onDestroy, onMount } from 'svelte'
+  import type { BlogCommentsResponse, BlogSitePublic, PublicBlogComment } from '../lib/blog-types'
   import { t, type BlogLocale } from '../i18n'
 
   interface Props {
@@ -8,9 +9,84 @@
     discussion: BlogCommentsResponse['discussion']
     initial: PublicBlogComment[]
     locale: BlogLocale
+    provider?: BlogSitePublic['comment']['provider']
+    providerConfig?: BlogSitePublic['comment']
   }
 
-  let { slug, enabled, discussion, initial, locale }: Props = $props()
+  let { slug, enabled, discussion, initial, locale, provider = 'none', providerConfig }: Props = $props()
+  const external = $derived(provider === 'twikoo' || provider === 'giscus' || provider === 'waline')
+  let externalHost: HTMLDivElement | undefined = $state()
+  let externalError = $state('')
+  const addedScripts: HTMLScriptElement[] = []
+
+  function loadScript(src: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.async = true
+      script.dataset.commentProvider = provider
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error(`Could not load ${src}`))
+      document.head.appendChild(script)
+      addedScripts.push(script)
+    })
+  }
+
+  async function mountExternal(): Promise<void> {
+    if (!external || !enabled || !externalHost || !providerConfig) return
+    externalHost.replaceChildren()
+    externalError = ''
+    try {
+      if (provider === 'giscus') {
+        const giscus = providerConfig.giscus
+        if (!giscus.repo || !giscus.repoId) throw new Error('missing giscus config')
+        const script = document.createElement('script')
+        script.src = 'https://giscus.app/client.js'
+        script.async = true
+        script.dataset.commentProvider = provider
+        script.setAttribute('data-repo', giscus.repo)
+        script.setAttribute('data-repo-id', giscus.repoId)
+        script.setAttribute('data-category', giscus.category)
+        script.setAttribute('data-category-id', giscus.categoryId)
+        script.setAttribute('data-mapping', 'pathname')
+        script.setAttribute('data-strict', '0')
+        script.setAttribute('data-reactions-enabled', '1')
+        script.setAttribute('data-emit-metadata', '0')
+        script.setAttribute('data-input-position', 'bottom')
+        script.setAttribute('data-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')
+        script.setAttribute('data-lang', locale)
+        script.setAttribute('crossorigin', 'anonymous')
+        externalHost.appendChild(script)
+        addedScripts.push(script)
+        return
+      }
+      if (provider === 'twikoo') {
+        if (!providerConfig.twikoo.envId) throw new Error('missing twikoo config')
+        await loadScript('https://cdn.jsdelivr.net/npm/twikoo@1.7.20/dist/twikoo.min.js')
+        const twikoo = (window as unknown as { twikoo?: { init: (options: Record<string, unknown>) => void } }).twikoo
+        if (!twikoo?.init) throw new Error('twikoo unavailable')
+        twikoo.init({ envId: providerConfig.twikoo.envId, el: externalHost, path: `/posts/${slug}` })
+        return
+      }
+      if (!providerConfig.waline.serverURL) throw new Error('missing waline config')
+      await loadScript('https://unpkg.com/@waline/client@3/dist/waline.js')
+      const Waline = (window as unknown as { Waline?: { init: (options: Record<string, unknown>) => void } }).Waline
+      if (!Waline?.init) throw new Error('waline unavailable')
+      Waline.init({ el: externalHost, serverURL: providerConfig.waline.serverURL, path: `/posts/${slug}`, dark: 'html.dark' })
+    } catch (cause) {
+      console.warn('[blog] external comment provider failed', cause)
+      externalError = t(locale, 'comments.externalMissing')
+    }
+  }
+
+  onMount(() => {
+    void mountExternal()
+  })
+
+  onDestroy(() => {
+    for (const script of addedScripts) script.remove()
+    addedScripts.length = 0
+  })
 
   // svelte-ignore state_referenced_locally
   let items = $state<PublicBlogComment[]>(initial)
@@ -102,9 +178,13 @@
 
 <section class="comments-section" aria-labelledby="comments-heading" data-blog-comments>
   <h2 id="comments-heading" class="comments-title">
-    {t(locale, 'comments.title')} <span class="muted">({flat.length})</span>
+    {t(locale, 'comments.title')}{#if !external} <span class="muted">({flat.length})</span>{/if}
   </h2>
 
+  {#if external}
+    <div class="comment-provider" bind:this={externalHost}></div>
+    {#if externalError}<p class="comment-error" role="alert">{externalError}</p>{/if}
+  {:else}
   {#if flat.length === 0}
     <p class="comments-empty">{t(locale, 'comments.empty')}</p>
   {:else}
@@ -197,5 +277,6 @@
     </form>
   {:else}
     <p class="comments-empty">{t(locale, 'comments.closed')}</p>
+  {/if}
   {/if}
 </section>

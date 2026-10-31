@@ -1,4 +1,5 @@
 import type { BlogFeedData } from './blog-types'
+import { postUrl } from './format'
 
 export function escapeXml(value: string): string {
   return value
@@ -14,7 +15,7 @@ export function siteOrigin(requestUrl: URL, siteUrl: string): string {
   return configured || siteUrl.replace(/\/+$/, '') || requestUrl.origin
 }
 
-export function postLink(origin: string, slug: string): string {
-  return `${origin}/posts/${encodeURIComponent(slug)}`
+export function postLink(origin: string, slug: string, permalink?: string | null, enabled = false): string {
+  return `${origin}${postUrl(slug, permalink, enabled)}`
 }
 

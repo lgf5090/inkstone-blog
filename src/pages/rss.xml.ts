@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ url }) => {
   if (!feed) return new Response('Blog feed unavailable', { status: 503 })
   const origin = siteOrigin(url, feed.site.site.url)
   const items = feed.posts.slice(0, 50).map((post) => {
-    const link = postLink(origin, post.slug)
+    const link = postLink(origin, post.slug, post.permalink, feed.site.permalink.enable)
     return `<item>
       <title>${escapeXml(post.title)}</title>
       <link>${escapeXml(link)}</link>

@@ -33,7 +33,11 @@ export function formatMonth(month: string, locale: string): string {
   }
 }
 
-export function postUrl(slug: string): string {
+export function postUrl(slug: string, permalink?: string | null, enabled = false): string {
+  if (enabled && permalink) {
+    const path = permalink.trim().replace(/^\/+|\/+$/g, '')
+    if (path && !path.includes('..')) return '/' + path.split('/').map(encodeURIComponent).join('/')
+  }
   return `/posts/${encodeURIComponent(slug)}`
 }
 
