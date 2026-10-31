@@ -2,7 +2,12 @@
   import { onMount } from 'svelte'
   import { t, type BlogLocale } from '../../i18n'
 
-  let { locale }: { locale: BlogLocale } = $props()
+  let { locale, defaultHue = 315, defaultStyle = 'tonalSpot', defaultSpec = '2025' }: {
+    locale: BlogLocale
+    defaultHue?: number
+    defaultStyle?: string
+    defaultSpec?: '2025' | '2021'
+  } = $props()
   type Theme = 'auto' | 'light' | 'dark'
   type Accent = 'cinnabar' | 'indigo' | 'celadon' | 'amber' | 'terracotta' | 'wisteria' | 'graphite'
   type Background = 'paper' | 'white'
@@ -38,9 +43,9 @@
     { id: 'fruitSalad', chroma: 0.15, offset: 100, secondaryChroma: 0.15 },
   ]
   const textures: Texture[] = ['none', 'starlight', 'cyber_dots', 'topography', 'geometric', 'sakura']
-  let hue = $state(315)
-  let m3Style = $state<McStyle>('tonalSpot')
-  let m3Spec = $state<'2025' | '2021'>('2025')
+  let hue = $state(defaultHue)
+  let m3Style = $state<McStyle>(styles.some((item) => item.id === defaultStyle) ? defaultStyle as McStyle : 'tonalSpot')
+  let m3Spec = $state<'2025' | '2021'>(defaultSpec === '2021' ? '2021' : '2025')
   let texture = $state<Texture>('none')
   let wallpaper = $state<'plain' | 'banner'>('plain')
   let reduceMotion = $state(false)
@@ -153,16 +158,19 @@
     const storedBackground = localStorage.getItem('background')
     background = storedBackground === 'white' ? 'white' : 'paper'
     density = localStorage.getItem('density') === 'compact' ? 'compact' : 'comfortable'
-    const storedHue = Number(localStorage.getItem('hue'))
-    if (Number.isFinite(storedHue) && storedHue >= 0 && storedHue <= 360) hue = Math.round(storedHue)
+    const storedHueRaw = localStorage.getItem('hue')
+    const storedHue = Number(storedHueRaw)
+    if (storedHueRaw !== null && Number.isFinite(storedHue) && storedHue >= 0 && storedHue <= 360) hue = Math.round(storedHue)
     const storedStyle = localStorage.getItem('m3-style')
     if (styles.some((item) => item.id === storedStyle)) m3Style = storedStyle as McStyle
-    m3Spec = localStorage.getItem('m3-spec') === '2021' ? '2021' : '2025'
+    else if (styles.some((item) => item.id === defaultStyle)) m3Style = defaultStyle as McStyle
+    m3Spec = localStorage.getItem('m3-spec') === '2021' ? '2021' : defaultSpec === '2021' ? '2021' : '2025'
     const storedTexture = localStorage.getItem('texture')
     if (textures.includes(storedTexture as Texture)) texture = storedTexture as Texture
     wallpaper = localStorage.getItem('wallpaper') === 'banner' ? 'banner' : 'plain'
     reduceMotion = localStorage.getItem('reduce-motion') === '1'
     m3Enabled = Boolean(localStorage.getItem('m3-primary'))
+    if (!m3Enabled) applyPalette()
     document.documentElement.dataset.texture = texture
     document.documentElement.dataset.wallpaper = wallpaper
     document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false'

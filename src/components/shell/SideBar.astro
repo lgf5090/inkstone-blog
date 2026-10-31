@@ -35,6 +35,7 @@ const secondaryTypes = new Set(['categories', 'tags', 'series', 'stats', 'calend
 const visible = all.filter((widget) => widget.enabled
   && (!widget.pages?.length || widget.pages.includes(page))
   && (column === 'all' || (column === 'secondary' ? secondaryTypes.has(widget.type) : !secondaryTypes.has(widget.type))))
+const ordered = [...visible].sort((left, right) => (left.slot === 'top' ? 0 : 1) - (right.slot === 'top' ? 0 : 1))
 const recentWidget = visible.some((widget) => widget.type === 'recent')
 let recent: BlogPostSummary[] = []
 if (recentWidget) {
@@ -79,11 +80,11 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
         )}
       </section>
     )}
-    {visible.map((widget) => {
+    {ordered.map((widget) => {
       if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
         <section class:list={["sidebar-card profile-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={profile.name || t(locale, 'nav.about')}>
           {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
-          {profile.name && <h2 class="profile-name">{profile.name}</h2>}
+          {widgetTitle(widget) && <h2 class="profile-name">{widgetTitle(widget)}</h2>}
           {profile.bio && <p class="profile-bio">{profile.bio}</p>}
           {profile.links.length > 0 && (
             <div class="profile-links">
@@ -158,8 +159,8 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
         </section>
       )
       if (widget.type === 'stats') return (
-        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={t(locale, 'common.stats')}>
-          <h2 class="sidebar-title">{t(locale, 'common.stats')}</h2>
+        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widgetTitle(widget) || t(locale, 'common.stats')}>
+          <h2 class="sidebar-title">{widgetTitle(widget) || t(locale, 'common.stats')}</h2>
           <ul class="widget-list">
             <li><span>{t(locale, 'common.posts')}</span><span class="widget-count">{blog.site.counts.posts}</span></li>
             <li><span>{t(locale, 'common.categories')}</span><span class="widget-count">{blog.site.counts.categories}</span></li>

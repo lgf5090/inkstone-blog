@@ -170,7 +170,7 @@ const discussion = comments?.discussion ?? {
   allowReplies: true,
   maxLength: 4000,
 }
-const origin = (import.meta.env.BLOG_SITE_URL ?? Astro.url.origin).replace(/\/+$/, '')
+const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
 const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 const canonical = `${origin}${postUrl(slug, post?.permalink, permalinkEnabled)}`
 const runtimeOrigin = (import.meta.env.BLOG_RUNTIME_ORIGIN || import.meta.env.BLOG_API_ORIGIN || '').replace(/\/+$/, '')

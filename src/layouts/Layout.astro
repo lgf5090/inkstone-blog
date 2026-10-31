@@ -30,7 +30,7 @@ const {
 const siteTitle = blog.site.site.title || 'Inkstone Blog'
 const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle
 const configuredOrigin = (import.meta.env.BLOG_SITE_URL ?? '').replace(/\/+$/, '')
-const origin = configuredOrigin || Astro.url.origin
+const origin = (blog.site.site.url || configuredOrigin || Astro.url.origin).replace(/\/+$/, '')
 const canonical = canonicalUrl ? new URL(canonicalUrl) : new URL(Astro.url.pathname + Astro.url.search, origin)
 const absoluteImage = image ? new URL(image, origin).href : null
 const structured = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).filter(Boolean)
