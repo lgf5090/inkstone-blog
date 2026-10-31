@@ -30,4 +30,3 @@ pnpm-debug.log*
 !.env.example
 test-results/
 playwright-report/
-
