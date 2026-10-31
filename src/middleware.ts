@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
-import { blogApiOrigin, blogRuntimeOrigin } from './server/origins'
+import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey, blogRuntimeOrigin } from './server/origins'
 import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { unlockCookieName } from './lib/format'
@@ -22,13 +22,13 @@ async function mediaProxy(context: Parameters<Parameters<typeof defineMiddleware
   const origin = blogApiOrigin()
   if (!origin) return new Response(null, { status: 503 })
   const headers = new Headers({ 'x-inkstone-client': '1' })
-  const key = import.meta.env.BLOG_PROXY_KEY
+  const key = blogProxyKey()
   if (key) headers.set('x-blog-proxy-key', key)
   let upstream: Response
   try {
     upstream = await fetch(`${origin}/api/blog/assets/${encodeURIComponent(id)}`, {
       headers,
-      signal: AbortSignal.timeout(Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')),
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
   } catch {
     return new Response(null, { status: 502 })
@@ -69,7 +69,7 @@ async function runtimeProxy(context: Parameters<Parameters<typeof defineMiddlewa
   try {
     upstream = await fetch(`${origin}${upstreamPath}`, {
       headers: { 'x-inkstone-client': '1' },
-      signal: AbortSignal.timeout(Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')),
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
   } catch {
     return new Response(null, { status: 502 })

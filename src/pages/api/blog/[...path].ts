@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { blogApiOrigin } from '../../../server/origins'
+import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey } from '../../../server/origins'
 import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
@@ -13,7 +13,7 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   const origin = blogApiOrigin()
   if (!origin) return Response.json({ error: 'blog_api_not_configured' }, { status: 503 })
   const headers = new Headers()
-  const key = import.meta.env.BLOG_PROXY_KEY
+  const key = blogProxyKey()
   if (key) headers.set('x-blog-proxy-key', key)
   headers.set('x-inkstone-client', '1')
   const contentType = request.headers.get('content-type')
@@ -37,7 +37,7 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
       headers,
       // Multipart uploads must keep their bytes: reading the body as text corrupts image data.
       body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer(),
-      signal: AbortSignal.timeout(Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')),
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
     const responseHeaders = new Headers()
     const type = upstream.headers.get('content-type')

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { blogApiOrigin } from '../server/origins'
+import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey } from '../server/origins'
 import type {
   AdjacentPosts,
   BlogAlbumDetail,
@@ -21,10 +21,6 @@ import type {
   SeriesItem,
   TaxonomyItem,
 } from './blog-types'
-
-const ORIGIN = blogApiOrigin()
-const PROXY_KEY = import.meta.env.BLOG_PROXY_KEY ?? ''
-const TIMEOUT_MS = Number(import.meta.env.BLOG_API_TIMEOUT_MS ?? '8000')
 
 export class BlogApiError extends Error {
   constructor(
@@ -182,8 +178,9 @@ const siteSchema = z.object({
 }).passthrough()
 
 function apiHeaders(extra?: Record<string, string>): Record<string, string> {
+  const key = blogProxyKey()
   return {
-    ...(PROXY_KEY ? { 'x-blog-proxy-key': PROXY_KEY } : {}),
+    ...(key ? { 'x-blog-proxy-key': key } : {}),
     'x-inkstone-client': '1',
     ...extra,
   }
@@ -209,7 +206,7 @@ async function getJson<T>(
   query?: Record<string, string | number | boolean | undefined | null>,
   headers?: Record<string, string>,
 ): Promise<T> {
-  const url = new URL(`${ORIGIN}/api/blog${path}`)
+  const url = new URL(`${blogApiOrigin()}/api/blog${path}`)
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value))
   }
@@ -217,7 +214,7 @@ async function getJson<T>(
   try {
     response = await fetch(url, {
       headers: apiHeaders(headers),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
   } catch (cause) {
     throw new BlogApiError(503, cause instanceof Error ? cause.message : String(cause), 'blog_api_unreachable')
@@ -229,11 +226,11 @@ async function getJson<T>(
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   let response: Response
   try {
-    response = await fetch(`${ORIGIN}/api/blog${path}`, {
+    response = await fetch(`${blogApiOrigin()}/api/blog${path}`, {
       method: 'POST',
       headers: apiHeaders({ 'content-type': 'application/json' }),
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
   } catch (cause) {
     throw new BlogApiError(503, cause instanceof Error ? cause.message : String(cause), 'blog_api_unreachable')

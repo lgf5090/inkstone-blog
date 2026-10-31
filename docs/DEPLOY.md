@@ -60,7 +60,12 @@ BLOG_API_TIMEOUT_MS=8000
 | `BLOG_RUNTIME_ORIGIN` | 否 | runtime/media 源；默认跟随 `BLOG_API_ORIGIN` |
 | `BLOG_API_TIMEOUT_MS` | 否 | SSR 请求超时，默认 8000 |
 
-这些变量在 **构建时** 通过 Vite 的 `import.meta.env` 注入，所以在 CI/本地构建前设置，或写入 `.env.production`；只在 Cloudflare Dashboard 改运行时变量不会改变已构建的 Worker。
+这些变量在服务端读取时**先取 Worker 的运行时变量/密钥**（`cloudflare:workers` 的 `env`），没有时才回退到构建时的 `import.meta.env`：
+
+- 生产环境推荐在 Cloudflare Worker 的「运行时变量和密钥」里配置 `BLOG_API_ORIGIN`、`BLOG_PROXY_KEY`、`BLOG_RUNTIME_ORIGIN`、`BLOG_API_TIMEOUT_MS`，改完立即生效，不需要重新构建。
+- 构建变量仍然可用（例如 CI 里没有运行时绑定时），但改了构建变量必须重新构建部署。
+- `BLOG_SITE_URL` 只走构建时注入（canonical/OG/sitemap/feed），修改后需要重新构建。
+- `BLOG_API_ORIGIN` 只填域名 origin（如 `https://inkstone.454470.xyz`）；代码会把误填的路径（`/api`、`/blog-admin`）和末尾斜杠规范化掉。
 
 本地开发使用 `.env`（可指向 `http://localhost:7714` 和 `http://127.0.0.1:4321`），不要提交 `.env`。
 
@@ -132,12 +137,15 @@ curl -s -o /dev/null -w '%{http_code}\n' https://blog.example.com/rss.xml
    - 构建命令：`pnpm build`
    - 部署命令：`pnpm exec wrangler deploy`
    - 也可以把部署命令填 `pnpm deploy`（会重新构建一次）
-5. 在“变量和机密”添加 **构建变量**（必须添加在构建配置里，不是运行时变量）：
-   - `BLOG_SITE_URL=https://blog.example.com`
-   - `BLOG_API_ORIGIN=https://inkstone.454470.xyz`（可不填，代码默认就是这个）
-   - `BLOG_PROXY_KEY=<与后端相同的 secret>`（类型选 Secret）
-   - `BLOG_API_TIMEOUT_MS=8000`
-   - `NODE_VERSION=22.23.4`
+5. 配置变量（二选一，推荐运行时）：
+   - **运行时变量和密钥**（Worker → Settings → 运行时变量和密钥，改完立即生效）：
+     - `BLOG_API_ORIGIN=https://inkstone.454470.xyz`（只填 origin）
+     - `BLOG_PROXY_KEY=<与后端相同的 secret>`（类型选密钥）
+     - 可选：`BLOG_RUNTIME_ORIGIN`、`BLOG_API_TIMEOUT_MS`
+   - **构建变量**（Settings → 构建 → 构建变量和密钥，支持 CI 构建，改动后必须重新构建）：
+     - `BLOG_SITE_URL=https://blog.example.com`
+     - 其余变量可在此重复配置，作为运行时缺失时的回退。
+   - `NODE_VERSION=22.23.4` 放构建变量。
 6. 保存并首次部署；之后每次 push 到 `main` 自动重建部署。Dashboard 的 Deployments 可回滚。
 
 如果仓库使用 npm 而不是 pnpm，构建/部署命令改为 `npm run build` / `npx wrangler deploy`；但本仓库只有 `pnpm-lock.yaml`，推荐保持 pnpm，且 `packageManager` 已固定。
@@ -145,9 +153,10 @@ curl -s -o /dev/null -w '%{http_code}\n' https://blog.example.com/rss.xml
 ## 6. 常见问题
 
 - **`/api/blog/site` 404**：后端没部署博客模块，或请求被后端路由拦到 404；先修正后端，不是前端问题。
-- **403 / `The blog proxy key is invalid`**：前端 `.env.production` 与后端 secret 的 `BLOG_PROXY_KEY` 不一致。
+- **`API endpoint not found`**：`BLOG_API_ORIGIN` 带了路径（如 `/api`、`/api/blog`、`/blog-admin`）。只填 origin；代码会规范化，但仍建议改对。
+- **403 / `The blog proxy key is invalid`**：前端与后端 secret 的 `BLOG_PROXY_KEY` 不一致。
 - **503 `server_misconfigured`**：后端没有设置 `BLOG_PROXY_KEY`（生产环境不允许空密钥）。
 - **502 `blog_api_unreachable`**：构建环境无法访问 `BLOG_API_ORIGIN`，或后端域名/DNS/TLS 异常；检查 `BLOG_API_TIMEOUT_MS`。
 - **正文空白/图片 404**：确认后端 `/blog-runtime/<version>/...` 与 `/api/blog/assets/<id>` 可访问；runtime 版本必须与快照一致。
-- **修改 API 地址不生效**：前端配置是构建时变量；改 `.env.production` 后重新 `pnpm build` 并部署。
+- **修改 API 地址不生效**：运行时变量立即生效；构建变量需要重新构建。两处都设置时运行时优先。
 - **不要**把 `BLOG_PROXY_KEY` 放到 `PUBLIC_*` 变量或前端源码；浏览器只能访问博客同源代理。
