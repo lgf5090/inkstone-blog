@@ -142,6 +142,8 @@ select {
 
 .top-app-bar-inner {
   pointer-events: auto;
+  position: relative;
+  z-index: 2;
   width: min(calc(100% - 2rem), var(--page-width));
   margin-inline: auto;
   display: flex;
@@ -301,6 +303,8 @@ select {
 
 .mobile-nav {
   display: none;
+  position: relative;
+  z-index: 1;
   width: min(calc(100% - 2rem), var(--page-width));
   margin: 0.4rem auto 0;
   padding: 0.35rem;
@@ -1580,7 +1584,7 @@ select {
 /* Six texture names do not fit one pill row; a 3x2 chip grid keeps every label readable. */
 .appearance-segment.appearance-texture {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-radius: var(--radius-md);
 }
 
