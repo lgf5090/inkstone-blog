@@ -41,6 +41,32 @@ export function postUrl(slug: string, permalink?: string | null, enabled = false
   return `/posts/${encodeURIComponent(slug)}`
 }
 
+const SAFE_LINK_PROTOCOLS = new Set(['http:', 'https:', 'mailto:'])
+
+export function safeUrl(value: string | null | undefined): string | null {
+  const raw = (value ?? '').trim()
+  if (!raw) return null
+  if (raw.startsWith('/') && !raw.startsWith('//') && !raw.includes('\\')) return raw
+  try {
+    const parsed = new URL(raw)
+    return SAFE_LINK_PROTOCOLS.has(parsed.protocol) ? raw : null
+  } catch {
+    return null
+  }
+}
+
+export function safeRedirectTarget(value: string | null | undefined, origin: string): string | null {
+  const raw = (value ?? '').trim()
+  if (!raw) return null
+  if (raw.startsWith('/') && !raw.startsWith('//') && !raw.includes('\\')) return raw
+  try {
+    const target = new URL(raw, origin)
+    return target.origin === origin ? `${target.pathname}${target.search}${target.hash}` : null
+  } catch {
+    return null
+  }
+}
+
 export function unlockCookieName(slug: string): string {
   let hash = 2166136261
   for (let index = 0; index < slug.length; index++) {

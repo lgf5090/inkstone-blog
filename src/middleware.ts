@@ -147,8 +147,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (!PASSTHROUGH.test(context.url.pathname)) {
     try {
-      const site = await loadSite()
-      const { categories, tags, series } = await loadTaxonomies()
+      const [site, taxonomies] = await Promise.all([loadSite(), loadTaxonomies()])
+      const { categories, tags, series } = taxonomies
       const blog = buildRuntimeConfig(site, categories.items, tags.items, series.items as never[])
       const requested = context.url.searchParams.get('lang') ?? context.cookies.get('blog-locale')?.value
       const selected = requested && (LOCALES as readonly string[]).includes(requested) ? blogLocale(requested) : null
@@ -165,6 +165,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
   const response = await next()
   response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   return response

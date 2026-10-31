@@ -8,7 +8,7 @@ import SharePoster from '../../components/blog/SharePoster.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
 import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, loadPosts, resolveRedirect, unlockPost } from '../../lib/blog-api'
-import { formatDate, postUrl, unlockCookieName } from '../../lib/format'
+import { formatDate, postUrl, safeRedirectTarget, unlockCookieName } from '../../lib/format'
 import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail, BlogPostSummary, SeriesItem } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 import { blogRuntimeOrigin } from '../../server/origins'
@@ -58,16 +58,21 @@ if (Astro.request.method === 'POST') {
   }
 }
 
+const commentProvider = blog.site.comment?.provider ?? 'none'
+const externalComments = commentProvider === 'twikoo' || commentProvider === 'giscus' || commentProvider === 'waline'
+const postPromise = loadPost(slug, unlockToken)
+const adjacentPromise = loadAdjacent(slug).catch(() => ({ previous: null, next: null }))
+const commentsPromise = externalComments ? Promise.resolve(null) : loadComments(slug, unlockToken).catch(() => null)
 try {
-  post = await loadPost(slug, unlockToken)
-  ;[adjacent, comments] = await Promise.all([
-    loadAdjacent(slug).catch(() => ({ previous: null, next: null })),
-    loadComments(slug, unlockToken).catch(() => null),
-  ])
+  post = await postPromise
+  ;[adjacent, comments] = await Promise.all([adjacentPromise, commentsPromise])
 } catch (cause) {
   if (cause instanceof BlogApiError && cause.status === 404) {
     const redirect: import('../../lib/blog-types').BlogRedirectResult = await resolveRedirect(`/posts/${slug}`).catch(() => ({ found: false }))
-    if (redirect.found && redirect.to) return Astro.redirect(redirect.to, (redirect.status ?? 301) as 301 | 302)
+    if (redirect.found && redirect.to) {
+      const target = safeRedirectTarget(redirect.to, Astro.url.origin)
+      if (target) return Astro.redirect(target, (redirect.status ?? 301) as 301 | 302)
+    }
     Astro.response.status = 404
     error = t(locale, 'blog.notFound')
   } else if (cause instanceof BlogApiError && cause.status === 403) {
@@ -133,7 +138,9 @@ if (post) {
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score || (b.item.publishedAt ?? 0) - (a.item.publishedAt ?? 0))
     related = scored.slice(0, blog.article.relatedCount).map((entry) => entry.item)
-    const relatedSlugs = new Set(related.map((item) => item.slug))
+    const excludedSlugs = new Set(related.map((item) => item.slug))
+    if (adjacent.previous) excludedSlugs.add(adjacent.previous.slug)
+    if (adjacent.next) excludedSlugs.add(adjacent.next.slug)
     const rank = (slug: string): number => {
       let hash = 2166136261
       for (const char of `${post!.slug}:${slug}`) {
@@ -143,7 +150,7 @@ if (post) {
       return hash >>> 0
     }
     random = candidates
-      .filter((item) => !relatedSlugs.has(item.slug))
+      .filter((item) => !excludedSlugs.has(item.slug))
       .sort((a, b) => rank(a.slug) - rank(b.slug))
       .slice(0, blog.article.randomCount)
   }
@@ -276,7 +283,7 @@ const jsonLd = post ? {
                       <Icon name="link" size={12} /> {t(locale, 'common.share')}
                     </button>
                     <SharePoster
-                      client:load
+                      client:idle
                       title={post.title}
                       description={post.description || post.excerpt}
                       author={blog.site.profile.name || blog.site.site.title}
@@ -326,10 +333,10 @@ const jsonLd = post ? {
                 <nav class="article-nav" aria-label={t(locale, 'article.series')}>
                   {seriesCard.prev
                     ? <a href={postUrl(seriesCard.prev.slug, seriesCard.prev.permalink, permalinkEnabled)}>{t(locale, 'common.previousPost')}<strong>{seriesCard.prev.title}</strong></a>
-                    : <span />}
+                    : null}
                   {seriesCard.next
                     ? <a href={postUrl(seriesCard.next.slug, seriesCard.next.permalink, permalinkEnabled)}>{t(locale, 'common.nextPost')}<strong>{seriesCard.next.title}</strong></a>
-                    : <span />}
+                    : null}
                 </nav>
               )}
             </section>
@@ -387,15 +394,15 @@ const jsonLd = post ? {
             <nav class="article-nav" aria-label={t(locale, 'common.postNavigation')}>
               {adjacent.previous
                 ? <a href={postUrl(adjacent.previous.slug, adjacent.previous.permalink, permalinkEnabled)}>{t(locale, 'common.previousPost')}<strong>{adjacent.previous.title}</strong></a>
-                : <span />}
+                : null}
               {adjacent.next
                 ? <a href={postUrl(adjacent.next.slug, adjacent.next.permalink, permalinkEnabled)}>{t(locale, 'common.nextPost')}<strong>{adjacent.next.title}</strong></a>
-                : <span />}
+                : null}
             </nav>
           )}
 
           <Comments
-            client:load
+            client:idle
             slug={post.slug}
             enabled={comments?.enabled ?? false}
             discussion={discussion}

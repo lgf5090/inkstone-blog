@@ -1,4 +1,3 @@
-import type { BlogFeedData } from './blog-types'
 import { postUrl } from './format'
 
 export function escapeXml(value: string): string {

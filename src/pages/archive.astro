@@ -4,7 +4,7 @@ import MainGridLayout from '../layouts/MainGridLayout.astro'
 import PostCard from '../components/blog/PostCard.astro'
 import { blogLocale, t } from '../i18n'
 import { BlogApiError, loadArchive, loadPosts } from '../lib/blog-api'
-import { formatMonth, postUrl } from '../lib/format'
+import { postUrl } from '../lib/format'
 import type { BlogArchiveYear, BlogPage, BlogPostSummary } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 

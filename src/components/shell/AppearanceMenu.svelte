@@ -282,7 +282,7 @@
     </section>
     <section>
       <p class="appearance-label">{t(locale, 'appearance.texture')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.texture')}>
+      <div class="appearance-segment appearance-texture" role="group" aria-label={t(locale, 'appearance.texture')}>
         {#each textures as item}
           <button type="button" aria-pressed={texture === item} onclick={() => setTexture(item)}>{t(locale, `appearance.texture_${item}`)}</button>
         {/each}

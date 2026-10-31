@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte'
   import type { BlogCommentsResponse, BlogSitePublic, PublicBlogComment } from '../lib/blog-types'
   import { t, type BlogLocale } from '../i18n'
+  import { safeUrl } from '../lib/format'
 
   interface Props {
     slug: string
@@ -190,12 +191,13 @@
   {:else}
     <ol class="comments-list">
       {#each flat as entry (entry.node.id)}
+        {@const authorHref = safeUrl(entry.node.authorUrl)}
         <li style={`margin-left: ${Math.min(entry.depth, 3) * 18}px`}>
           <article class="comment-card">
             <div class="comment-meta">
               <span class="comment-author">
-                {#if entry.node.authorUrl}
-                  <a href={entry.node.authorUrl} target="_blank" rel="noopener noreferrer nofollow">{entry.node.authorName}</a>
+                {#if authorHref}
+                  <a href={authorHref} target="_blank" rel="noopener noreferrer nofollow">{entry.node.authorName}</a>
                 {:else}
                   {entry.node.authorName}
                 {/if}

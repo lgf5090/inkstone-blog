@@ -1,7 +1,13 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte'
   import { t, type BlogLocale } from '../../i18n'
+  import { safeUrl } from '../../lib/format'
   import type { BlogFriendCategory, BlogFriendLink, BlogFriends } from '../../lib/blog-types'
+
+  function openFriend(url: string) {
+    const href = safeUrl(url)
+    if (href) window.open(href, '_blank', 'noopener,noreferrer')
+  }
 
   let { friends, locale }: { friends: BlogFriends; locale: BlogLocale } = $props()
 
@@ -463,10 +469,11 @@
         <div class="friend-grid">
           {#each filtered as link (link.id)}
             {@const source = iconSrc(link.icon)}
+            {@const href = safeUrl(link.url)}
             <a
               class="friend-card"
               class:friend-card--simple={cardStyle === 'simple'}
-              href={link.url}
+              href={href ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${t(locale, 'friends.open')}: ${link.title}`}
@@ -500,7 +507,7 @@
 
 {#if menu}
   <div class="friend-menu" role="menu" tabindex="-1" bind:this={menuEl} style={`left:${menu.x}px;top:${menu.y}px`} onkeydown={menuKey}>
-    <button type="button" role="menuitem" onclick={() => { window.open(menu!.link.url, '_blank', 'noopener,noreferrer'); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↗</span>{t(locale, 'friends.open')}</button>
+    <button type="button" role="menuitem" onclick={() => { openFriend(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↗</span>{t(locale, 'friends.open')}</button>
     <button type="button" role="menuitem" onclick={() => { void copy(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">⧉</span>{t(locale, 'friends.copyLink')}</button>
     <button type="button" role="menuitem" onclick={() => { openQr(menu!.link); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">▦</span>{t(locale, 'friends.qr')}</button>
     <button type="button" role="menuitem" onclick={() => { void copy(hostOf(menu!.link.url)); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">◈</span>{t(locale, 'friends.copyDomain')}</button>

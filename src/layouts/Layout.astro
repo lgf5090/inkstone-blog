@@ -65,7 +65,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
     <meta name="theme-color" content={`oklch(0.47 0.16 ${hue})`} />
     {structured.map((item) => (
-      <script type="application/ld+json" set:html={JSON.stringify(item)} />
+      <script type="application/ld+json" set:html={JSON.stringify(item).replace(/</g, '\\u003c')} />
     ))}
     <slot name="head" />
     {blog.site.integrations.umami.enabled && /^[0-9a-f-]{8,}$/i.test(blog.site.integrations.umami.websiteId) && (
@@ -124,6 +124,26 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
           window.__blogCleanups.get(key)?.()
           window.__blogCleanups.set(key, cleanup)
         }
+      })()
+    </script>
+    <script is:inline>
+      (() => {
+        if (window.__blogMenuBehaviorInstalled) return
+        window.__blogMenuBehaviorInstalled = true
+        const openMenus = () => document.querySelectorAll('details.nav-menu[open], details.mobile-nav-group[open]')
+        document.addEventListener('click', (event) => {
+          for (const menu of openMenus()) {
+            if (!menu.contains(event.target)) menu.open = false
+          }
+        })
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape') return
+          const menus = openMenus()
+          const menu = menus[menus.length - 1]
+          if (!menu) return
+          menu.open = false
+          menu.querySelector('summary')?.focus()
+        })
       })()
     </script>
     {showTopProgress && (

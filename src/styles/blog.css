@@ -869,7 +869,7 @@ select {
 
 .article-nav {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0.7rem;
   margin-top: 1rem;
 }
@@ -932,7 +932,7 @@ select {
 
 .article-discovery-lanes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0.9rem;
 }
 
@@ -1533,6 +1533,9 @@ select {
   left: auto;
   width: 16.5rem;
   padding: 0.8rem;
+  max-height: min(calc(100vh - 4.5rem), 40rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .appearance-panel section + section {
@@ -1558,6 +1561,7 @@ select {
 
 .appearance-segment button {
   flex: 1;
+  min-height: 2rem;
   padding: 0.32rem 0.35rem;
   border: 0;
   border-radius: 999px;
@@ -1571,6 +1575,20 @@ select {
   background: var(--primary);
   color: var(--on-primary);
   font-weight: 600;
+}
+
+/* Six texture names do not fit one pill row; a 3x2 chip grid keeps every label readable. */
+.appearance-segment.appearance-texture {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: var(--radius-md);
+}
+
+.appearance-texture button {
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .appearance-swatches {

@@ -5,7 +5,7 @@ import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import { blogLocale, t } from '../../i18n'
 import { BlogApiError, loadPage, loadPosts, resolveRedirect } from '../../lib/blog-api'
 import { renderPageMarkdown } from '../../lib/markdown'
-import { postUrl } from '../../lib/format'
+import { postUrl, safeRedirectTarget } from '../../lib/format'
 import type { BlogPageItem, BlogPostSummary } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -20,7 +20,10 @@ try {
 } catch (cause) {
   if (cause instanceof BlogApiError && cause.status === 404) {
     const redirect: import('../../lib/blog-types').BlogRedirectResult = await resolveRedirect(`/pages/${slug}`).catch(() => ({ found: false }))
-    if (redirect.found && redirect.to) return Astro.redirect(redirect.to, (redirect.status ?? 301) as 301 | 302)
+    if (redirect.found && redirect.to) {
+      const target = safeRedirectTarget(redirect.to, Astro.url.origin)
+      if (target) return Astro.redirect(target, (redirect.status ?? 301) as 301 | 302)
+    }
     if (!isAbout) {
       Astro.response.status = 404
       error = t(locale, 'blog.notFound')

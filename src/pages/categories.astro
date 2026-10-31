@@ -2,7 +2,6 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import { blogLocale, t } from '../i18n'
-import { BlogApiError } from '../lib/blog-api'
 import { FALLBACK_SITE } from '../server/site-config'
 
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [] }

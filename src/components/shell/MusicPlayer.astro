@@ -61,6 +61,8 @@ const options = { music, labels, locale }
       options = null
     }
     if (!runtimeUrl || !options) return
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
+    if (connection?.saveData) return
     const devOrigin = card.getAttribute('data-dev-origin') || ''
     let cancelled = false
     let playerHandle = null

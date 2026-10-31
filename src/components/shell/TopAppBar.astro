@@ -96,7 +96,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
         </div>
       </details>
       <AppearanceMenu
-        client:load
+        client:idle
         locale={locale}
         defaultHue={Number(blog.site.site.themeColor?.hue ?? 315)}
         defaultStyle={blog.site.site.themeColor?.style ?? 'tonalSpot'}
@@ -174,7 +174,8 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     }
     const postHref = (item) => {
       if (permalinkEnabled && item.permalink) {
-        return '/' + item.permalink.split('/').filter(Boolean).map(encodeURIComponent).join('/')
+        const path = item.permalink.trim().replace(/^\/+|\/+$/g, '')
+        if (path && !path.includes('..')) return '/' + path.split('/').map(encodeURIComponent).join('/')
       }
       return '/posts/' + encodeURIComponent(item.slug)
     }
@@ -232,6 +233,24 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     })
     const onKey = (event) => {
       if (event.key === 'Escape') close()
+      if (!overlay.hidden && event.key === 'Tab') {
+        const focusables = [...overlay.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])')]
+        if (focusables.length > 0) {
+          const first = focusables[0]
+          const last = focusables[focusables.length - 1]
+          if (!overlay.contains(document.activeElement)) {
+            event.preventDefault()
+            first.focus()
+          } else if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault()
+            last.focus()
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault()
+            first.focus()
+          }
+        }
+        return
+      }
       if (overlay.hidden || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')) return
       const links = [...list.querySelectorAll('a')]
       if (links.length === 0) return
