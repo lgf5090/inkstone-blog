@@ -45,7 +45,7 @@ export const FALLBACK_SITE: BlogSitePublic = {
   },
   profile: { name: '', bio: '', avatar: '', links: [] },
   nav: [{ label: 'Posts', href: '/' }],
-  sidebar: { enable: true, arrangement: 'single', side: 'left', widgets: [] },
+  sidebar: { enable: true, arrangement: 'single', side: 'left' },
   widgets: [],
   discussion: {
     enabled: true,

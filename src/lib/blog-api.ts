@@ -68,8 +68,7 @@ const siteSchema = z.object({
     enable: z.boolean().default(true),
     arrangement: z.enum(['single', 'dual']).default('single'),
     side: z.enum(['left', 'right']).default('left'),
-    widgets: z.array(z.string()).default([]),
-  }).passthrough().default({ enable: true, arrangement: 'single', side: 'left', widgets: [] }),
+  }).passthrough().default({ enable: true, arrangement: 'single', side: 'left' }),
   widgets: z.array(z.object({
     id: z.string(),
     type: z.string(),

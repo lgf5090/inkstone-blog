@@ -140,7 +140,7 @@ export interface BlogSitePublic {
     links: { label: string; url: string }[]
   }
   nav: { label: string; href: string; children?: { label: string; href: string }[] }[]
-  sidebar: { enable: boolean; arrangement: 'single' | 'dual'; side: 'left' | 'right'; widgets: string[] }
+  sidebar: { enable: boolean; arrangement: 'single' | 'dual'; side: 'left' | 'right' }
   widgets: BlogWidget[]
   discussion: {
     enabled: boolean
