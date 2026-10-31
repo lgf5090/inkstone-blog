@@ -38,6 +38,12 @@ const labels = {
 }
 const options = { music, labels }
 ---
+{!music.enabled && (
+  <section class="sidebar-card music-card" aria-label={labels.title}>
+    <h2 class="sidebar-title">{labels.title}</h2>
+    <p class="music-empty">{t(locale, 'music.empty')}</p>
+  </section>
+)}
 {music.enabled && runtimeUrl && (
   <section class="sidebar-card music-card" aria-label={labels.title} data-blog-music data-runtime-url={runtimeUrl} data-runtime-css={runtimeCss} data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''} data-options={JSON.stringify(options)}>
     <h2 class="sidebar-title">{labels.title}</h2>

@@ -108,9 +108,10 @@
   {#if filtered.length === 0}
     <div class="grid-empty">{items.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
   {:else}
-    <div class="grid-cards">
+    <div class="grid-cards" data-kind={kind}>
       {#each filtered as item (item.id)}
         {@const image = cover(item)}
+        {@const featured = item.data.featured === true || item.data.featured === 1}
         {@const tags = list(item.data, kind === 'anime' ? 'genres' : 'tags').map(String)}
         {@const link = safeUrl(text(item.data, 'link'))}
         {@const rating = number(item.data, 'rating')}
@@ -121,7 +122,18 @@
         {@const level = levelPercent(item)}
         {@const specs = list(item.data, 'specs')}
         <article class="grid-card" class:grid-card--cover={Boolean(image)}>
-          {#if image}<div class="grid-cover"><img src={image} alt="" loading="lazy" decoding="async" /></div>{/if}
+          {#if image || kind === 'anime' || kind === 'games'}
+            <div class="grid-cover" class:grid-cover--empty={!image}>
+              {#if image}
+                <img src={image} alt="" loading="lazy" decoding="async" />
+              {:else}
+                <span class="grid-cover-initial" aria-hidden="true">{initial(item.title)}</span>
+              {/if}
+              {#if (kind === 'games' || kind === 'anime') && rating !== null}<span class="grid-badge grid-badge--rating">★ {rating}</span>{/if}
+              {#if (kind === 'games' || kind === 'anime') && text(item.data, 'status')}<span class="grid-badge grid-badge--status">{text(item.data, 'status')}</span>{/if}
+              {#if featured}<span class="grid-badge grid-badge--featured">{t(locale, 'common.pinned')}</span>{/if}
+            </div>
+          {/if}
           <div class="grid-body">
             <div class="grid-title-row">
               {#if !image && kind !== 'skills'}<span class="grid-icon" aria-hidden="true">{initial(item.title)}</span>{/if}
@@ -132,7 +144,6 @@
                 {#if kind === 'games'}<span class="grid-sub">{[text(item.data, 'developer'), text(item.data, 'platform'), text(item.data, 'year'), text(item.data, 'status')].filter(Boolean).join(' · ')}</span>{/if}
                 {#if kind === 'anime'}<span class="grid-sub">{[text(item.data, 'studio'), text(item.data, 'year'), text(item.data, 'status')].filter(Boolean).join(' · ')}</span>{/if}
               </div>
-              {#if (kind === 'games' || kind === 'anime') && rating !== null}<span class="grid-rating">★ {rating}</span>{/if}
             </div>
 
             {#if kind === 'skills' && level !== null}
@@ -158,37 +169,50 @@
   {/if}
 </section>
 
+
 <style>
   .grid-section { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
   .grid-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
-  .grid-head h1 { margin: 0; color: var(--on-surface, #1d1b1e); font-size: 1.7rem; line-height: 1.2; letter-spacing: -0.02em; }
-  .grid-head p { margin: 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
-  .grid-tools { display: flex; flex-direction: column; gap: 0.65rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); }
+  .grid-head h1 { margin: 0; color: var(--on-surface); font-size: 1.7rem; line-height: 1.2; letter-spacing: -0.02em; }
+  .grid-head p { margin: 0; color: var(--on-surface-variant); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .grid-tools { display: flex; flex-direction: column; gap: 0.65rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--outline-variant); }
   .grid-search { position: relative; width: min(100%, 30rem); }
-  .grid-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 999px; background: var(--surface-container-low, #f7f3f6); color: var(--on-surface, #1d1b1e); padding: 0.5rem 2.2rem 0.5rem 0.85rem; font: inherit; font-size: 0.8rem; }
-  .grid-search button { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: 999px; background: transparent; color: var(--on-surface-variant, #5d5b5e); cursor: pointer; font-size: 1rem; }
+  .grid-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant); border-radius: 999px; background: var(--surface-low); color: var(--on-surface); padding: 0.55rem 2.2rem 0.55rem 0.9rem; font: inherit; font-size: 0.82rem; }
+  .grid-search button { position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: 999px; background: transparent; color: var(--on-surface-variant); cursor: pointer; font-size: 1rem; }
   .grid-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .grid-chips button { border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 999px; background: var(--surface-container-low, #f7f3f6); color: var(--on-surface-variant, #5d5b5e); padding: 0.25rem 0.65rem; font: inherit; font-size: 0.7rem; cursor: pointer; }
-  .grid-chips button.active { background: var(--primary-container, #ffdada); color: var(--on-primary-container, #3a0000); border-color: transparent; }
-  .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 0.8rem; align-items: start; }
-  .grid-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.9rem; background: var(--card-bg, var(--surface-container-low, #f7f3f6)); }
-  .grid-cover { aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface-container, #f1edf0); }
+  .grid-chips button { border: 1px solid var(--outline-variant); border-radius: 999px; background: var(--surface); color: var(--on-surface-variant); padding: 0.28rem 0.7rem; font: inherit; font-size: 0.72rem; cursor: pointer; }
+  .grid-chips button:hover { background: var(--surface-container); color: var(--on-surface); }
+  .grid-chips button.active { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent; }
+  .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.9rem; align-items: start; }
+  .grid-card { display: flex; flex-direction: column; overflow: hidden; min-width: 0; border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); background: var(--surface); transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
+  .grid-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); border-color: color-mix(in oklab, var(--primary) 35%, var(--outline-variant)); }
+  .grid-cover { position: relative; display: grid; place-items: center; overflow: hidden; background: var(--surface-container); }
+  .grid-cards[data-kind='anime'] .grid-cover { aspect-ratio: 2 / 3; }
+  .grid-cards[data-kind='games'] .grid-cover { aspect-ratio: 16 / 9; }
+  .grid-cards[data-kind='devices'] .grid-cover, .grid-cards[data-kind='skills'] .grid-cover { aspect-ratio: 16 / 9; }
   .grid-cover img { width: 100%; height: 100%; object-fit: cover; }
-  .grid-body { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.75rem 0.85rem 0.9rem; min-width: 0; }
+  .grid-cover--empty { background: linear-gradient(135deg, color-mix(in oklab, var(--primary) 18%, var(--surface-container)), color-mix(in oklab, var(--secondary) 16%, var(--surface-container))); }
+  .grid-cover-initial { color: var(--on-primary-container); font-size: 2rem; font-weight: 750; opacity: 0.75; }
+  .grid-badge { position: absolute; display: inline-flex; align-items: center; gap: 0.2rem; border-radius: 999px; background: color-mix(in oklab, var(--surface) 88%, transparent); color: var(--on-surface); padding: 0.18rem 0.5rem; font-size: 0.66rem; font-weight: 600; backdrop-filter: blur(6px); }
+  .grid-badge--rating { top: 0.5rem; right: 0.5rem; color: #b7791f; }
+  .grid-badge--status { top: 0.5rem; left: 0.5rem; color: var(--primary); }
+  .grid-badge--featured { top: 0.5rem; left: 0.5rem; color: var(--on-primary-container); background: var(--primary-container); }
+  .grid-badge--featured + .grid-badge--status { top: 2rem; }
+  .grid-body { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.8rem 0.9rem 0.95rem; min-width: 0; }
   .grid-title-row { display: flex; align-items: flex-start; gap: 0.5rem; min-width: 0; }
-  .grid-icon { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; flex: none; border-radius: 0.5rem; background: var(--surface-container, #f1edf0); color: var(--on-surface, #1d1b1e); font-size: 0.85rem; font-weight: 700; }
   .grid-title-main { min-width: 0; flex: 1; }
-  .grid-title-main h2 { margin: 0; color: var(--on-surface, #1d1b1e); font-size: 0.92rem; line-height: 1.35; }
-  .grid-sub { display: block; color: var(--on-surface-variant, #5d5b5e); font-size: 0.66rem; line-height: 1.4; }
-  .grid-rating { flex: none; color: var(--warning, #7a4d00); font-size: 0.7rem; }
-  .grid-meter { height: 0.35rem; overflow: hidden; border-radius: 999px; background: var(--surface-container, #f1edf0); }
-  .grid-meter span { display: block; height: 100%; border-radius: inherit; background: var(--primary, #8a3a3a); }
-  .grid-desc { margin: 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.75rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .grid-specs { margin: 0; padding-left: 1rem; color: var(--on-surface-variant, #5d5b5e); font-size: 0.7rem; line-height: 1.5; }
-  .grid-meta { margin: 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.68rem; }
-  .grid-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; color: var(--on-surface-variant, #5d5b5e); font-size: 0.64rem; }
-  .grid-link { align-self: flex-start; color: var(--primary, #8a3a3a); font-size: 0.7rem; text-decoration: none; }
-  .grid-link:hover { text-decoration: underline; }
-  .grid-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant, #5d5b5e); border: 1px dashed var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.9rem; font-size: 0.8rem; }
+  .grid-title-row h2 { margin: 0; color: var(--on-surface); font-size: 0.95rem; line-height: 1.35; }
+  .grid-sub { display: block; margin-top: 0.1rem; color: var(--on-surface-variant); font-size: 0.7rem; }
+  .grid-icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; flex: none; border-radius: 0.55rem; background: var(--surface-container); color: var(--on-surface); font-size: 0.9rem; font-weight: 700; }
+  .grid-desc { margin: 0; color: var(--on-surface-variant); font-size: 0.76rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .grid-meta { margin: 0; color: var(--on-surface-variant); font-size: 0.7rem; }
+  .grid-specs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0; padding: 0; list-style: none; color: var(--on-surface-variant); font-size: 0.68rem; }
+  .grid-specs li { border: 1px solid var(--outline-variant); border-radius: 999px; padding: 0.1rem 0.45rem; }
+  .grid-meter { height: 0.4rem; overflow: hidden; border-radius: 999px; background: var(--surface-container); }
+  .grid-meter span { display: block; height: 100%; border-radius: inherit; background: var(--primary); }
+  .grid-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; color: var(--on-surface-variant); font-size: 0.68rem; }
+  .grid-tags span { border: 1px solid var(--outline-variant); border-radius: 999px; padding: 0.08rem 0.4rem; }
+  .grid-link { align-self: flex-start; margin-top: 0.15rem; color: var(--primary); font-size: 0.72rem; }
+  .grid-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant); border: 1px dashed var(--outline-variant); border-radius: var(--radius-lg); font-size: 0.8rem; }
   .grid-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 </style>

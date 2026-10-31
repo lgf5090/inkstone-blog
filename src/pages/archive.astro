@@ -24,14 +24,12 @@ let error = Astro.locals.blogError ?? ''
 try {
   years = (await loadArchive()).years
   if (year && group === 'year' && !category && !tag) posts = await loadPosts({ year, limit: 100 })
-  if (group !== 'year' || category || tag || year) {
-    groupPosts = (await loadPosts({
-      ...(category ? { category } : {}),
-      ...(tag ? { tag } : {}),
-      ...(year ? { year } : {}),
-      limit: 50,
-    })).items
-  }
+  groupPosts = (await loadPosts({
+    ...(category ? { category } : {}),
+    ...(tag ? { tag } : {}),
+    ...(year ? { year } : {}),
+    limit: 50,
+  })).items
 } catch (cause) {
   error = cause instanceof BlogApiError ? cause.message : t(locale, 'common.loadError')
 }
@@ -98,21 +96,7 @@ const sortedGroups = [...groups.entries()].sort((a, b) => group === 'year' ? b[0
       ) : years.length === 0 ? (
         <div class="empty-state">{t(locale, 'common.noPosts')}</div>
       ) : (
-        <div class="archive-year">
-          {years.map((entry) => (
-            <section class="sidebar-card" style="margin-bottom:0.8rem" aria-labelledby={`year-${entry.year}`}>
-              <h2 class="sidebar-title" id={`year-${entry.year}`}>
-                <a href={queryHref({ year: String(entry.year), group: group === 'year' ? null : group })} aria-current={year === Number(entry.year) ? 'page' : undefined}>{entry.year}</a>
-                <span class="widget-count">{entry.count}</span>
-              </h2>
-              <div class="archive-months">
-                {entry.months.map((month) => (
-                  <a class="chip" href={queryHref({ year: String(entry.year), group: group === 'year' ? null : group })}>{formatMonth(month.month, locale)} · {month.count}</a>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        <div class="archive-summary-empty"></div>
       )}
 
       {group === 'year' && !category && !tag && year && posts && (
@@ -128,7 +112,7 @@ const sortedGroups = [...groups.entries()].sort((a, b) => group === 'year' ? b[0
         </section>
       )}
 
-      {(group !== 'year' || category || tag) && (
+      {(group !== 'year' || category || tag || !year) && (
         <section class="archive-groups" aria-label={t(locale, 'page.archiveTitle')}>
           {sortedGroups.length === 0 ? (
             <div class="empty-state">{t(locale, 'common.noPosts')}</div>
@@ -138,8 +122,10 @@ const sortedGroups = [...groups.entries()].sort((a, b) => group === 'year' ? b[0
               <ul>
                 {items.map((post) => (
                   <li>
-                    <a href={postUrl(post.slug, post.permalink, permalinkEnabled)}>{post.title || t(locale, 'common.untitled')}</a>
-                    <time datetime={new Date(post.publishedAt ?? post.updatedAt).toISOString()}>{new Date(post.publishedAt ?? post.updatedAt).toISOString().slice(0, 10)}</time>
+                    <time datetime={new Date(post.publishedAt ?? post.updatedAt).toISOString()}>{new Date(post.publishedAt ?? post.updatedAt).toISOString().slice(5, 10)}</time>
+                    {post.category && <span class="archive-category">{post.category}</span>}
+                    <a class="archive-post-title" href={postUrl(post.slug, post.permalink, permalinkEnabled)}>{post.title || t(locale, 'common.untitled')}</a>
+                    {post.tags.length > 0 && <span class="archive-tags">{post.tags.slice(0, 3).map((tag) => `#${tag}`).join(' ')}</span>}
                   </li>
                 ))}
               </ul>

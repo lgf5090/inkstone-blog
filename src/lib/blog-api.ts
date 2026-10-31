@@ -76,6 +76,7 @@ const siteSchema = z.object({
     enabled: z.boolean().default(true),
     config: z.record(z.string(), z.unknown()).default({}),
     slot: z.enum(['top', 'sticky']).optional(),
+    column: z.enum(['primary', 'secondary']).optional(),
     pages: z.array(z.string()).optional(),
     collapseAfter: z.number().optional(),
   }).passthrough()).default([]),
@@ -111,7 +112,9 @@ const siteSchema = z.object({
     enable: z.boolean().default(false),
     text: z.string().default(''),
     closable: z.boolean().default(true),
-  }).passthrough().default({ enable: false, text: '', closable: true }),
+    linkText: z.string().default(''),
+    linkUrl: z.string().default(''),
+  }).passthrough().default({ enable: false, text: '', closable: true, linkText: '', linkUrl: '' }),
   llms: z.object({
     enable: z.boolean().default(true),
     excludeTags: z.array(z.string()).default([]),

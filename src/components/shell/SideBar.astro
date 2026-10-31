@@ -32,9 +32,12 @@ const fallbackWidgets = [
 ]
 const all: BlogWidget[] = widgets.length ? widgets : fallbackWidgets
 const secondaryTypes = new Set(['categories', 'tags', 'series', 'stats', 'calendar'])
+const columnOf = (widget: BlogWidget): 'primary' | 'secondary' => widget.column === 'primary' || widget.column === 'secondary'
+  ? widget.column
+  : secondaryTypes.has(widget.type) ? 'secondary' : 'primary'
 const visible = all.filter((widget) => widget.enabled
   && (!widget.pages?.length || widget.pages.includes(page))
-  && (column === 'all' || (column === 'secondary' ? secondaryTypes.has(widget.type) : !secondaryTypes.has(widget.type))))
+  && (column === 'all' || columnOf(widget) === column))
 const ordered = [...visible].sort((left, right) => (left.slot === 'top' ? 0 : 1) - (right.slot === 'top' ? 0 : 1))
 const recentWidget = visible.some((widget) => widget.type === 'recent')
 let recent: BlogPostSummary[] = []
@@ -70,11 +73,14 @@ const announcement = (widget: (typeof all)[number]): string => typeof widget.con
 const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', closable: true }
 ---
 
-{(visible.length > 0 || blog.music?.enabled || (siteAnnouncement.enable && siteAnnouncement.text)) && (
+{(visible.length > 0 || (siteAnnouncement.enable && siteAnnouncement.text)) && (
   <aside class="sidebar" aria-label={t(locale, 'common.categories')}>
     {siteAnnouncement.enable && siteAnnouncement.text && (
       <section class="sidebar-card announcement-card" data-announcement={siteAnnouncement.text.slice(0, 120)}>
         <p class="profile-bio">{siteAnnouncement.text}</p>
+        {siteAnnouncement.linkText && siteAnnouncement.linkUrl && (
+          <p class="announcement-link"><a class="chip" href={siteAnnouncement.linkUrl} target="_blank" rel="noopener noreferrer">{siteAnnouncement.linkText}</a></p>
+        )}
         {siteAnnouncement.closable && (
           <button type="button" class="announcement-close" data-announcement-close aria-label={t(locale, 'friends.close')} title={t(locale, 'friends.close')}>×</button>
         )}
@@ -83,7 +89,9 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
     {ordered.map((widget) => {
       if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
         <section class:list={["sidebar-card profile-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={profile.name || t(locale, 'nav.about')}>
-          {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
+          {avatar
+            ? <img class="profile-avatar" src={avatar} alt="" loading="lazy" />
+            : <span class="profile-avatar profile-avatar--placeholder" aria-hidden="true">{Array.from(profile.name || '?')[0]?.toUpperCase() ?? '?'}</span>}
           {widgetTitle(widget) && <h2 class="profile-name">{widgetTitle(widget)}</h2>}
           {profile.bio && <p class="profile-bio">{profile.bio}</p>}
           {profile.links.length > 0 && (
@@ -152,6 +160,7 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
           </ul>
         </section>
       )
+      if (widget.type === 'music') return <MusicPlayer />
       if (widget.type === 'calendar') return (
         <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
@@ -190,7 +199,6 @@ const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', cl
       }
       return null
     })}
-    {blog.music?.enabled && <MusicPlayer />}
   </aside>
 )}
 <script is:inline data-astro-rerun>

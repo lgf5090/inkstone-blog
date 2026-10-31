@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import { blogLocale, t } from '../../i18n'
-import { BlogApiError, loadPage, loadPosts, mediaUrl, resolveRedirect } from '../../lib/blog-api'
+import { BlogApiError, loadPage, loadPosts, resolveRedirect } from '../../lib/blog-api'
 import { renderPageMarkdown } from '../../lib/markdown'
 import { postUrl } from '../../lib/format'
 import type { BlogPageItem, BlogPostSummary } from '../../lib/blog-types'
@@ -43,8 +43,6 @@ if (isAbout && !page) {
   error = ''
 }
 const html = page ? renderPageMarkdown(page.body) : ''
-const profile = blog.site.profile
-const avatar = profile.avatar ? mediaUrl(profile.avatar) : null
 let recent: BlogPostSummary[] = []
 if (isAbout) {
   try {
@@ -57,34 +55,6 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 ---
 <Layout title={page?.title ?? t(locale, 'blog.notFound')} noIndex={!page}>
   <MainGridLayout page="about">
-    {isAbout && (
-      <section class="about-profile sidebar-card" aria-label={profile.name || t(locale, 'page.about')}>
-        {avatar && <img class="profile-avatar" src={avatar} alt="" loading="lazy" />}
-        <div class="about-profile-body">
-          {profile.name && <h2 class="profile-name">{profile.name}</h2>}
-          {profile.bio && <p class="profile-bio">{profile.bio}</p>}
-          {profile.links.length > 0 && (
-            <div class="profile-links">
-              {profile.links.map((link) => <a class="chip" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
-            </div>
-          )}
-          <ul class="about-stats">
-            <li>{blog.site.counts.posts} {t(locale, 'common.posts')}</li>
-            <li>{blog.site.counts.categories} {t(locale, 'common.categories')}</li>
-            <li>{blog.site.counts.tags} {t(locale, 'common.tags')}</li>
-            <li>{blog.site.counts.views} {t(locale, 'common.views')}</li>
-          </ul>
-        </div>
-      </section>
-    )}
-    {isAbout && recent.length > 0 && (
-      <section class="about-recent sidebar-card" aria-label={t(locale, 'common.latest')}>
-        <h2 class="sidebar-title">{t(locale, 'common.latest')}</h2>
-        <ul class="widget-list">
-          {recent.map((item) => <li><a href={postUrl(item.slug, item.permalink, permalinkEnabled)}><span>{item.title || t(locale, 'common.untitled')}</span></a></li>)}
-        </ul>
-      </section>
-    )}
     {error || !page ? (
       <div class="error-state" role="alert">
         <strong>{t(locale, 'blog.notFound')}</strong><p>{error || t(locale, 'blog.notFoundHint')}</p>
@@ -98,9 +68,32 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
           {page.updatedAt && <p class="article-meta">{new Date(page.updatedAt).toLocaleDateString(locale)}</p>}
         </header>
         <div class="article-body">
-          <div class="ink-prose" set:html={html} />
+          <div class="ink-prose" set:html={isAbout ? html.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/, '') : html} />
         </div>
       </article>
+    )}
+    {isAbout && page && (
+      <>
+        <section class="about-block sidebar-card" aria-label={t(locale, 'page.about')}>
+          <h2 class="sidebar-title">{t(locale, 'page.about')}</h2>
+          <div class="about-tech">
+            <span>Astro 7</span><span>Svelte 5</span><span>Cloudflare Workers</span><span>D1</span><span>R2</span><span>Inkstone runtime</span>
+          </div>
+          <div class="about-links">
+            <a class="chip" href="/rss.xml">RSS</a>
+            <a class="chip" href="/atom.xml">Atom</a>
+            <a class="chip" href="/sitemap.xml">Sitemap</a>
+          </div>
+        </section>
+        {recent.length > 0 && (
+          <section class="about-recent sidebar-card" aria-label={t(locale, 'common.latest')}>
+            <h2 class="sidebar-title">{t(locale, 'common.latest')}</h2>
+            <ul class="widget-list">
+              {recent.map((item) => <li><a href={postUrl(item.slug, item.permalink, permalinkEnabled)}><span>{item.title || t(locale, 'common.untitled')}</span></a></li>)}
+            </ul>
+          </section>
+        )}
+      </>
     )}
   </MainGridLayout>
 </Layout>

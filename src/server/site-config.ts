@@ -59,7 +59,7 @@ export const FALLBACK_SITE: BlogSitePublic = {
   license: { enable: false, name: '', url: '' },
   footer: { enable: true, html: '' },
   fab: { enable: true, items: ['home', 'toc', 'comment', 'top'] },
-  announcement: { enable: false, text: '', closable: true },
+  announcement: { enable: false, text: '', closable: true, linkText: '', linkUrl: '' },
   llms: { enable: true, excludeTags: [] },
   comment: {
     provider: 'none',
