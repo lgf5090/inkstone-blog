@@ -1,23 +1,31 @@
 ---
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
-const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, fab: { enable: true, items: ['home', 'toc', 'comment', 'top'] } }
 const locale = blogLocale(blog.site.site.locale)
+const fab = blog.fab ?? { enable: true, items: ['home', 'toc', 'comment', 'top'] }
 ---
-<div class="fab" data-fab role="group" aria-label={t(locale, 'fab.label')}>
-  <a class="fab-btn" href="/" aria-label={t(locale, 'fab.home')} title={t(locale, 'fab.home')}>
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" /></svg>
-  </a>
-  <button type="button" class="fab-btn" data-fab-toc hidden aria-label={t(locale, 'fab.toc')} title={t(locale, 'fab.toc')}>
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13" /><circle cx="3.5" cy="6" r="1" /><circle cx="3.5" cy="12" r="1" /><circle cx="3.5" cy="18" r="1" /></svg>
-  </button>
-  <a class="fab-btn" data-fab-comments href="#comments-heading" hidden aria-label={t(locale, 'fab.comments')} title={t(locale, 'fab.comments')}>
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" /></svg>
-  </a>
-  <button type="button" class="fab-btn" data-fab-top hidden aria-label={t(locale, 'fab.top')} title={t(locale, 'fab.top')}>
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
-  </button>
-</div>
+{fab.enable && (
+  <div class="fab" data-fab role="group" aria-label={t(locale, 'fab.label')}>
+    {fab.items.map((item) => item === 'home' ? (
+      <a class="fab-btn" href="/" aria-label={t(locale, 'fab.home')} title={t(locale, 'fab.home')}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" /></svg>
+      </a>
+    ) : item === 'toc' ? (
+      <button type="button" class="fab-btn" data-fab-toc hidden aria-label={t(locale, 'fab.toc')} title={t(locale, 'fab.toc')}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13" /><circle cx="3.5" cy="6" r="1" /><circle cx="3.5" cy="12" r="1" /><circle cx="3.5" cy="18" r="1" /></svg>
+      </button>
+    ) : item === 'comment' ? (
+      <a class="fab-btn" data-fab-comments href="#comments-heading" hidden aria-label={t(locale, 'fab.comments')} title={t(locale, 'fab.comments')}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" /></svg>
+      </a>
+    ) : item === 'top' ? (
+      <button type="button" class="fab-btn" data-fab-top hidden aria-label={t(locale, 'fab.top')} title={t(locale, 'fab.top')}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+      </button>
+    ) : null)}
+  </div>
+)}
 <script is:inline data-astro-rerun>
   (() => {
     const fab = document.querySelector('[data-fab]')

@@ -3,6 +3,7 @@ import type {
   AdjacentPosts,
   BlogAlbumDetail,
   BlogArchiveYear,
+  BlogCalendarEntry,
   BlogCollectionItem,
   BlogCollectionKind,
   BlogCommentsResponse,
@@ -78,6 +79,35 @@ const siteSchema = z.object({
     maxLength: z.number().default(4000),
     autoCloseDays: z.number().default(0),
   }).passthrough().default({ enabled: true, requireNameEmail: true, requireApproval: true, allowReplies: true, maxLength: 4000, autoCloseDays: 0 }),
+  article: z.object({
+    share: z.boolean().default(true),
+    showLastUpdated: z.boolean().default(true),
+    lastUpdatedDays: z.number().default(90),
+    relatedCount: z.number().default(3),
+    randomCount: z.number().default(2),
+  }).passthrough().default({ share: true, showLastUpdated: true, lastUpdatedDays: 90, relatedCount: 3, randomCount: 2 }),
+  license: z.object({
+    enable: z.boolean().default(false),
+    name: z.string().default(''),
+    url: z.string().default(''),
+  }).passthrough().default({ enable: false, name: '', url: '' }),
+  footer: z.object({
+    enable: z.boolean().default(true),
+    html: z.string().default(''),
+  }).passthrough().default({ enable: true, html: '' }),
+  fab: z.object({
+    enable: z.boolean().default(true),
+    items: z.array(z.string()).default(['home', 'toc', 'comment', 'top']),
+  }).passthrough().default({ enable: true, items: ['home', 'toc', 'comment', 'top'] }),
+  announcement: z.object({
+    enable: z.boolean().default(false),
+    text: z.string().default(''),
+    closable: z.boolean().default(true),
+  }).passthrough().default({ enable: false, text: '', closable: true }),
+  llms: z.object({
+    enable: z.boolean().default(true),
+    excludeTags: z.array(z.string()).default([]),
+  }).passthrough().default({ enable: true, excludeTags: [] }),
   display: z.record(z.string(), z.unknown()).default({}),
   integrations: z.object({
     comments: z.string().default('none'),
@@ -236,6 +266,10 @@ export function loadPages(): Promise<{ items: BlogPageItem[] }> {
 
 export function loadTaxonomy(kind: 'categories' | 'tags' | 'series'): Promise<{ items: (TaxonomyItem | SeriesItem)[] }> {
   return getJson<{ items: (TaxonomyItem | SeriesItem)[] }>(`/${kind}`)
+}
+
+export function loadCalendar(): Promise<{ items: BlogCalendarEntry[] }> {
+  return getJson<{ items: BlogCalendarEntry[] }>('/calendar')
 }
 
 export function searchPosts(q: string, page = 1, limit = 10): Promise<BlogSearchResult> {

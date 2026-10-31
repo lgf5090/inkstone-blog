@@ -11,10 +11,13 @@ function bodyOf(markdown: string): string {
 export const GET: APIRoute = async ({ url }) => {
   const feed = await loadFeeds().catch(() => null)
   if (!feed) return new Response('Unavailable', { status: 503 })
+  if (feed.site.llms.enable === false) return new Response('Not found', { status: 404 })
+  const excluded = new Set(feed.site.llms.excludeTags)
+  const listed = feed.posts.filter((post) => !post.tags.some((tag) => excluded.has(tag)))
   const origin = siteOrigin(url, feed.site.site.url)
   const posts: Array<{ title: string; link: string; body: string }> = []
-  for (let index = 0; index < feed.posts.length; index += 4) {
-    const chunk = await Promise.all(feed.posts.slice(index, index + 4).map(async (summary) => {
+  for (let index = 0; index < listed.length; index += 4) {
+    const chunk = await Promise.all(listed.slice(index, index + 4).map(async (summary) => {
       if (summary.encrypted) return null
       const post = await loadPost(summary.slug).catch(() => null)
       if (!post?.content) return null

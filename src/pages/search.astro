@@ -41,7 +41,7 @@ const mode = blog.display.postListMode
       <div class="empty-state">{t(locale, 'search.empty')}</div>
     ) : (
       <>
-        <div class="post-list" data-mode={mode}>
+        <div class="post-list" data-post-list data-mode={mode}>
           {result.items.map((post) => <PostCard post={post} mode={mode} />)}
         </div>
         <Pagination page={result.page} total={result.total} limit={result.limit} basePath="/search" baseQuery={`?q=${encodeURIComponent(q)}`} />

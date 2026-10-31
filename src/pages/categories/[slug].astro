@@ -44,7 +44,7 @@ const mode = blog.display.postListMode
       <div class="empty-state">{t(locale, 'common.noPosts')}</div>
     ) : (
       <>
-        <div class="post-list" data-mode={mode}>
+        <div class="post-list" data-post-list data-mode={mode}>
           {page.items.map((post) => <PostCard post={post} mode={mode} />)}
         </div>
         <Pagination page={page.page} total={page.total} limit={page.limit} basePath={`/categories/${encodeURIComponent(category!.slug)}`} />

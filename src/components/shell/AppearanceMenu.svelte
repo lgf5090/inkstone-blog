@@ -22,6 +22,8 @@
   let accent = $state<Accent>('cinnabar')
   let background = $state<Background>('paper')
   let density = $state<Density>('comfortable')
+  type LayoutMode = 'list' | 'grid' | 'masonry'
+  let layout = $state<LayoutMode>('list')
   let prefersDark = $state(false)
 
   function applyTheme(next: Theme) {
@@ -52,6 +54,11 @@
     const storedBackground = localStorage.getItem('background')
     background = storedBackground === 'white' ? 'white' : 'paper'
     density = localStorage.getItem('density') === 'compact' ? 'compact' : 'comfortable'
+    const modes = ['list', 'grid', 'masonry'] as const
+    const storedMode = localStorage.getItem('post-list-mode')
+    const serverMode = document.querySelector('[data-post-list]')?.getAttribute('data-mode')
+    const initial = modes.find((mode) => mode === storedMode) ?? modes.find((mode) => mode === serverMode)
+    if (initial) layout = initial
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     prefersDark = media.matches
     media.addEventListener('change', () => {
@@ -87,6 +94,12 @@
   function setDensity(next: Density) {
     density = next
     persist()
+  }
+
+  function setLayout(next: LayoutMode) {
+    layout = next
+    localStorage.setItem('post-list-mode', next)
+    ;(window as unknown as { __blogApplyPostListMode?: (mode: string) => void }).__blogApplyPostListMode?.(next)
   }
 </script>
 
@@ -134,6 +147,14 @@
       <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.density')}>
         <button type="button" aria-pressed={density === 'comfortable'} onclick={() => setDensity('comfortable')}>{t(locale, 'appearance.density_comfortable')}</button>
         <button type="button" aria-pressed={density === 'compact'} onclick={() => setDensity('compact')}>{t(locale, 'appearance.density_compact')}</button>
+      </div>
+    </section>
+    <section>
+      <p class="appearance-label">{t(locale, 'appearance.layout')}</p>
+      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.layout')}>
+        <button type="button" aria-pressed={layout === 'list'} onclick={() => setLayout('list')}>{t(locale, 'appearance.layout_list')}</button>
+        <button type="button" aria-pressed={layout === 'grid'} onclick={() => setLayout('grid')}>{t(locale, 'appearance.layout_grid')}</button>
+        <button type="button" aria-pressed={layout === 'masonry'} onclick={() => setLayout('masonry')}>{t(locale, 'appearance.layout_masonry')}</button>
       </div>
     </section>
   </div>

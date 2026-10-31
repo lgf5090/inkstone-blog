@@ -1,9 +1,10 @@
 ---
 import Icon from '../Icon.astro'
-import { loadPosts, mediaUrl } from '../../lib/blog-api'
+import { loadCalendar, loadPosts, mediaUrl } from '../../lib/blog-api'
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
-import type { BlogPostSummary, BlogWidget } from '../../lib/blog-types'
+import type { BlogCalendarEntry, BlogPostSummary, BlogWidget } from '../../lib/blog-types'
+import CalendarWidget from '../blog/CalendarWidget.svelte'
 import MusicPlayer from './MusicPlayer.astro'
 
 interface Props {
@@ -39,6 +40,15 @@ if (recentWidget) {
     recent = []
   }
 }
+const calendarWidget = visible.find((widget) => widget.type === 'calendar')
+let calendarItems: BlogCalendarEntry[] = []
+if (calendarWidget) {
+  try {
+    calendarItems = (await loadCalendar()).items
+  } catch (cause) {
+    console.warn('[blog] calendar data failed', cause)
+  }
+}
 const profile = blog.site.profile
 const avatar = profile.avatar ? mediaUrl(profile.avatar) : null
 const widgetTitle = (widget: (typeof all)[number]): string => {
@@ -46,16 +56,25 @@ const widgetTitle = (widget: (typeof all)[number]): string => {
   const keys: Record<string, string> = {
     profile: profile.name, search: t(locale, 'search.title'), categories: t(locale, 'nav.categories'),
     tags: t(locale, 'nav.tags'), series: t(locale, 'nav.series'), recent: t(locale, 'common.recentPosts'),
-    stats: t(locale, 'common.stats'), announcement: '',
+    stats: t(locale, 'common.stats'), calendar: t(locale, 'calendar.title'), announcement: '',
   }
   return keys[widget.type] ?? ''
 }
 const customHtml = (widget: (typeof all)[number]): string => typeof widget.config.html === 'string' ? widget.config.html : ''
 const announcement = (widget: (typeof all)[number]): string => typeof widget.config.text === 'string' ? widget.config.text : ''
+const siteAnnouncement = blog.site.announcement ?? { enable: false, text: '', closable: true }
 ---
 
-{(visible.length > 0 || blog.music?.enabled) && (
+{(visible.length > 0 || blog.music?.enabled || (siteAnnouncement.enable && siteAnnouncement.text)) && (
   <aside class="sidebar" aria-label={t(locale, 'common.categories')}>
+    {siteAnnouncement.enable && siteAnnouncement.text && (
+      <section class="sidebar-card announcement-card" data-announcement={siteAnnouncement.text.slice(0, 120)}>
+        <p class="profile-bio">{siteAnnouncement.text}</p>
+        {siteAnnouncement.closable && (
+          <button type="button" class="announcement-close" data-announcement-close aria-label={t(locale, 'friends.close')} title={t(locale, 'friends.close')}>×</button>
+        )}
+      </section>
+    )}
     {visible.map((widget) => {
       if (widget.type === 'profile') return (profile.name || profile.bio || avatar || profile.links.length > 0) && (
         <section class="sidebar-card profile-card" aria-label={profile.name || t(locale, 'nav.about')}>
@@ -118,6 +137,12 @@ const announcement = (widget: (typeof all)[number]): string => typeof widget.con
           </ul>
         </section>
       )
+      if (widget.type === 'calendar') return (
+        <section class="sidebar-card" aria-labelledby={`widget-${widget.id}`}>
+          <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
+          <CalendarWidget client:visible locale={locale} timeZone={blog.site.site.timeZone} items={calendarItems} />
+        </section>
+      )
       if (widget.type === 'stats') return (
         <section class="sidebar-card" aria-label={t(locale, 'common.stats')}>
           <h2 class="sidebar-title">{t(locale, 'common.stats')}</h2>
@@ -152,3 +177,15 @@ const announcement = (widget: (typeof all)[number]): string => typeof widget.con
     {blog.music?.enabled && <MusicPlayer />}
   </aside>
 )}
+<script is:inline data-astro-rerun>
+  (() => {
+    document.querySelectorAll('[data-announcement]').forEach((card) => {
+      const key = 'blog-announcement:' + (card.getAttribute('data-announcement') || '')
+      if (localStorage.getItem(key) === '1') card.hidden = true
+      card.querySelector('[data-announcement-close]')?.addEventListener('click', () => {
+        localStorage.setItem(key, '1')
+        card.hidden = true
+      })
+    })
+  })()
+</script>

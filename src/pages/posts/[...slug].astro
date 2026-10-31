@@ -6,12 +6,17 @@ import Toc from '../../components/blog/Toc.astro'
 import Comments from '../../components/Comments.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
-import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, resolveRedirect, unlockPost } from '../../lib/blog-api'
+import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadPost, loadPosts, resolveRedirect, unlockPost } from '../../lib/blog-api'
 import { formatDate, postUrl, unlockCookieName } from '../../lib/format'
-import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail } from '../../lib/blog-types'
+import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail, BlogPostSummary, SeriesItem } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
 
-const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, display: { tocDepth: 3 }, article: { share: true, showLastUpdated: true } }
+const blog = Astro.locals.blog ?? {
+  site: FALLBACK_SITE,
+  series: [],
+  display: { tocDepth: 3 },
+  article: { share: true, showLastUpdated: true, lastUpdatedDays: 90, relatedCount: 3, randomCount: 2 },
+}
 const locale = blogLocale(blog.site.site.locale)
 const slug = Astro.params.slug ?? ''
 let post: BlogPostDetail | null = null
@@ -78,6 +83,84 @@ try {
   }
 }
 
+type SeriesContext = {
+  slug: string
+  name: string
+  index: number
+  total: number
+  prev: BlogPostSummary | null
+  next: BlogPostSummary | null
+}
+let seriesCard: SeriesContext | null = null
+let related: BlogPostSummary[] = []
+let random: BlogPostSummary[] = []
+if (post) {
+  const seriesCatalog = (blog.series ?? []) as SeriesItem[]
+  const seriesItem = post.series ? seriesCatalog.find((item) => item.name === post!.series || item.slug === post!.series) : undefined
+  if (seriesItem) {
+    try {
+      const items = (await loadPosts({ series: seriesItem.slug, limit: 50 })).items
+      const sorted = [...items].sort((a, b) => (a.seriesOrder ?? 0) - (b.seriesOrder ?? 0) || (a.publishedAt ?? 0) - (b.publishedAt ?? 0))
+      const index = sorted.findIndex((item) => item.slug === post!.slug)
+      if (index >= 0) {
+        seriesCard = {
+          slug: seriesItem.slug,
+          name: seriesItem.name,
+          index: index + 1,
+          total: sorted.length,
+          prev: sorted[index - 1] ?? null,
+          next: sorted[index + 1] ?? null,
+        }
+      }
+    } catch (cause) {
+      console.warn('[blog] series context failed', cause)
+    }
+  }
+  if (blog.article.relatedCount > 0 || blog.article.randomCount > 0) {
+    let candidates: BlogPostSummary[] = []
+    try {
+      candidates = (await loadPosts({ limit: 50 })).items.filter((item) => item.slug !== post!.slug)
+    } catch (cause) {
+      console.warn('[blog] discovery candidates failed', cause)
+    }
+    const scored = candidates
+      .map((item) => ({
+        item,
+        score: item.tags.filter((tag) => post!.tags.includes(tag)).length * 2 + (item.category && item.category === post!.category ? 1 : 0),
+      }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score || (b.item.publishedAt ?? 0) - (a.item.publishedAt ?? 0))
+    related = scored.slice(0, blog.article.relatedCount).map((entry) => entry.item)
+    const relatedSlugs = new Set(related.map((item) => item.slug))
+    const rank = (slug: string): number => {
+      let hash = 2166136261
+      for (const char of `${post!.slug}:${slug}`) {
+        hash ^= char.charCodeAt(0)
+        hash = Math.imul(hash, 16777619)
+      }
+      return hash >>> 0
+    }
+    random = candidates
+      .filter((item) => !relatedSlugs.has(item.slug))
+      .sort((a, b) => rank(a.slug) - rank(b.slug))
+      .slice(0, blog.article.randomCount)
+  }
+}
+const updatedDays = post?.updatedAt ? Math.max(0, Math.floor((Date.now() - post.updatedAt) / 86_400_000)) : 0
+const showUpdatedNotice = Boolean(post && blog.article.showLastUpdated && post.updatedAt && updatedDays >= blog.article.lastUpdatedDays)
+function postLicenseLabel(value: string | undefined): string {
+  const raw = value?.trim() ?? ''
+  if (!raw || raw === '{}' || raw === 'null') return ''
+  if (!raw.startsWith('{')) return raw
+  try {
+    const parsed = JSON.parse(raw) as { name?: unknown }
+    return typeof parsed.name === 'string' ? parsed.name.trim() : ''
+  } catch {
+    return ''
+  }
+}
+const licenseName = postLicenseLabel(post?.license) || blog.site.license.name
+const showLicense = Boolean(post && blog.site.license.enable && licenseName)
 const cover = mediaUrl(post?.coverUrl)
 const headings = post?.headings ?? []
 const discussion = comments?.discussion ?? {
@@ -203,6 +286,82 @@ const jsonLd = post ? {
               )}
             </div>
           </article>
+
+          {showUpdatedNotice && post.updatedAt && (
+            <p class="article-updated-note" role="note">
+              {t(locale, 'common.updated')}
+              <time datetime={new Date(post.updatedAt).toISOString()}>{formatDate(post.updatedAt, locale, blog.site.site.timeZone)}</time>
+              · {updatedDays} {t(locale, 'article.daysAgo')}
+            </p>
+          )}
+
+          {seriesCard && (
+            <section class="article-block" aria-labelledby="article-series-title">
+              <header class="article-block-head">
+                <h2 id="article-series-title">{t(locale, 'article.series')}</h2>
+                <a href={`/series/${encodeURIComponent(seriesCard.slug)}`}>{seriesCard.name}</a>
+                <span class="muted">{t(locale, 'article.partOf').replace('{index}', String(seriesCard.index)).replace('{total}', String(seriesCard.total))}</span>
+              </header>
+              {(seriesCard.prev || seriesCard.next) && (
+                <nav class="article-nav" aria-label={t(locale, 'article.series')}>
+                  {seriesCard.prev
+                    ? <a href={postUrl(seriesCard.prev.slug)}>{t(locale, 'common.previousPost')}<strong>{seriesCard.prev.title}</strong></a>
+                    : <span />}
+                  {seriesCard.next
+                    ? <a href={postUrl(seriesCard.next.slug)}>{t(locale, 'common.nextPost')}<strong>{seriesCard.next.title}</strong></a>
+                    : <span />}
+                </nav>
+              )}
+            </section>
+          )}
+
+          {showLicense && (
+            <section class="article-license" aria-labelledby="article-license-title">
+              <h2 id="article-license-title">{t(locale, 'article.license')}</h2>
+              <p class="article-license-work"><strong>{post.title || t(locale, 'common.untitled')}</strong> · <a href={canonical}>{canonical}</a></p>
+              <dl>
+                <div><dt>{t(locale, 'article.author')}</dt><dd>{blog.site.profile.name || blog.site.site.title}</dd></div>
+                {post.publishedAt && <div><dt>{t(locale, 'common.published')}</dt><dd>{formatDate(post.publishedAt, locale, blog.site.site.timeZone)}</dd></div>}
+                <div><dt>{t(locale, 'article.license')}</dt><dd>{blog.site.license.url ? <a href={blog.site.license.url} rel="license noopener noreferrer" target="_blank">{licenseName}</a> : licenseName}</dd></div>
+              </dl>
+            </section>
+          )}
+
+          {(related.length > 0 || random.length > 0) && (
+            <section class="article-block" aria-labelledby="article-discovery-title">
+              <header class="article-block-head">
+                <h2 id="article-discovery-title">{t(locale, 'article.continueReading')}</h2>
+              </header>
+              <div class="article-discovery-lanes">
+                {related.length > 0 && (
+                  <div class="article-discovery-lane">
+                    <h3>{t(locale, 'article.relatedReading')}</h3>
+                    <ul>
+                      {related.map((item) => (
+                        <li>
+                          <a href={postUrl(item.slug)}>{item.title || t(locale, 'common.untitled')}</a>
+                          <span class="muted">{item.category || formatDate(item.publishedAt ?? 0, locale, blog.site.site.timeZone)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {random.length > 0 && (
+                  <div class="article-discovery-lane">
+                    <h3>{t(locale, 'article.randomReading')}</h3>
+                    <ul>
+                      {random.map((item) => (
+                        <li>
+                          <a href={postUrl(item.slug)}>{item.title || t(locale, 'common.untitled')}</a>
+                          <span class="muted">{item.category || formatDate(item.publishedAt ?? 0, locale, blog.site.site.timeZone)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           {(adjacent.previous || adjacent.next) && (
             <nav class="article-nav" aria-label={t(locale, 'common.postNavigation')}>

@@ -54,7 +54,7 @@ const jsonLd = {
       ) : posts.length === 0 ? (
         <div class="empty-state">{t(locale, 'common.noPosts')}</div>
       ) : (
-        <div class="post-list" data-mode={mode}>
+        <div class="post-list" data-post-list data-mode={mode}>
           {posts.map((post) => <PostCard post={post} mode={mode} />)}
         </div>
       )}

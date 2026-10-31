@@ -22,11 +22,13 @@ export interface BlogRuntimeConfig {
   }
   article: {
     showLastUpdated: boolean
+    lastUpdatedDays: number
     relatedCount: number
     randomCount: number
     share: boolean
   }
   music: BlogSitePublic['integrations']['music']
+  fab: BlogSitePublic['fab']
   runtimeVersion: string
 }
 
@@ -52,6 +54,12 @@ export const FALLBACK_SITE: BlogSitePublic = {
     maxLength: 4000,
     autoCloseDays: 0,
   },
+  article: { share: true, showLastUpdated: true, lastUpdatedDays: 90, relatedCount: 3, randomCount: 2 },
+  license: { enable: false, name: '', url: '' },
+  footer: { enable: true, html: '' },
+  fab: { enable: true, items: ['home', 'toc', 'comment', 'top'] },
+  announcement: { enable: false, text: '', closable: true },
+  llms: { enable: true, excludeTags: [] },
   display: {},
   integrations: { comments: 'none', music: { enabled: false, provider: 'none', tracks: [], defaultVolume: 0.7, defaultMode: 'sequence' }, umami: { enabled: false, websiteId: '' } },
   runtimeVersion: 'inkstone-blog-v3',
@@ -90,13 +98,9 @@ export function buildRuntimeConfig(
       tocDepth: numberSetting(display.tocDepth, 2, 1, 6),
       progressStyle: display.progressStyle === 'single' ? 'single' : 'dual',
     },
-    article: {
-      showLastUpdated: display.articleLastUpdated !== false,
-      relatedCount: numberSetting(display.relatedCount, 3, 0, 12),
-      randomCount: numberSetting(display.randomCount, 2, 0, 12),
-      share: display.articleShare !== false,
-    },
+    article: site.article,
     music: site.integrations.music,
+    fab: site.fab,
     runtimeVersion: site.runtimeVersion ?? 'inkstone-blog-v3',
   }
 }

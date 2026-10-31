@@ -7,6 +7,9 @@ export const prerender = false
 export const GET: APIRoute = async ({ url }) => {
   const feed = await loadFeeds().catch(() => null)
   if (!feed) return new Response('Unavailable', { status: 503 })
+  if (feed.site.llms.enable === false) return new Response('Not found', { status: 404 })
+  const excluded = new Set(feed.site.llms.excludeTags)
+  const posts = feed.posts.filter((post) => !post.tags.some((tag) => excluded.has(tag)))
   const origin = siteOrigin(url, feed.site.site.url)
   const body = [
     `# ${feed.site.site.title}`,
@@ -14,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
     feed.site.site.description,
     '',
     '## Posts',
-    ...feed.posts.map((post) => `- [${post.title}](${postLink(origin, post.slug)})${post.description ? ` — ${post.description}` : ''}`),
+    ...posts.map((post) => `- [${post.title}](${postLink(origin, post.slug)})${post.description ? ` — ${post.description}` : ''}`),
     '',
     '## Full text',
     `- [All posts as Markdown](${origin}/llms-full.txt)`,

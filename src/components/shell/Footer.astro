@@ -4,11 +4,20 @@ import { FALLBACK_SITE } from '../../server/site-config'
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
 const year = new Date().getFullYear()
+const footer = blog.site.footer ?? { enable: true, html: '' }
 ---
-<footer class="site-footer">
-  <span>© {year} {blog.site.site.title}</span>
-  <span class="muted">
-    {blog.site.counts.posts} {t(locale, 'common.posts')} · {blog.site.counts.tags} {t(locale, 'common.tags')} · {blog.site.counts.categories} {t(locale, 'common.categories')}
-  </span>
-  <span class="muted"><a href="/rss.xml">RSS</a> · <a href="/rss">{t(locale, 'nav.rss')}</a> · {t(locale, 'blog.poweredBy')}</span>
-</footer>
+{footer.enable && (
+  <footer class="site-footer">
+    {footer.html ? (
+      <div class="footer-custom" set:html={footer.html} />
+    ) : (
+      <>
+        <span>© {year} {blog.site.site.title}</span>
+        <span class="muted">
+          {blog.site.counts.posts} {t(locale, 'common.posts')} · {blog.site.counts.tags} {t(locale, 'common.tags')} · {blog.site.counts.categories} {t(locale, 'common.categories')}
+        </span>
+        <span class="muted"><a href="/rss.xml">RSS</a> · <a href="/rss">{t(locale, 'nav.rss')}</a> · {t(locale, 'blog.poweredBy')}</span>
+      </>
+    )}
+  </footer>
+)}

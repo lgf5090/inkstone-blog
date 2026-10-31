@@ -46,6 +46,10 @@ export type MessageKey =
   | 'page.about' | 'page.archiveTitle' | 'page.archiveHint'
   | 'common.recentPosts' | 'common.stats' | 'common.language' | 'appearance.title' | 'appearance.theme_auto' | 'appearance.theme_light' | 'appearance.theme_dark'
   | 'appearance.accent' | 'appearance.theme' | 'appearance.background' | 'appearance.density'
+  | 'appearance.layout' | 'appearance.layout_list' | 'appearance.layout_grid' | 'appearance.layout_masonry'
+  | 'article.series' | 'article.partOf' | 'article.relatedReading' | 'article.randomReading'
+  | 'article.continueReading' | 'article.daysAgo' | 'article.license' | 'article.author'
+  | 'calendar.title' | 'calendar.prevMonth' | 'calendar.nextMonth' | 'calendar.backToday' | 'calendar.posts'
   | 'appearance.background_paper' | 'appearance.background_white'
   | 'appearance.density_comfortable' | 'appearance.density_compact'
   | 'appearance.accent_cinnabar' | 'appearance.accent_indigo' | 'appearance.accent_celadon'
@@ -106,6 +110,12 @@ const en: Dictionary = {
   'collections.games': 'Games', 'collections.anime': 'Anime', 'collections.timeline': 'Timeline',
   'collections.compass': 'Compass',
   'page.about': 'About', 'page.archiveTitle': 'Archive', 'page.archiveHint': 'Everything published, by year.',
+  'appearance.layout': 'Layout', 'appearance.layout_list': 'List', 'appearance.layout_grid': 'Grid', 'appearance.layout_masonry': 'Masonry',
+  'article.series': 'Series', 'article.partOf': 'Part {index} of {total}', 'article.relatedReading': 'Related reading',
+  'article.randomReading': 'Random picks', 'article.continueReading': 'Continue reading', 'article.daysAgo': 'days ago',
+  'article.license': 'License', 'article.author': 'Author',
+  'calendar.title': 'Calendar', 'calendar.prevMonth': 'Previous month', 'calendar.nextMonth': 'Next month',
+  'calendar.backToday': 'Back to today', 'calendar.posts': 'posts',
   'appearance.title': 'Appearance', 'appearance.theme': 'Theme', 'appearance.background': 'Background', 'appearance.density': 'Density', 'appearance.theme_auto': 'Auto', 'appearance.theme_light': 'Light',
   'appearance.theme_dark': 'Dark', 'appearance.accent': 'Accent colour', 'appearance.background_paper': 'Paper',
   'appearance.background_white': 'Pure white', 'appearance.density_comfortable': 'Comfortable',
@@ -172,6 +182,12 @@ const zhCN: Dictionary = {
   'friends.iconFetchFailed': '图标获取失败。',
   'friends.uploadIcon': '上传图标', 'friends.uploadingIcon': '上传中…',
   'friends.iconUploadFailed': '图标上传失败。',
+  'appearance.layout': '布局', 'appearance.layout_list': '列表', 'appearance.layout_grid': '网格', 'appearance.layout_masonry': '瀑布流',
+  'article.series': '系列', 'article.partOf': '第 {index} 篇，共 {total} 篇', 'article.relatedReading': '相关阅读',
+  'article.randomReading': '随便看看', 'article.continueReading': '继续阅读', 'article.daysAgo': '天前',
+  'article.license': '许可协议', 'article.author': '作者',
+  'calendar.title': '日历', 'calendar.prevMonth': '上个月', 'calendar.nextMonth': '下个月',
+  'calendar.backToday': '回到今天', 'calendar.posts': '篇',
   'common.recentPosts': '最近文章', 'common.stats': '站点概览', 'common.language': '语言', 'common.latest': '最新文章', 'common.link': '链接', 'common.repository': '仓库', 'common.episodes': '集', 'common.photos': '张照片', 'common.readMore': '阅读全文', 'common.minRead': '分钟阅读', 'common.posts': '篇文章',
   'common.tags': '个标签', 'common.categories': '个分类', 'common.series': '个系列',
   'common.noPosts': '还没有发布文章。', 'common.loadError': '博客加载失败。', 'common.retry': '重试',
