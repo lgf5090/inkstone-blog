@@ -432,6 +432,12 @@ select {
   top: 6.2rem;
 }
 
+.layout-grid > .sidebar {
+  max-height: calc(100dvh - 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .sidebar-card {
   border: 1px solid color-mix(in oklab, var(--outline-variant) 78%, transparent);
   border-radius: var(--radius-lg);
@@ -2703,6 +2709,31 @@ html[data-reduce-motion='true'] *::after {
   flex-direction: column;
   gap: 0.9rem;
   min-width: 0;
+  position: sticky;
+  top: 6.2rem;
+  align-self: start;
+  max-height: calc(100dvh - 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* The rail itself is sticky; two sticky children pinned at the same top overlapped each other. */
+.secondary-column > .sidebar,
+.secondary-column > .toc-card {
+  position: static;
+  top: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 1024px) {
+  .secondary-column,
+  .layout-grid > .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .article-layout--single {
