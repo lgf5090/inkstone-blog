@@ -3,7 +3,7 @@
  * router's re-execution of inline scripts. Every executable inline script is therefore rendered from
  * Layout and kept static, so a hash policy covers both the first load and later client-side swaps.
  */
-export const CSP_REPORT_ONLY = true
+export const CSP_REPORT_ONLY = false
 
 async function sha256(value: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
