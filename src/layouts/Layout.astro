@@ -327,7 +327,15 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         config = null
       }
       if (!host || !snapshot || !config || !config.runtimeUrl) return
-      const { runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug, readerLocale, runtimeLabels, contextMenuConfig, devRuntimeOrigin, lazy } = config
+      const { runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug, readerLocale, runtimeLabels, contextMenuConfig, devRuntimeOrigin, lazy, stripLeadingTitle } = config
+      const stripTitleHeading = (value) => {
+        const frontmatter = /^(---\r?\n[\s\S]*?\r?\n---\r?\n)/.exec(value)
+        const head = frontmatter ? frontmatter[1] : ''
+        let body = frontmatter ? value.slice(head.length) : value
+        body = body.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '')
+        body = body.replace(/^\s*#\s+[^\n]*(?:\n+|$)/, '')
+        return head + body
+      }
       let cancelled = false
       let stage = null
       let handle = null
@@ -382,6 +390,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
           keepSnapshot(new Error('post body missing'))
           return
         }
+        const content = stripLeadingTitle ? stripTitleHeading(detail.content) : detail.content
         if (!devRuntimeOrigin && runtimeAssetBase && !document.querySelector('link[data-blog-runtime-style]')) {
           const style = document.createElement('link')
           style.rel = 'stylesheet'
@@ -402,7 +411,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         try {
           handle = await reading.mount({
             container: stage,
-            content: detail.content,
+            content,
             noteTitle: detail.title,
             embeds: detail.embeds || [],
             assets: detail.assets || [],
