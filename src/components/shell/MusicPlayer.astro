@@ -40,14 +40,23 @@ const labels = {
 const options = { music, labels, locale }
 ---
 {music.enabled && runtimeUrl && (
-  <div
-    data-blog-music
-    hidden
-    data-runtime-url={runtimeUrl}
-    data-runtime-css={runtimeCss}
-    data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''}
-    data-options={JSON.stringify(options)}
-  ></div>
+  <>
+    <button type="button" class="blog-music-trigger" data-blog-music-trigger aria-label={labels.title} title={labels.title}>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    </button>
+    <div
+      data-blog-music
+      hidden
+      data-runtime-url={runtimeUrl}
+      data-runtime-css={runtimeCss}
+      data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''}
+      data-options={JSON.stringify(options)}
+    ></div>
+  </>
 )}
 <script is:inline data-astro-rerun>
   (() => {
@@ -61,8 +70,6 @@ const options = { music, labels, locale }
       options = null
     }
     if (!runtimeUrl || !options) return
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
-    if (connection?.saveData) return
     const devOrigin = card.getAttribute('data-dev-origin') || ''
     let cancelled = false
     let playerHandle = null
@@ -110,7 +117,21 @@ const options = { music, labels, locale }
         console.warn('[blog] music player mount failed', error)
       }
     }
-    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 2500 })
-    else window.setTimeout(boot, 200)
+    const trigger = document.querySelector('[data-blog-music-trigger]')
+    if (!trigger) return
+    let busy = false
+    const start = async () => {
+      if (busy) return
+      busy = true
+      trigger.disabled = true
+      await boot()
+      if (cancelled) return
+      if (playerHandle) trigger.remove()
+      else {
+        trigger.disabled = false
+        busy = false
+      }
+    }
+    trigger.addEventListener('click', () => { void start() })
   })()
 </script>

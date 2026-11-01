@@ -327,7 +327,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         config = null
       }
       if (!host || !snapshot || !config || !config.runtimeUrl) return
-      const { runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug, readerLocale, runtimeLabels, contextMenuConfig, devRuntimeOrigin } = config
+      const { runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug, readerLocale, runtimeLabels, contextMenuConfig, devRuntimeOrigin, lazy } = config
       let cancelled = false
       let stage = null
       let handle = null
@@ -450,8 +450,28 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         // frames, and a reader who opened the article there would keep the still until they returned.
         window.setTimeout(reveal, 16)
       }
-      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 3000 })
-      else window.setTimeout(boot, 200)
+      if (!lazy) {
+        if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 3000 })
+        else window.setTimeout(boot, 200)
+        return
+      }
+      let requested = false
+      const trigger = (event) => {
+        if (requested) return
+        if (event.type === 'pointerover' && event.pointerType !== 'mouse') return
+        const target = event.target
+        if (!(target instanceof Element) || !target.closest('a[href]')) return
+        requested = true
+        host.removeEventListener('pointerover', trigger)
+        host.removeEventListener('focusin', trigger)
+        void boot()
+      }
+      host.addEventListener('pointerover', trigger, { passive: true })
+      host.addEventListener('focusin', trigger)
+      window.__blogRegisterCleanup?.('reading-lazy', () => {
+        host.removeEventListener('pointerover', trigger)
+        host.removeEventListener('focusin', trigger)
+      })
     })()
   </script>
 

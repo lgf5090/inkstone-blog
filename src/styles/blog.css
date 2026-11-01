@@ -1822,6 +1822,33 @@ select {
   gap: 0.45rem;
 }
 
+.blog-music-trigger {
+  position: fixed;
+  left: max(1rem, env(safe-area-inset-left));
+  bottom: max(1.2rem, calc(env(safe-area-inset-bottom) + 1rem));
+  z-index: var(--z-popover, 40);
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--outline-variant);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow-soft);
+  color: var(--primary);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.blog-music-trigger:hover {
+  background: var(--surface-container);
+}
+
+.blog-music-trigger:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .fab-btn {
   display: inline-flex;
   align-items: center;
