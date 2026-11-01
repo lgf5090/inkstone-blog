@@ -41,7 +41,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="light" class="light" data-accent="cinnabar" data-background="paper" data-density="comfortable" style={`--hue:${hue}`}>
+<html lang={locale} data-hue={hue} data-theme="light" class="light" data-accent="cinnabar" data-background="paper" data-density="comfortable" style={`--hue:${hue}`}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -71,8 +71,9 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     {blog.site.integrations.umami.enabled && /^[0-9a-f-]{8,}$/i.test(blog.site.integrations.umami.websiteId) && (
       <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={blog.site.integrations.umami.websiteId}></script>
     )}
-    <script is:inline define:vars={{ hue }}>
+    <script is:inline>
       (() => {
+        const hue = Number(document.documentElement.dataset.hue) || 315
         const stored = localStorage.getItem('theme')
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         const dark = stored === 'dark' || (stored !== 'light' && prefersDark)
@@ -152,6 +153,308 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     <slot />
     <FloatingActions />
     <MusicPlayer />
+
+<script is:inline data-astro-rerun>
+  (() => {
+    const toc = document.querySelector('[data-toc]')
+    const list = toc && toc.querySelector('[data-toc-list]')
+    if (!toc || !list) return
+    const items = [...list.querySelectorAll('[data-toc-item]')]
+    const folds = new Map()
+    let filtering = ''
+    let observer = null
+
+    const depthOf = (item) => Number(item.getAttribute('data-depth')) || 1
+    const applyVisibility = () => {
+      if (filtering) {
+        const query = filtering.toLocaleLowerCase()
+        const visible = new Set()
+        items.forEach((item, index) => {
+          if (item.textContent.toLocaleLowerCase().includes(query)) {
+            visible.add(index)
+            let level = depthOf(item)
+            for (let cursor = index - 1; cursor >= 0 && level > 1; cursor--) {
+              if (depthOf(items[cursor]) < level) {
+                visible.add(cursor)
+                level = depthOf(items[cursor])
+              }
+            }
+          }
+        })
+        items.forEach((item, index) => { item.hidden = !visible.has(index) })
+        toc.querySelector('[data-toc-empty]').hidden = visible.size > 0
+        return
+      }
+      toc.querySelector('[data-toc-empty]').hidden = true
+      items.forEach((item, index) => {
+        let hidden = false
+        for (const [foldIndex, folded] of folds) {
+          if (!folded || foldIndex >= index) continue
+          if (depthOf(items[foldIndex]) < depthOf(item)) {
+            hidden = true
+            break
+          }
+        }
+        item.hidden = hidden
+      })
+    }
+
+    items.forEach((item, index) => {
+      const button = item.querySelector('[data-toc-fold]')
+      if (!button) return
+      button.addEventListener('click', (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        const folded = !folds.get(index)
+        folds.set(index, folded)
+        button.setAttribute('aria-expanded', String(!folded))
+        const label = folded ? button.getAttribute('data-unfold') : button.getAttribute('data-fold')
+        if (label) {
+          button.setAttribute('aria-label', label)
+          button.setAttribute('title', label)
+        }
+        item.classList.toggle('is-folded', folded)
+        applyVisibility()
+      })
+    })
+
+    const filter = toc.querySelector('[data-toc-filter]')
+    filter?.addEventListener('input', () => {
+      filtering = filter.value.trim()
+      applyVisibility()
+    })
+
+    const progress = toc.querySelector('[data-toc-progress]')
+    const bar = toc.querySelector('.toc-progress')
+    const article = document.querySelector('[data-blog-reading-host]') || document.querySelector('.article-body')
+    const updateProgress = () => {
+      if (!article || !progress || !bar) return
+      const rect = article.getBoundingClientRect()
+      const start = rect.top + window.scrollY
+      const end = start + Math.max(0, article.offsetHeight - window.innerHeight)
+      const value = end > start ? Math.min(1, Math.max(0, (window.scrollY - start) / (end - start))) : 0
+      progress.style.width = `${Math.round(value * 100)}%`
+      bar.setAttribute('aria-valuenow', String(Math.round(value * 100)))
+    }
+    updateProgress()
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+
+    const bindSpy = () => {
+      observer?.disconnect()
+      const links = [...document.querySelectorAll('[data-toc-link]')]
+      if (links.length === 0 || !('IntersectionObserver' in window)) return
+      const byId = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]))
+      observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          links.forEach((link) => link.removeAttribute('aria-current'))
+          byId.get(entry.target.id)?.setAttribute('aria-current', 'location')
+        }
+      }, { rootMargin: '-20% 0px -70% 0px' })
+      for (const id of byId.keys()) {
+        const heading = document.getElementById(id)
+        if (heading) observer.observe(heading)
+      }
+    }
+    bindSpy()
+    document.addEventListener('blog:reading-ready', bindSpy)
+    document.addEventListener('blog:reading-ready', updateProgress)
+    window.__blogRegisterCleanup?.('toc', () => {
+      observer?.disconnect()
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+      document.removeEventListener('blog:reading-ready', bindSpy)
+      document.removeEventListener('blog:reading-ready', updateProgress)
+    })
+  })()
+</script>
+
+<script is:inline data-astro-rerun>
+  (() => {
+    const target = document.querySelector('[data-hero-typewriter]')
+    if (!target || !target.hasAttribute('data-animate')) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const text = target.getAttribute('data-full') || target.textContent || ''
+    target.textContent = ''
+    let index = 0
+    const timer = window.setInterval(() => {
+      target.textContent = text.slice(0, ++index)
+      if (index >= text.length) window.clearInterval(timer)
+    }, 42)
+    window.__blogRegisterCleanup?.('banner', () => window.clearInterval(timer))
+  })()
+</script>
+
+<script is:inline data-astro-rerun>
+  (() => {
+    document.querySelectorAll('[data-announcement]').forEach((card) => {
+      const key = 'blog-announcement:' + (card.getAttribute('data-announcement') || '')
+      if (localStorage.getItem(key) === '1') card.hidden = true
+      card.querySelector('[data-announcement-close]')?.addEventListener('click', () => {
+        localStorage.setItem(key, '1')
+        card.hidden = true
+      })
+    })
+  })()
+</script>
+
+<script is:inline data-astro-rerun>
+  document.querySelectorAll('[data-share-link]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const link = button.getAttribute('data-share-link')
+      if (!link) return
+      try {
+        await navigator.clipboard.writeText(link)
+        const label = button.getAttribute('data-copied-label') || 'Copied'
+        const previous = button.textContent
+        button.textContent = label
+        window.setTimeout(() => { button.textContent = previous }, 1600)
+      } catch {
+        button.textContent = button.getAttribute('data-copy-failed') || button.textContent
+      }
+    })
+  })
+</script>
+<script is:inline data-astro-rerun>
+    (() => {
+      const host = document.querySelector('[data-blog-reading-host]')
+      const snapshot = host && host.querySelector('[data-blog-snapshot]')
+      let config = null
+      try {
+        config = JSON.parse(host?.getAttribute('data-runtime-config') || 'null')
+      } catch {
+        config = null
+      }
+      if (!host || !snapshot || !config || !config.runtimeUrl) return
+      const { runtimeUrl, runtimeAssetBase, runtimeVersion, postSlug, readerLocale, runtimeLabels, contextMenuConfig, devRuntimeOrigin } = config
+      let cancelled = false
+      let stage = null
+      let handle = null
+      window.__blogRegisterCleanup?.('reading', () => {
+        cancelled = true
+        try {
+          handle?.unmount()
+        } catch (error) {
+          console.warn('[blog] reading runtime cleanup failed', error)
+        }
+        handle = null
+        stage?.remove()
+      })
+      const keepSnapshot = (error) => {
+        console.warn('[blog] reading runtime unavailable; keeping the stored snapshot', error)
+      }
+      const boot = async () => {
+        if (cancelled || !document.contains(host)) return
+        try {
+          if (devRuntimeOrigin) {
+            // The runtime is served by the Inkstone dev server, whose React plugin expects its
+            // refresh preamble on the importing page. Production loads a built bundle and never
+            // reaches this branch.
+            const refresh = await import(devRuntimeOrigin + '/@react-refresh')
+            refresh.injectIntoGlobalHook(window)
+            window.$RefreshReg$ = () => {}
+            window.$RefreshSig$ = () => (type) => type
+            window.__vite_plugin_react_preamble_installed__ = true
+          }
+          await import(runtimeUrl)
+        } catch (error) {
+          keepSnapshot(error)
+          return
+        }
+        if (cancelled || !document.contains(host)) return
+        const reading = window.InkstoneReading
+        if (!reading || reading.version !== runtimeVersion) {
+          keepSnapshot(new Error('reading runtime version mismatch'))
+          return
+        }
+        let detail
+        try {
+          // Not the HTTP cache: the snapshot beside this fetch can already be a newer revision.
+          const response = await fetch('/_blog/post/' + encodeURIComponent(postSlug), { headers: { accept: 'application/json' }, cache: 'no-store' })
+          if (!response.ok) throw new Error('post body ' + response.status)
+          detail = await response.json()
+        } catch (error) {
+          keepSnapshot(error)
+          return
+        }
+        if (!detail || typeof detail.content !== 'string') {
+          keepSnapshot(new Error('post body missing'))
+          return
+        }
+        if (!devRuntimeOrigin && runtimeAssetBase && !document.querySelector('link[data-blog-runtime-style]')) {
+          const style = document.createElement('link')
+          style.rel = 'stylesheet'
+          style.href = runtimeAssetBase + 'runtime.css'
+          style.setAttribute('data-blog-runtime-style', '')
+          document.head.appendChild(style)
+        }
+        if (cancelled || !document.contains(host)) return
+        stage = document.createElement('div')
+        stage.className = 'blog-runtime-stage'
+        host.appendChild(stage)
+        const selfPost = '/posts/' + encodeURIComponent(postSlug)
+        const wikiLinks = [{ target: detail.title, href: selfPost }]
+        for (const link of detail.wikiLinks || []) {
+          if (!link || !link.slug || !link.target) continue
+          wikiLinks.push({ target: link.target, href: '/posts/' + encodeURIComponent(link.slug) })
+        }
+        try {
+          handle = await reading.mount({
+            container: stage,
+            content: detail.content,
+            noteTitle: detail.title,
+            embeds: detail.embeds || [],
+            assets: detail.assets || [],
+            settings: detail.settings,
+            locale: readerLocale,
+            assetBase: runtimeAssetBase,
+            wikiLinks,
+            labels: runtimeLabels,
+            contextMenu: contextMenuConfig,
+            tagHref: (name) => '/tags/' + encodeURIComponent(name),
+          })
+        } catch (error) {
+          stage.remove()
+          stage = null
+          keepSnapshot(error)
+          return
+        }
+        if (cancelled) {
+          handle?.unmount()
+          handle = null
+          stage.remove()
+          stage = null
+          return
+        }
+        let attempts = 0
+        const reveal = () => {
+          if (cancelled) return
+          if (!stage.querySelector('[data-preview-content]')) {
+            if (++attempts > 120) {
+              if (handle) handle.unmount()
+              stage.remove()
+              keepSnapshot(new Error('reading surface did not render'))
+              return
+            }
+            window.setTimeout(reveal, 16)
+            return
+          }
+          // Removed rather than hidden: both surfaces carry the same heading ids, and a hidden
+          // duplicate would win `getElementById` for every TOC anchor and scroll-spy lookup.
+          snapshot.remove()
+          stage.classList.add('is-ready')
+          document.dispatchEvent(new CustomEvent('blog:reading-ready'))
+        }
+        // A timer rather than requestAnimationFrame: a background tab does not run animation
+        // frames, and a reader who opened the article there would keep the still until they returned.
+        window.setTimeout(reveal, 16)
+      }
+      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(boot, { timeout: 3000 })
+      else window.setTimeout(boot, 200)
+    })()
+  </script>
+
     <script is:inline data-astro-rerun>
       (() => {
         const valid = new Set(['list', 'grid', 'masonry'])

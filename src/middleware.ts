@@ -2,6 +2,7 @@ import { defineMiddleware } from 'astro:middleware'
 import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey, blogRuntimeOrigin } from './server/origins'
 import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
+import { CSP_REPORT_ONLY, contentSecurityPolicy, inlineScriptHashes } from './server/csp'
 import { unlockCookieName } from './lib/format'
 import { blogLocale, LOCALES, t } from './i18n'
 
@@ -170,5 +171,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+
+  const contentType = response.headers.get('content-type') ?? ''
+  const skipStatus = response.status === 204 || response.status === 304 || (response.status >= 300 && response.status < 400)
+  if (!import.meta.env.DEV && context.request.method !== 'HEAD' && contentType.includes('text/html') && !skipStatus) {
+    const html = await response.text()
+    const headers = new Headers(response.headers)
+    headers.delete('content-length')
+    headers.delete('content-encoding')
+    headers.set(CSP_REPORT_ONLY ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy', contentSecurityPolicy(await inlineScriptHashes(html)))
+    return new Response(html, { status: response.status, headers })
+  }
   return response
 })

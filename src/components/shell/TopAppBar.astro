@@ -41,6 +41,11 @@ const iconFor = (href: string): NavIconName | null => iconByHref[href.replace(/\
 const groupActive = (item: { href: string; children?: { href: string }[] }): boolean =>
   isActive(item.href) || Boolean(item.children?.some((child) => isActive(child.href)))
 const permalinkEnabled = Boolean(blog.site.permalink?.enable)
+const searchLabels = {
+  empty: t(locale, 'search.empty'),
+  loading: t(locale, 'search.loading'),
+  error: t(locale, 'search.error'),
+}
 ---
 
 <header class="top-app-bar">
@@ -131,7 +136,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     <button type="button" class="nav-link" data-search-open>{t(locale, 'nav.search')}</button>
   </nav>
 
-  <div class="search-overlay" data-search-overlay hidden>
+  <div class="search-overlay" data-search-overlay data-permalink-enabled={permalinkEnabled ? 'true' : 'false'} data-search-labels={JSON.stringify(searchLabels)} hidden>
     <div class="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-dialog-title">
       <h2 id="search-dialog-title" class="sr-only">{t(locale, 'search.title')}</h2>
       <form class="search-dialog-form" role="search" data-search-form>
@@ -145,11 +150,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     </div>
   </div>
 </header>
-<script is:inline data-astro-rerun define:vars={{ permalinkEnabled, searchLabels: {
-  empty: t(locale, 'search.empty'),
-  loading: t(locale, 'search.loading'),
-  error: t(locale, 'search.error'),
-} }}>
+<script is:inline data-astro-rerun>
   (() => {
     const overlay = document.querySelector('[data-search-overlay]')
     if (!overlay) return
@@ -157,6 +158,8 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
     const list = overlay.querySelector('[data-search-results]')
     const status = overlay.querySelector('[data-search-status]')
     const more = overlay.querySelector('[data-search-more]')
+    const searchLabels = JSON.parse(overlay.getAttribute('data-search-labels') || '{}')
+    const permalinkEnabled = overlay.getAttribute('data-permalink-enabled') === 'true'
     let opener = null
     let timer = 0
     let controller = null

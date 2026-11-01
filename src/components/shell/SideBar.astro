@@ -233,15 +233,4 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
     })}
   </aside>
 )}
-<script is:inline data-astro-rerun>
-  (() => {
-    document.querySelectorAll('[data-announcement]').forEach((card) => {
-      const key = 'blog-announcement:' + (card.getAttribute('data-announcement') || '')
-      if (localStorage.getItem(key) === '1') card.hidden = true
-      card.querySelector('[data-announcement-close]')?.addEventListener('click', () => {
-        localStorage.setItem(key, '1')
-        card.hidden = true
-      })
-    })
-  })()
-</script>
+
