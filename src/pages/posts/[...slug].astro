@@ -184,13 +184,13 @@ const canonical = `${origin}${postUrl(slug, post?.permalink, permalinkEnabled)}`
 const runtimeOrigin = blogRuntimeOrigin()
 const runtimeVersion = post?.render?.rendererVersion ?? ''
 // A plain article keeps its stored still: the runtime is 2 MiB of interactive block code, and the
-// still was produced by the same renderer. Rich blocks load it after idle; a post that only needs
-// wiki-link previews loads it when a link is hovered or focused.
-const runtimeRich = Boolean(post?.render && (
+// still was produced by the same renderer. Load the runtime on the first article interaction rather
+// than on idle, so a reader who never touches the body pays nothing for it.
+const runtimeNeeded = Boolean(post?.render && (
   (post.render.features?.length ?? 0) > 0 ||
+  (post.render.wikiLinks?.length ?? 0) > 0 ||
   (post.render.embeds?.length ?? 0) > 0
 ))
-const runtimeNeeded = Boolean(post?.render && (runtimeRich || (post.render.wikiLinks?.length ?? 0) > 0))
 const runtimeUrl = !post?.render
   ? ''
   : import.meta.env.DEV
@@ -224,7 +224,7 @@ const runtimeConfig = post?.render && runtimeNeeded && runtimeUrl
       runtimeLabels,
       contextMenuConfig,
       devRuntimeOrigin: import.meta.env.DEV ? runtimeOrigin : '',
-      lazy: !runtimeRich,
+      lazy: true,
     })
   : undefined
 const jsonLd = post ? {

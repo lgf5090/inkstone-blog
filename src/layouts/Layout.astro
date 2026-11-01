@@ -459,17 +459,18 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
       const trigger = (event) => {
         if (requested) return
         if (event.type === 'pointerover' && event.pointerType !== 'mouse') return
-        const target = event.target
-        if (!(target instanceof Element) || !target.closest('a[href]')) return
         requested = true
         host.removeEventListener('pointerover', trigger)
+        host.removeEventListener('pointerdown', trigger)
         host.removeEventListener('focusin', trigger)
         void boot()
       }
       host.addEventListener('pointerover', trigger, { passive: true })
+      host.addEventListener('pointerdown', trigger, { passive: true })
       host.addEventListener('focusin', trigger)
       window.__blogRegisterCleanup?.('reading-lazy', () => {
         host.removeEventListener('pointerover', trigger)
+        host.removeEventListener('pointerdown', trigger)
         host.removeEventListener('focusin', trigger)
       })
     })()
