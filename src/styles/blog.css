@@ -2734,6 +2734,9 @@ html[data-reduce-motion='true'] *::after {
     max-height: none;
     overflow: visible;
   }
+  .secondary-column {
+    order: 3;
+  }
 }
 
 .article-layout--single {
