@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware'
+import { env as workerEnv } from 'cloudflare:workers'
 import { blogApiOrigin, blogApiTimeoutMs, blogProxyKey, blogRuntimeOrigin } from './server/origins'
 import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
@@ -15,6 +16,50 @@ async function loadTaxonomies() {
   const [categories, tags, series] = await Promise.all([loadTaxonomy('categories'), loadTaxonomy('tags'), loadTaxonomy('series')])
   taxonomyCache = { at: Date.now(), categories, tags, series }
   return taxonomyCache
+}
+
+type SearchLimiter = { limit: (options: { key: string }) => Promise<{ success: boolean }> }
+const localSearchWindows = new Map<string, { count: number; reset: number }>()
+
+function localSearchAllowed(key: string): boolean {
+  const now = Date.now()
+  if (localSearchWindows.size > 5000) localSearchWindows.clear()
+  const entry = localSearchWindows.get(key)
+  if (!entry || entry.reset <= now) {
+    localSearchWindows.set(key, { count: 1, reset: now + 60_000 })
+    return true
+  }
+  entry.count += 1
+  return entry.count <= 60
+}
+
+async function searchAllowed(ip: string): Promise<boolean> {
+  const key = `search:${ip}`
+  const limiter = (workerEnv as unknown as { SEARCH_RATE_LIMITER?: SearchLimiter }).SEARCH_RATE_LIMITER
+  if (limiter) {
+    try {
+      return (await limiter.limit({ key })).success
+    } catch (cause) {
+      console.warn('[blog] search rate limiter failed; using isolate fallback', cause)
+    }
+  }
+  return localSearchAllowed(key)
+}
+
+function searchRateLimited(pathname: string): Response {
+  const headers = new Headers({
+    'cache-control': 'no-store',
+    'retry-after': '60',
+    'x-content-type-options': 'nosniff',
+  })
+  if (pathname === '/_blog/search') return Response.json({ error: 'rate_limited' }, { status: 429, headers })
+  headers.set('content-type', 'text/html; charset=utf-8')
+  headers.set('x-frame-options', 'SAMEORIGIN')
+  headers.set('referrer-policy', 'strict-origin-when-cross-origin')
+  return new Response(
+    '<!doctype html><html lang="en"><meta charset="utf-8"><title>Too many searches</title><p>Too many searches. Please try again in a minute.</p><p><a href="/">Home</a></p>',
+    { status: 429, headers },
+  )
 }
 
 async function mediaProxy(context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]): Promise<Response> {
@@ -122,6 +167,10 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.url.pathname === '/search' || context.url.pathname === '/_blog/search') {
+    const ip = context.request.headers.get('cf-connecting-ip') ?? 'local'
+    if (!(await searchAllowed(ip))) return searchRateLimited(context.url.pathname)
+  }
   if (context.url.pathname === '/_blog/search') {
     const q = (context.url.searchParams.get('q') ?? '').trim().slice(0, 120)
     if (!q) return Response.json({ items: [] }, { headers: { 'cache-control': 'no-store' } })

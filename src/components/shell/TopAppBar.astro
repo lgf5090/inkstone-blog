@@ -232,6 +232,11 @@ const searchLabels = {
       controller = new AbortController()
       try {
         const response = await fetch('/_blog/search?q=' + encodeURIComponent(query), { signal: controller.signal })
+        if (response.status === 429) {
+          list.replaceChildren()
+          status.textContent = searchLabels.error
+          return
+        }
         const data = await response.json()
         render(Array.isArray(data.items) ? data.items : [])
       } catch (error) {
