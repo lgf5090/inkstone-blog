@@ -42,7 +42,7 @@ export function contentSecurityPolicy(hashes: string[]): string {
       'https://cdn.jsdelivr.net',
       'https://unpkg.com',
     ].filter(Boolean).join(' '),
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://unpkg.com",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     "media-src 'self' blob: https:",

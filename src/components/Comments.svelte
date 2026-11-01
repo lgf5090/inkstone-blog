@@ -19,13 +19,34 @@
   let externalHost: HTMLDivElement | undefined = $state()
   let externalError = $state('')
   const addedScripts: HTMLScriptElement[] = []
+  const addedStyles: HTMLLinkElement[] = []
+  const TWIKOO_SCRIPT = 'https://cdn.jsdelivr.net/npm/twikoo@1.7.20/dist/twikoo.min.js'
+  const TWIKOO_INTEGRITY = 'sha384-yoiW6B9POkG8YiZgmBFK1Q3jJhKNqcdMOJGKRUDAno6UZBq8XHCDyx10i1INEjbz'
+  const WALINE_SCRIPT = 'https://unpkg.com/@waline/client@3.16.1/dist/waline.umd.js'
+  const WALINE_INTEGRITY = 'sha384-Db96/JOSAyLRgkP/3u25qrE0vadi19jxrpdGiz4Kolu+w4sI5x2K3trlUB69n5D5'
+  const WALINE_CSS = 'https://unpkg.com/@waline/client@3.16.1/dist/waline.css'
+  const WALINE_CSS_INTEGRITY = 'sha384-JQsDJd0Q+SCQkICQDOYZZVYNV6zUSpp3ivfffGZJBKPjMqWrhG6uIjqEZjQjH3dx'
 
-  function loadScript(src: string): Promise<void> {
+  function loadStylesheet(href: string, integrity: string): void {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = href
+    link.integrity = integrity
+    link.crossOrigin = 'anonymous'
+    document.head.appendChild(link)
+    addedStyles.push(link)
+  }
+
+  function loadScript(src: string, integrity?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script')
       script.src = src
       script.async = true
       script.dataset.commentProvider = provider
+      if (integrity) {
+        script.integrity = integrity
+        script.crossOrigin = 'anonymous'
+      }
       script.onload = () => resolve()
       script.onerror = () => reject(new Error(`Could not load ${src}`))
       document.head.appendChild(script)
@@ -41,6 +62,9 @@
       if (provider === 'giscus') {
         const giscus = providerConfig.giscus
         if (!giscus.repo || !giscus.repoId) throw new Error('missing giscus config')
+        // giscus ships one unversioned client that derives its widget origin from this script's URL:
+        // a self-hosted copy would point the iframe at this site, and there is no stable bytes-to-hash
+        // URL to pin. It therefore stays on the official origin under the CSP allowlist.
         const script = document.createElement('script')
         script.src = 'https://giscus.app/client.js'
         script.async = true
@@ -63,14 +87,15 @@
       }
       if (provider === 'twikoo') {
         if (!providerConfig.twikoo.envId) throw new Error('missing twikoo config')
-        await loadScript('https://cdn.jsdelivr.net/npm/twikoo@1.7.20/dist/twikoo.min.js')
+        await loadScript(TWIKOO_SCRIPT, TWIKOO_INTEGRITY)
         const twikoo = (window as unknown as { twikoo?: { init: (options: Record<string, unknown>) => void } }).twikoo
         if (!twikoo?.init) throw new Error('twikoo unavailable')
         twikoo.init({ envId: providerConfig.twikoo.envId, el: externalHost, path: `/posts/${slug}` })
         return
       }
       if (!providerConfig.waline.serverURL) throw new Error('missing waline config')
-      await loadScript('https://unpkg.com/@waline/client@3/dist/waline.js')
+      loadStylesheet(WALINE_CSS, WALINE_CSS_INTEGRITY)
+      await loadScript(WALINE_SCRIPT, WALINE_INTEGRITY)
       const Waline = (window as unknown as { Waline?: { init: (options: Record<string, unknown>) => void } }).Waline
       if (!Waline?.init) throw new Error('waline unavailable')
       Waline.init({ el: externalHost, serverURL: providerConfig.waline.serverURL, path: `/posts/${slug}`, dark: 'html.dark' })
@@ -86,7 +111,9 @@
 
   onDestroy(() => {
     for (const script of addedScripts) script.remove()
+    for (const link of addedStyles) link.remove()
     addedScripts.length = 0
+    addedStyles.length = 0
   })
 
   // svelte-ignore state_referenced_locally
