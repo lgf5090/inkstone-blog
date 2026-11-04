@@ -33,7 +33,7 @@ export type MessageKey =
   | 'music.title' | 'music.play' | 'music.pause' | 'music.previous' | 'music.next'
   | 'music.mode' | 'music.modeSequence' | 'music.modeRepeatOne' | 'music.modeShuffle'
   | 'music.progress' | 'music.volume' | 'music.mute' | 'music.unmute' | 'music.playlist'
-  | 'music.empty' | 'music.loading' | 'music.error' | 'music.nowPlaying'
+  | 'music.empty' | 'music.loading' | 'music.error' | 'music.nowPlaying' | 'music.configure'
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
@@ -177,6 +177,7 @@ const en: Dictionary = {
   'music.unmute': 'Unmute',
   'music.playlist': 'Playlist',
   'music.empty': 'No tracks yet',
+  'music.configure': 'Add tracks in Inkstone → Blog admin → Settings → Appearance → Integrations → Music.',
   'music.loading': 'Loading…',
   'music.error': 'Music is unavailable right now',
   'music.nowPlaying': 'Now playing',
@@ -293,6 +294,7 @@ const zhCN: Dictionary = {
   'music.unmute': '取消静音',
   'music.playlist': '播放列表',
   'music.empty': '暂无曲目',
+  'music.configure': '在 Inkstone → 博客后台 → 设置 → 外观 → 集成 → 音乐 中添加曲目。',
   'music.loading': '加载中…',
   'music.error': '音乐暂时无法播放',
   'music.nowPlaying': '正在播放',
