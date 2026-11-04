@@ -4,6 +4,7 @@ import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import Toc from '../../components/blog/Toc.astro'
 import Comments from '../../components/Comments.svelte'
+import ArticleImageLightbox from '../../components/blog/ArticleImageLightbox.svelte'
 import SharePoster from '../../components/blog/SharePoster.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, t } from '../../i18n'
@@ -198,6 +199,15 @@ const discussion = comments?.discussion ?? {
   allowReplies: true,
   maxLength: 4000,
 }
+// An external provider lives outside this worker, so `/comments` is not called for it. `enabled`
+// still has to be read from the article and the site, or Twikoo/Giscus/Waline mount with `false` and
+// the widget never appears — the setting exists but does nothing.
+const discussionSettings = blog.site.discussion
+const commentsClosedByAge = discussionSettings.autoCloseDays > 0 && post?.publishedAt !== null && post?.publishedAt !== undefined
+  && post.publishedAt < Date.now() - discussionSettings.autoCloseDays * 24 * 60 * 60 * 1000
+const commentsEnabled = externalComments
+  ? Boolean(post?.commentsEnabled && discussionSettings.enabled && !commentsClosedByAge)
+  : (comments?.enabled ?? false)
 const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
 const permalinkEnabled = Boolean(blog.site.permalink?.enable)
 const canonical = `${origin}${postUrl(slug, post?.permalink, permalinkEnabled)}`
@@ -347,6 +357,7 @@ const jsonLd = post ? {
               )}
             </div>
           </article>
+          <ArticleImageLightbox client:only="svelte" locale={locale} />
 
           {showUpdatedNotice && post.updatedAt && (
             <p class="article-updated-note" role="note">
@@ -438,7 +449,7 @@ const jsonLd = post ? {
           <Comments
             client:idle
             slug={post.slug}
-            enabled={comments?.enabled ?? false}
+            enabled={commentsEnabled}
             discussion={discussion}
             initial={comments?.items ?? []}
             locale={locale}
