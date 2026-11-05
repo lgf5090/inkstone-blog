@@ -157,6 +157,7 @@ const siteSchema = z.object({
       libraryScope: z.enum(['all', 'playlist']).optional(),
       libraryPlaylistId: z.string().optional(),
       libraryPlaylistName: z.string().optional(),
+      libraryStatus: z.enum(['ready', 'empty', 'no-r2', 'playlist-empty', 'playlist-missing', 'signing-unavailable']).optional(),
       tracks: z.array(z.object({
         id: z.string(),
         title: z.string(),

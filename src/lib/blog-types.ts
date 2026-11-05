@@ -122,6 +122,7 @@ export interface BlogMusicConfig {
   libraryScope?: 'all' | 'playlist'
   libraryPlaylistId?: string
   libraryPlaylistName?: string
+  libraryStatus?: 'ready' | 'empty' | 'no-r2' | 'playlist-empty' | 'playlist-missing' | 'signing-unavailable'
   defaultVolume: number
   defaultMode: 'sequence' | 'repeat-one' | 'shuffle'
 }

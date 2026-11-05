@@ -44,8 +44,18 @@ const labels = {
   configure: t(locale, 'music.configure'),
   libraryEmpty: t(locale, 'music.libraryEmpty'),
 }
-const emptyMessage = music.provider === 'library' ? labels.libraryEmpty : labels.configure
+const emptyMessage = music.provider === 'library' ? libraryEmptyMessage(music.libraryStatus) : labels.configure
 const options = { music, labels, locale, emptyMessage }
+
+function libraryEmptyMessage(status: BlogMusicConfig['libraryStatus']): string {
+  switch (status) {
+    case 'no-r2': return t(locale, 'music.libraryNoR2')
+    case 'playlist-empty': return t(locale, 'music.libraryPlaylistEmpty')
+    case 'playlist-missing': return t(locale, 'music.libraryPlaylistMissing')
+    case 'signing-unavailable': return t(locale, 'music.libraryUnavailable')
+    default: return labels.libraryEmpty
+  }
+}
 ---
 {configured && runtimeUrl && (
   <>
