@@ -42,8 +42,10 @@ const labels = {
   error: t(locale, 'music.error'),
   nowPlaying: t(locale, 'music.nowPlaying'),
   configure: t(locale, 'music.configure'),
+  libraryEmpty: t(locale, 'music.libraryEmpty'),
 }
-const options = { music, labels, locale }
+const emptyMessage = music.provider === 'library' ? labels.libraryEmpty : labels.configure
+const options = { music, labels, locale, emptyMessage }
 ---
 {configured && runtimeUrl && (
   <>
@@ -64,7 +66,7 @@ const options = { music, labels, locale }
     </button>
     <div class="blog-music-note" data-blog-music-note hidden role="status" aria-live="polite">
       <strong>{labels.empty}</strong>
-      <span data-blog-music-note-text>{labels.configure}</span>
+      <span data-blog-music-note-text>{emptyMessage}</span>
     </div>
     <div
       data-blog-music
@@ -153,7 +155,7 @@ const options = { music, labels, locale }
     const trigger = document.querySelector('[data-blog-music-trigger]')
     if (!trigger) return
     if (card.getAttribute('data-playable') !== 'true') {
-      trigger.addEventListener('click', () => showNote(options.labels.configure))
+      trigger.addEventListener('click', () => showNote(options.emptyMessage))
       return
     }
     let busy = false

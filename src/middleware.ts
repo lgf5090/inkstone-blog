@@ -89,6 +89,42 @@ async function mediaProxy(context: Parameters<Parameters<typeof defineMiddleware
   return new Response(upstream.body, { status: 200, headers: responseHeaders })
 }
 
+/**
+ * Streams one owner-library track or cover through the blog origin.
+ *
+ * The browser only holds a short-lived HMAC token issued by `/site`; the R2 key stays inside the
+ * worker. Range requests are forwarded so seeking and partial audio loads behave like the music app.
+ */
+async function musicProxy(context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]): Promise<Response> {
+  const rest = context.url.pathname.slice('/_blog/music/'.length)
+  if (!/^(?:audio|cover)\/[A-Za-z0-9_-]{1,64}$/.test(rest)) return new Response(null, { status: 404 })
+  const origin = blogApiOrigin()
+  if (!origin) return new Response(null, { status: 503 })
+  const headers = new Headers({ 'x-inkstone-client': '1' })
+  const key = blogProxyKey()
+  if (key) headers.set('x-blog-proxy-key', key)
+  const range = context.request.headers.get('range')
+  if (range) headers.set('range', range)
+  const ifNoneMatch = context.request.headers.get('if-none-match')
+  if (ifNoneMatch) headers.set('if-none-match', ifNoneMatch)
+  let upstream: Response
+  try {
+    upstream = await fetch(`${origin}/api/blog/music/${rest}${context.url.search}`, {
+      headers,
+      signal: AbortSignal.timeout(blogApiTimeoutMs()),
+    })
+  } catch {
+    return new Response(null, { status: 502 })
+  }
+  const responseHeaders = new Headers()
+  for (const name of ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified', 'cache-control']) {
+    const value = upstream.headers.get(name)
+    if (value) responseHeaders.set(name, value)
+  }
+  responseHeaders.set('x-content-type-options', 'nosniff')
+  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders })
+}
+
 const RUNTIME_VERSION = /^inkstone-blog-v[0-9]+$/
 const RUNTIME_FILE = /^[A-Za-z0-9._/-]+$/
 
@@ -194,6 +230,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (context.url.pathname.startsWith('/_blog/runtime/')) return runtimeProxy(context)
   if (context.url.pathname.startsWith('/_blog/post/')) return readingData(context)
   if (context.url.pathname.startsWith('/_blog/media/')) return mediaProxy(context)
+  if (context.url.pathname.startsWith('/_blog/music/')) return musicProxy(context)
 
   if (!PASSTHROUGH.test(context.url.pathname)) {
     try {
