@@ -98,6 +98,36 @@ const searchLabels = {
       <button type="button" class="icon-button" data-search-open aria-label={t(locale, 'search.title')} title={t(locale, 'search.title')}>
         <Icon name="search" size={17} />
       </button>
+      <details class="nav-menu mobile-menu">
+        <summary class="icon-button" aria-label={t(locale, 'nav.more')} title={t(locale, 'nav.more')}>
+          <Icon name="menu" size={17} />
+        </summary>
+        <div class="nav-menu-panel mobile-menu-panel">
+          <nav class="mobile-nav" aria-label={t(locale, 'nav.home')}>
+            {links.map((item) => (
+              item.children?.length ? (
+                <details class="mobile-nav-group">
+                  <summary class="nav-link" aria-current={groupActive(item) ? 'page' : undefined}>
+                    {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
+                    {fallbackLabel(item.href, item.label)}
+                  </summary>
+                  <div class="mobile-nav-children">
+                    {item.children.map((child) => (
+                      <a href={hrefOf(child.href)} aria-current={isActive(child.href) ? 'page' : undefined}>{fallbackLabel(child.href, child.label)}</a>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <a href={hrefOf(item.href)} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
+                  {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
+                  {fallbackLabel(item.href, item.label)}
+                </a>
+              )
+            ))}
+            <button type="button" class="nav-link" data-search-open>{t(locale, 'nav.search')}</button>
+          </nav>
+        </div>
+      </details>
       <details class="nav-menu lang-menu">
         <summary class="icon-button" aria-label={t(locale, 'common.language')} title={t(locale, 'common.language')}>文</summary>
         <div class="nav-menu-panel lang-panel">
@@ -113,30 +143,6 @@ const searchLabels = {
       />
     </div>
   </div>
-
-  <nav class="mobile-nav" aria-label={t(locale, 'nav.home')}>
-    {links.map((item) => (
-      item.children?.length ? (
-        <details class="mobile-nav-group">
-          <summary class="nav-link" aria-current={groupActive(item) ? 'page' : undefined}>
-            {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
-            {fallbackLabel(item.href, item.label)}
-          </summary>
-          <div class="mobile-nav-children">
-            {item.children.map((child) => (
-              <a href={hrefOf(child.href)} aria-current={isActive(child.href) ? 'page' : undefined}>{fallbackLabel(child.href, child.label)}</a>
-            ))}
-          </div>
-        </details>
-      ) : (
-        <a href={hrefOf(item.href)} class="nav-link" aria-current={isActive(item.href) ? 'page' : undefined}>
-          {iconFor(item.href) && <Icon name={iconFor(item.href)!} size={13} />}
-          {fallbackLabel(item.href, item.label)}
-        </a>
-      )
-    ))}
-    <button type="button" class="nav-link" data-search-open>{t(locale, 'nav.search')}</button>
-  </nav>
 
   <div class="search-overlay" data-search-overlay data-permalink-enabled={permalinkEnabled ? 'true' : 'false'} data-search-labels={JSON.stringify(searchLabels)} hidden>
     <div class="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-dialog-title">
