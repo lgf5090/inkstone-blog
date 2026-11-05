@@ -116,9 +116,12 @@ export interface BlogMusicMeting {
 
 export interface BlogMusicConfig {
   enabled: boolean
-  provider: 'none' | 'local' | 'meting' | 'custom' | 'mixed'
+  provider: 'none' | 'local' | 'meting' | 'custom' | 'mixed' | 'library'
   tracks: BlogMusicTrack[]
   meting?: BlogMusicMeting
+  libraryScope?: 'all' | 'playlist'
+  libraryPlaylistId?: string
+  libraryPlaylistName?: string
   defaultVolume: number
   defaultMode: 'sequence' | 'repeat-one' | 'shuffle'
 }

@@ -153,7 +153,10 @@ const siteSchema = z.object({
     comments: z.string().default('none'),
     music: z.object({
       enabled: z.boolean().default(false),
-      provider: z.enum(['none', 'local', 'meting', 'custom', 'mixed']).default('none'),
+      provider: z.enum(['none', 'local', 'meting', 'custom', 'mixed', 'library']).default('none'),
+      libraryScope: z.enum(['all', 'playlist']).optional(),
+      libraryPlaylistId: z.string().optional(),
+      libraryPlaylistName: z.string().optional(),
       tracks: z.array(z.object({
         id: z.string(),
         title: z.string(),
