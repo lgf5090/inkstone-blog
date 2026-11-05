@@ -57,10 +57,20 @@
   let position = $state(0)
   let duration = $state(0)
   let buffered = $state(0)
-  let volume = $state(typeof options.music.defaultVolume === 'number' ? options.music.defaultVolume : 0.7)
+  // Defaults stay derived from the SSR options, so a late-hydrating island still
+  // reads the latest config; a reader's own choice is kept as an override.
+  const defaultVolume = $derived(
+    typeof options.music.defaultVolume === 'number' ? options.music.defaultVolume : 0.7,
+  )
+  const defaultMode = $derived<'sequence' | 'repeat-one' | 'shuffle'>(
+    options.music.defaultMode ?? 'sequence',
+  )
+  let volumeOverride = $state<number | null>(null)
+  const volume = $derived(volumeOverride ?? defaultVolume)
   let muted = $state(false)
   let rate = $state(1)
-  let mode = $state<'sequence' | 'repeat-one' | 'shuffle'>(options.music.defaultMode ?? 'sequence')
+  let modeOverride = $state<'sequence' | 'repeat-one' | 'shuffle' | null>(null)
+  const mode = $derived(modeOverride ?? defaultMode)
   let search = $state('')
   let coverFailed = $state<Record<string, boolean>>({})
   let noteVisible = $state(false)
@@ -209,10 +219,11 @@
   }
 
   function setVolume(value: number): void {
-    volume = Math.max(0, Math.min(1, value))
+    const next = Math.max(0, Math.min(1, value))
+    volumeOverride = next
     muted = false
     if (audio) {
-      audio.volume = volume
+      audio.volume = next
       audio.muted = false
     }
   }
@@ -230,7 +241,7 @@
   }
 
   function cycleMode(): void {
-    mode = mode === 'sequence' ? 'repeat-one' : mode === 'repeat-one' ? 'shuffle' : 'sequence'
+    modeOverride = mode === 'sequence' ? 'repeat-one' : mode === 'repeat-one' ? 'shuffle' : 'sequence'
   }
 
   function openPanel(): void {
@@ -257,11 +268,18 @@
     noteTimer = setTimeout(() => { noteVisible = false }, 9000)
   }
 
-  function panelKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Escape') return
-    if (queueOpen) queueOpen = false
-    else closePanel()
-  }
+  // Escape is a panel-level command, not a control of one child: listen on the
+  // document while the panel is open so it also works when focus sits outside.
+  $effect(() => {
+    if (!open) return
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (queueOpen) queueOpen = false
+      else closePanel()
+    }
+    document.addEventListener('keydown', onKeydown)
+    return () => document.removeEventListener('keydown', onKeydown)
+  })
 
   function formatClock(ms: number): string {
     const seconds = Math.max(0, Math.floor(ms / 1000))
@@ -331,7 +349,7 @@
         </button>
       </div>
     {:else}
-      <aside class="bm-player" role="region" aria-label={labels.title} onkeydown={panelKeydown}>
+      <aside class="bm-player" role="region" aria-label={labels.title}>
         <header class="bm-header">
           <span class="bm-grip" aria-hidden="true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 9h16M4 15h16" /></svg>
