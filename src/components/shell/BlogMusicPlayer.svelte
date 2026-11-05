@@ -32,6 +32,7 @@
     minimize: string
     expand: string
     lyricsEmpty: string
+    drag: string
   }
 
   interface Options {
@@ -92,7 +93,114 @@
   const serialized = $derived(JSON.stringify(options))
   const rateSteps = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 
+  // ── Drag ────────────────────────────────────────────────────────────────
+  // The panel is fixed at the bottom-right corner; the reader's position is a
+  // translate offset kept inside the viewport. It persists across pages and is
+  // re-clamped on resize, so a window change can never strand the panel.
+  const OFFSET_KEY = 'blog-music-offset-v1'
+  const DRAG_MARGIN = 8
+  let panelEl = $state<HTMLElement | null>(null)
+  let dragState = $state<{ pointerId: number; startX: number; startY: number; baseX: number; baseY: number } | null>(null)
+  let offset = $state({ x: 0, y: 0 })
+
+  function clampOffset(x: number, y: number): { x: number; y: number } {
+    const element = panelEl
+    if (!element) return { x, y }
+    const rect = element.getBoundingClientRect()
+    const baseLeft = rect.left - offset.x
+    const baseTop = rect.top - offset.y
+    const viewportW = document.documentElement.clientWidth
+    const viewportH = document.documentElement.clientHeight
+    const minX = DRAG_MARGIN - baseLeft
+    const maxX = viewportW - DRAG_MARGIN - (baseLeft + rect.width)
+    const minY = DRAG_MARGIN - baseTop
+    const maxY = viewportH - DRAG_MARGIN - (baseTop + rect.height)
+    return {
+      x: Math.max(minX, Math.min(maxX, x)),
+      y: Math.max(minY, Math.min(maxY, y)),
+    }
+  }
+
+  function saveOffset(): void {
+    try {
+      localStorage.setItem(OFFSET_KEY, JSON.stringify(offset))
+    } catch {
+      // A reader in a private window keeps the position for this page only.
+    }
+  }
+
+  function startDrag(event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    const element = event.currentTarget as HTMLElement
+    dragState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+    }
+    element.setPointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+
+  function moveDrag(event: PointerEvent): void {
+    const state = dragState
+    if (!state || state.pointerId !== event.pointerId) return
+    offset = clampOffset(state.baseX + event.clientX - state.startX, state.baseY + event.clientY - state.startY)
+    event.preventDefault()
+  }
+
+  function endDrag(event: PointerEvent): void {
+    const state = dragState
+    if (!state) return
+    dragState = null
+    const element = event.currentTarget as HTMLElement
+    if (element.hasPointerCapture(state.pointerId)) element.releasePointerCapture(state.pointerId)
+    saveOffset()
+  }
+
+  function nudgeDrag(event: KeyboardEvent): void {
+    const step = event.shiftKey ? 40 : 16
+    let x = offset.x
+    let y = offset.y
+    if (event.key === 'ArrowLeft') x -= step
+    else if (event.key === 'ArrowRight') x += step
+    else if (event.key === 'ArrowUp') y -= step
+    else if (event.key === 'ArrowDown') y += step
+    else return
+    event.preventDefault()
+    offset = clampOffset(x, y)
+    saveOffset()
+  }
+
+  // Re-clamp whenever the panel mounts, opens, or changes size.
+  $effect(() => {
+    if (!panelEl) return
+    const element = panelEl
+    const reclamp = () => {
+      offset = clampOffset(offset.x, offset.y)
+    }
+    window.addEventListener('resize', reclamp)
+    const observer = new ResizeObserver(reclamp)
+    observer.observe(element)
+    return () => {
+      window.removeEventListener('resize', reclamp)
+      observer.disconnect()
+    }
+  })
+
   onMount(() => {
+    try {
+      const stored = localStorage.getItem(OFFSET_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as { x?: unknown; y?: unknown }
+        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+          offset = { x: parsed.x, y: parsed.y }
+        }
+      }
+    } catch {
+      // A malformed entry is not worth failing a page load over.
+    }
     const element = new Audio()
     element.preload = 'metadata'
     element.volume = volume
@@ -328,7 +436,13 @@
 
   {#if open}
     {#if collapsed}
-      <div class="bm-player bm-player--collapsed" role="region" aria-label={labels.title}>
+      <div
+        class="bm-player bm-player--collapsed"
+        role="region"
+        aria-label={labels.title}
+        bind:this={panelEl}
+        style:translate={`${offset.x}px ${offset.y}px`}
+      >
         <button type="button" class="bm-orb" aria-label={labels.expand} onclick={() => { collapsed = false }}>
           <span class="bm-cover bm-cover--orb" aria-hidden="true">
             {#if current && coverOf(current)}
@@ -349,11 +463,28 @@
         </button>
       </div>
     {:else}
-      <aside class="bm-player" role="region" aria-label={labels.title}>
+      <aside
+        class="bm-player"
+        class:bm-player--dragging={dragState !== null}
+        role="region"
+        aria-label={labels.title}
+        bind:this={panelEl}
+        style:translate={`${offset.x}px ${offset.y}px`}
+      >
         <header class="bm-header">
-          <span class="bm-grip" aria-hidden="true">
+          <button
+            type="button"
+            class="bm-grip"
+            aria-label={labels.drag}
+            title={labels.drag}
+            onpointerdown={startDrag}
+            onpointermove={moveDrag}
+            onpointerup={endDrag}
+            onpointercancel={endDrag}
+            onkeydown={nudgeDrag}
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 9h16M4 15h16" /></svg>
-          </span>
+          </button>
           <span class="bm-heading">{labels.nowPlaying}</span>
           <span class={playing ? 'bm-eq bm-eq--playing' : 'bm-eq'} aria-hidden="true">
             {#each [0, 1, 2, 3, 4] as bar (bar)}<span></span>{/each}
@@ -596,11 +727,37 @@
     min-block-size: 24px;
     align-items: center;
     gap: var(--sp-1);
+    user-select: none;
   }
 
   .bm-grip {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    block-size: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
     color: var(--text-quaternary);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .bm-grip:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+  }
+
+  .bm-grip:active,
+  .bm-player--dragging .bm-grip {
+    cursor: grabbing;
+  }
+
+  .bm-grip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
 
   .bm-heading {

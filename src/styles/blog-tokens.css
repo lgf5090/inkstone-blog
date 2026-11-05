@@ -20,6 +20,10 @@
   --font-outfit: var(--font-ui);
   --font-code: var(--font-mono);
   --blog-display: var(--font-display);
+  /* The app resolves `72ch` against its Times-based root; Tailwind's preflight
+     gives this page a narrower root `ch`, so the same measure is restated in
+     rem to keep the column identical to the app's reading view. */
+  --prose-width: 45.5rem;
 
   /* Radius — one scale, shared with the app -------------------------------- */
   --radius-xs: var(--r-xs);
