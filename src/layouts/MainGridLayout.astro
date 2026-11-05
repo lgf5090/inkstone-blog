@@ -33,8 +33,11 @@ const { page = 'home', hero = false } = Astro.props
       </div>
       {showSidebar && dual && (
         <div class="secondary-column">
-          <SideBar page={page} column="secondary" />
+          {/* The article outline leads the rail: it is the only contextual item
+              there, and it stays above the widgets instead of sitting under a
+              long taxonomy list. */}
           <slot name="aside" />
+          <SideBar page={page} column="secondary" />
         </div>
       )}
     </div>

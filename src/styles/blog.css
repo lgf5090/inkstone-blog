@@ -232,20 +232,48 @@ select {
   transform: translateY(1px);
 }
 
-.mobile-nav {
+/* The compact header keeps every destination in one popover instead of a
+   second bar under it. `details` supplies the keyboard and Escape behaviour
+   already used by the desktop nav menus; no native dialog is involved. */
+.mobile-menu {
   display: none;
-  position: relative;
-  z-index: 1;
-  width: min(calc(100% - var(--sp-8)), var(--page-width));
-  margin: var(--sp-1) auto 0;
-  padding: var(--sp-1);
+}
+
+.mobile-menu-panel {
+  right: 0;
+  left: auto;
+  width: min(18rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 5.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mobile-menu-panel .mobile-nav {
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-0-5);
-  flex-wrap: wrap;
-  pointer-events: auto;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-surface) 88%, transparent);
-  backdrop-filter: blur(16px);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.mobile-menu-panel .nav-link {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.mobile-menu-panel .mobile-nav-group > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.mobile-menu-panel .mobile-nav-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-menu-panel .mobile-nav-group[open] {
+  flex: none;
+  padding-bottom: var(--sp-1);
 }
 
 .site-main {
@@ -369,40 +397,37 @@ select {
   grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
 }
 
-/* 1024 keeps the three-column reading layout, so the rails tighten instead of
-   collapsing; the article measure stays the same at this width. */
-@media (max-width: 1200px) and (min-width: 1024px) {
+/* Tablet keeps the rails beside the article: the three-column reading layout
+   survives down to 769px, and the rails tighten by available width instead of
+   dropping below the content. */
+@media (max-width: 1200px) and (min-width: 769px) {
   .layout-grid[data-sidebar='dual'] {
-    grid-template-columns: 13.5rem minmax(0, 1fr) 13.5rem;
+    grid-template-columns: clamp(11rem, 17vw, 13.5rem) minmax(0, 1fr) clamp(11rem, 17vw, 13.5rem);
   }
   .layout-grid[data-sidebar='single'][data-side='left'] {
-    grid-template-columns: 13.5rem minmax(0, 1fr);
+    grid-template-columns: clamp(11rem, 17vw, 13.5rem) minmax(0, 1fr);
   }
   .layout-grid[data-sidebar='single'][data-side='right'] {
-    grid-template-columns: minmax(0, 1fr) 13.5rem;
+    grid-template-columns: minmax(0, 1fr) clamp(11rem, 17vw, 13.5rem);
   }
 }
 
+/* The rail takes its natural height and scrolls with the page. A sticky rail
+   taller than the viewport cannot be read to its end, and the capped height +
+   inner scroller that used to keep it pinned also clipped the second-level
+   sticky card and the lazily hydrated calendar: both lived below the rail's
+   scrollport and never became visible. `min-width: 0` stops a long list item's
+   min-content width from widening the whole rail. */
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3-5);
-  position: sticky;
-  top: 5.5rem;
   align-self: start;
-}
-
-/* The rail is sticky and only scrolls when it is genuinely taller than the
-   viewport. `overscroll-behavior: auto` lets the page resume as soon as the
-   rail reaches its end, so a wheel gesture never gets trapped. The capped
-   height keeps the top pinned at 5.5rem even when the page is scrolled to its
-   last pixel, instead of sliding under the header. */
-.layout-grid > .sidebar {
-  max-height: calc(100dvh - 13rem);
-  overflow-y: auto;
-  overscroll-behavior: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
+  min-width: 0;
+  /* A rail inside the flex `.secondary-column` would otherwise shrink-to-fit
+     its widest card instead of the column; the horizontal mobile strip needs
+     the rail itself to be viewport-width so it can scroll, not the page. */
+  width: 100%;
 }
 
 .sidebar-card {
@@ -423,6 +448,8 @@ select {
   font-weight: 600;
   letter-spacing: var(--tracking-micro);
   color: var(--text-primary);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .profile-card {
@@ -445,6 +472,7 @@ select {
   font-size: var(--text-17);
   font-weight: 600;
   letter-spacing: var(--tracking-title);
+  overflow-wrap: anywhere;
 }
 
 .profile-bio {
@@ -453,6 +481,7 @@ select {
   line-height: 1.6;
   color: var(--text-secondary);
   text-wrap: pretty;
+  overflow-wrap: anywhere;
 }
 
 .profile-links {
@@ -505,6 +534,20 @@ select {
   border-radius: var(--r-sm);
   font-size: var(--text-13);
   color: var(--text-secondary);
+  min-width: 0;
+}
+
+/* A recent-post title is the other place an unbreakable run escaped its column:
+   as a flex item its automatic minimum width was the whole 120-character word,
+   which widened the rail and then the page. */
+.widget-list a > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.widget-list a > svg,
+.widget-list a > .widget-count {
+  flex: none;
 }
 
 .widget-list a:hover {
@@ -606,6 +649,7 @@ select {
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .section-heading p {
@@ -671,7 +715,8 @@ select {
   box-shadow: var(--shadow-sm);
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
     border-color var(--dur-base) var(--ease-out);
-  overflow: hidden;
+  /* No `overflow: hidden`: the cover paints its own radius inside the padding,
+     while clipping here also cut the focus ring of the card's own title link. */
 }
 
 .post-card:has(.post-card-cover) {
@@ -720,6 +765,15 @@ select {
   letter-spacing: var(--tracking-title);
   font-weight: 600;
   text-wrap: balance;
+  min-width: 0;
+  /* A 120-character run with no space must break inside the card rather than
+     stretch the grid track past the viewport. `anywhere` only fires when the
+     word genuinely does not fit, so normal Chinese lines keep their breaks. */
+  overflow-wrap: anywhere;
+}
+
+.post-card-title a {
+  overflow-wrap: anywhere;
 }
 
 .post-card-title a:hover {
@@ -732,6 +786,8 @@ select {
   line-height: 1.65;
   color: var(--text-secondary);
   text-wrap: pretty;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .post-card-tags {
@@ -809,21 +865,31 @@ select {
   box-shadow: var(--shadow-btn);
 }
 
+/* One measure drives the header copy and the prose column: the inline padding
+   is whichever is wider, the shared gutter or half of the leftover around the
+   reading measure. Because both boxes are children of the same shell, the two
+   computed paddings are identical and their text edges land on one line. The
+   prose's own max-width stays the source of truth, so the runtime still gets
+   its 72ch column. `overflow` is visible: clipping here cut focus rings and the
+   cover carries its own top radii. */
 .article-shell {
+  --article-measure: var(--prose-width, 72ch);
+  --article-gutter: clamp(var(--sp-5), 3vw, var(--sp-6));
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-xl);
   background: var(--bg-surface);
   box-shadow: var(--shadow-soft);
-  overflow: hidden;
 }
 
 .article-header {
-  padding: clamp(var(--sp-5), 4vw, var(--sp-12)) clamp(var(--sp-5), 5vw, var(--sp-16)) var(--sp-5);
+  padding-block: clamp(var(--sp-5), 4vw, var(--sp-12)) var(--sp-5);
+  padding-inline: max(var(--article-gutter), calc((100% - var(--article-measure)) / 2));
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .article-title {
   margin: var(--sp-3) 0 0;
+  min-width: 0;
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3.5rem);
   line-height: 1.08;
@@ -831,6 +897,7 @@ select {
   font-weight: 600;
   color: var(--text-primary);
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .article-meta {
@@ -843,7 +910,7 @@ select {
 }
 
 .article-body {
-  padding: 0 clamp(var(--sp-2), 3vw, var(--sp-5));
+  padding-inline: max(var(--article-gutter), calc((100% - var(--article-measure)) / 2));
 }
 
 .article-body .ink-prose {
@@ -907,6 +974,7 @@ select {
   line-height: 1.45;
   color: var(--text-secondary);
   transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  overflow-wrap: anywhere;
 }
 
 .toc-list a:hover {
@@ -941,6 +1009,7 @@ select {
   margin-top: var(--sp-1);
   color: var(--text-primary);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .article-updated-note {
@@ -970,11 +1039,13 @@ select {
   font-size: var(--text-15);
   font-weight: 600;
   letter-spacing: var(--tracking-micro);
+  overflow-wrap: anywhere;
 }
 
 .article-block-head a {
   color: var(--accent);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .article-discovery-lanes {
@@ -1015,6 +1086,7 @@ select {
   color: var(--text-primary);
   font-size: var(--text-13);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .article-discovery-lane li a:hover {
@@ -1218,13 +1290,19 @@ select {
   }
 }
 
+/* Navigation collapses into the "more" menu one step before the reading layout
+   does, so a 1024 tablet still has its three columns while a 900 portrait tab
+   gets a single-row header instead of a wrapped nav bar. */
 @media (max-width: 1023px) {
   .top-nav {
     display: none;
   }
-  .mobile-nav {
-    display: flex;
+  .mobile-menu {
+    display: block;
   }
+}
+
+@media (max-width: 768px) {
   .layout-grid,
   .layout-grid[data-sidebar='single'][data-side='left'],
   .layout-grid[data-sidebar='single'][data-side='right'],
@@ -1240,12 +1318,27 @@ select {
     grid-row: auto;
   }
   .sidebar {
-    position: static;
     order: 2;
   }
-  .layout-grid > .sidebar {
-    max-height: none;
-    overflow: visible;
+  /* Below the content the rail becomes a horizontal card strip instead of a
+     1900px column: every widget is still reachable by swipe or by tabbing into
+     its links, while the page only grows by one card's height. */
+  .layout-grid > .sidebar,
+  .secondary-column > .sidebar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(76vw, 17rem);
+    align-items: start;
+    gap: var(--sp-2-5);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: var(--sp-1);
+  }
+  .sidebar > .sidebar-card,
+  .secondary-column > .sidebar > .sidebar-card {
+    scroll-snap-align: start;
   }
   .content-column {
     order: 1;
@@ -1303,12 +1396,10 @@ select {
   .photo-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  /* Vertical rhythm only: the inline padding keeps coming from the shared
+     measure so the title and the first line of prose stay on one edge. */
   .article-header {
-    padding: var(--sp-5) var(--sp-4) var(--sp-4);
-  }
-  .article-body .ink-prose {
-    padding-inline: var(--sp-4);
-    --prose-width: 100%;
+    padding-block: var(--sp-5) var(--sp-4);
   }
   .sidebar {
     gap: var(--sp-2-5);
@@ -1379,6 +1470,10 @@ select {
   object-fit: cover;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-inset);
+  /* The shell no longer clips its children (that also clipped focus rings), so
+     the full-bleed cover paints its own top corners. */
+  border-start-start-radius: calc(var(--r-xl) - 1px);
+  border-start-end-radius: calc(var(--r-xl) - 1px);
 }
 
 .toc-list a[aria-current='location'] {
@@ -2253,6 +2348,7 @@ select {
 .calendar-posts a {
   color: var(--on-surface);
   font-size: 0.75rem;
+  overflow-wrap: anywhere;
 }
 
 .footer-custom {
@@ -2461,11 +2557,6 @@ select {
   flex: none;
   color: var(--on-surface-variant);
   font-size: 0.7rem;
-}
-
-.sidebar-sticky {
-  position: sticky;
-  top: 5.2rem;
 }
 
 .widget-more summary {
@@ -2864,24 +2955,18 @@ html[data-reduce-motion='true'] *::after {
   color: var(--on-primary-container);
 }
 
+/* Same natural-height rule as the primary rail: no capped scrollport means no
+   nested sticky to fight with and no hidden card for `client:visible` to miss. */
 .secondary-column {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   min-width: 0;
-  position: sticky;
-  top: 5.5rem;
   align-self: start;
-  max-height: calc(100dvh - 13rem);
-  overflow-y: auto;
-  overscroll-behavior: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
 }
 
-/* The rail itself is sticky; two sticky children pinned at the same top overlapped each other. */
-.secondary-column > .sidebar,
+/* The outline keeps its own scroll when it is a direct grid item; inside the
+   secondary rail it stays in normal flow so the rail remains one column. */
 .secondary-column > .toc-card {
   position: static;
   top: auto;
@@ -2889,13 +2974,7 @@ html[data-reduce-motion='true'] *::after {
   overflow: visible;
 }
 
-@media (max-width: 1023px) {
-  .secondary-column,
-  .layout-grid > .sidebar {
-    position: static;
-    max-height: none;
-    overflow: visible;
-  }
+@media (max-width: 768px) {
   .secondary-column {
     order: 3;
   }
