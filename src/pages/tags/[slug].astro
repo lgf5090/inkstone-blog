@@ -13,7 +13,11 @@ const locale = blogLocale(blog.site.site.locale)
 const raw = Astro.params.slug ?? ''
 let needle = raw
 try { needle = decodeURIComponent(raw) } catch { needle = raw }
-const tag = blog.tags.find((item) => item.slug === needle || item.name === needle)
+// Slug is the single public URL. A legacy name-based URL gets one permanent redirect to it.
+const tag = blog.tags.find((item) => item.slug === needle) ?? blog.tags.find((item) => item.name === needle)
+if (tag && tag.slug !== needle) {
+  return Astro.redirect(`/tags/${encodeURIComponent(tag.slug)}${Astro.url.search}`, 301)
+}
 const pageNumber = Math.max(1, Math.trunc(Number(Astro.url.searchParams.get('page')) || 1))
 let page: BlogPage<BlogPostSummary> | null = null
 let error = ''
@@ -28,8 +32,12 @@ if (!tag) {
   }
 }
 const mode = blog.display.postListMode
+const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
+const canonicalUrl = tag
+  ? `${origin}/tags/${encodeURIComponent(tag.slug)}${pageNumber > 1 ? `?page=${pageNumber}` : ''}`
+  : undefined
 ---
-<Layout title={tag ? `#${tag.name}` : t(locale, 'nav.tags')} noIndex={!tag}>
+<Layout title={tag ? `#${tag.name}` : t(locale, 'nav.tags')} noIndex={!tag} canonicalUrl={canonicalUrl}>
   <MainGridLayout page="tags">
     <div class="section-heading">
       <div>

@@ -15,6 +15,8 @@ const locale = blogLocale(blog.site.site.locale)
 const { post, mode = 'list' } = Astro.props
 const cover = mediaUrl(post.coverUrl)
 const tags = post.tags.slice(0, 4)
+// Posts carry tag names; the canonical tag URL is keyed by slug.
+const tagSlug = (name: string): string => (blog.tags ?? []).find((item) => item.name === name)?.slug ?? name
 ---
 <article class="post-card" data-layout={mode}>
   {cover && <img class="post-card-cover" src={cover} alt="" loading="lazy" decoding="async" />}
@@ -37,7 +39,7 @@ const tags = post.tags.slice(0, 4)
   {tags.length > 0 && (
     <div class="post-card-tags">
       {tags.map((tag) => (
-        <a class="chip" href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>
+        <a class="chip" href={`/tags/${encodeURIComponent(tagSlug(tag))}`}>#{tag}</a>
       ))}
     </div>
   )}

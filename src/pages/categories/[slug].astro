@@ -11,9 +11,13 @@ import { FALLBACK_SITE } from '../../server/site-config'
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], display: { pageSize: 10, postListMode: 'list' as const } }
 const locale = blogLocale(blog.site.site.locale)
 const raw = Astro.params.slug ?? ''
-let slug = raw
-try { slug = decodeURIComponent(raw) } catch { slug = raw }
-const category = blog.categories.find((item) => item.slug === slug || item.name === slug)
+let needle = raw
+try { needle = decodeURIComponent(raw) } catch { needle = raw }
+// Slug is the single public URL. A legacy name-based URL gets one permanent redirect to it.
+const category = blog.categories.find((item) => item.slug === needle) ?? blog.categories.find((item) => item.name === needle)
+if (category && category.slug !== needle) {
+  return Astro.redirect(`/categories/${encodeURIComponent(category.slug)}${Astro.url.search}`, 301)
+}
 const pageNumber = Math.max(1, Math.trunc(Number(Astro.url.searchParams.get('page')) || 1))
 let page: BlogPage<BlogPostSummary> | null = null
 let error = ''
@@ -28,8 +32,12 @@ if (!category) {
   }
 }
 const mode = blog.display.postListMode
+const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
+const canonicalUrl = category
+  ? `${origin}/categories/${encodeURIComponent(category.slug)}${pageNumber > 1 ? `?page=${pageNumber}` : ''}`
+  : undefined
 ---
-<Layout title={category?.name ?? t(locale, 'nav.categories')} noIndex={!category}>
+<Layout title={category?.name ?? t(locale, 'nav.categories')} noIndex={!category} canonicalUrl={canonicalUrl}>
   <MainGridLayout page="categories">
     <div class="section-heading">
       <div>
