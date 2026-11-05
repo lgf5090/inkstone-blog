@@ -5,7 +5,7 @@ import { loadPost, loadSite, loadTaxonomy, searchPosts } from './lib/blog-api'
 import { buildRuntimeConfig, FALLBACK_SITE } from './server/site-config'
 import { CSP_REPORT_ONLY, contentSecurityPolicy, inlineScriptHashes } from './server/csp'
 import { unlockCookieName } from './lib/format'
-import { blogLocale, LOCALES, t } from './i18n'
+import { blogLocale, LOCALE_PREF_COOKIE, LOCALES, t } from './i18n'
 
 const PASSTHROUGH = /^\/(?:_astro|_blog|api|favicon|robots\.txt|sitemap\.xml|rss\.xml|atom\.xml|llms)/
 
@@ -236,8 +236,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       const [site, taxonomies] = await Promise.all([loadSite(), loadTaxonomies()])
       const { categories, tags, series } = taxonomies
+      // `?lang=` is a one-request override; the appearance panel's cookie is the only persistent
+      // preference. Neither branch writes to `loadSite()`'s isolate-wide cache below.
       const requested = context.url.searchParams.get('lang')
-      const selected = requested && (LOCALES as readonly string[]).includes(requested) ? blogLocale(requested) : null
+      const requestedLocale = requested && (LOCALES as readonly string[]).includes(requested) ? blogLocale(requested) : null
+      const preference = context.cookies.get(LOCALE_PREF_COOKIE)?.value
+      const preferredLocale = preference && (LOCALES as readonly string[]).includes(preference) ? blogLocale(preference) : null
+      const selected = requestedLocale ?? preferredLocale
       // `loadSite()` hands back the isolate-wide cached object for 30s, so writing `locale` on it
       // leaked one visitor's `?lang=` into every later request. Apply the override to a copy that
       // only this request (and the config built from it) can see.

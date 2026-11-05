@@ -1,7 +1,7 @@
 ---
 import Icon from '../Icon.astro'
 import AppearanceMenu from './AppearanceMenu.svelte'
-import { blogLocale, t, LOCALES, LOCALE_LABELS, type MessageKey } from '../../i18n'
+import { blogLocale, t, LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, type BlogLocale, type MessageKey } from '../../i18n'
 import { safeUrl } from '../../lib/format'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -10,6 +10,10 @@ interface Props {
 }
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
 const locale = blogLocale(blog.site.site.locale)
+const preference = Astro.cookies.get(LOCALE_PREF_COOKIE)?.value ?? ''
+const preferredLocale: BlogLocale | null = (LOCALES as readonly string[]).includes(preference)
+  ? (preference as BlogLocale)
+  : null
 const pathname = Astro.props.activePath ?? Astro.url.pathname
 const links = blog.site.nav.length ? blog.site.nav : [{ label: t(locale, 'nav.home'), href: '/' }]
 const hrefOf = (href: string): string => safeUrl(href) ?? '/'
@@ -105,6 +109,7 @@ const searchLabels = {
       <AppearanceMenu
         client:idle
         locale={locale}
+        preferred={preferredLocale}
       />
     </div>
   </div>
@@ -294,5 +299,15 @@ const searchLabels = {
       setBackgroundInert(false)
       document.removeEventListener('keydown', onKey)
     })
+  })()
+</script>
+<script is:inline data-astro-rerun>
+  // `?lang=` is a preview for exactly this request. Drop it from the address bar once the SSR
+  // response is on screen, so a reload (or a shared URL) returns to the saved preference.
+  (() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('lang')) return
+    url.searchParams.delete('lang')
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
   })()
 </script>

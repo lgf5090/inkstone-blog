@@ -6,6 +6,12 @@ export const LOCALE_LABELS: Record<BlogLocale, string> = {
   es: 'Español', id: 'Bahasa Indonesia', th: 'ไทย', tr: 'Türkçe', vi: 'Tiếng Việt',
 }
 
+/**
+ * The only cookie that may store a language choice. `?lang=` is a one-request override and never
+ * touches it; the appearance panel is the single writer.
+ */
+export const LOCALE_PREF_COOKIE = 'blog-locale-pref'
+
 export type MessageKey =
   | 'nav.home' | 'nav.archive' | 'nav.categories' | 'nav.tags' | 'nav.series'
   | 'nav.friends' | 'nav.moments' | 'nav.albums' | 'nav.projects' | 'nav.skills'
@@ -52,6 +58,7 @@ export type MessageKey =
   | 'common.recentPosts' | 'common.stats' | 'common.language' | 'appearance.title' | 'appearance.theme_auto' | 'appearance.theme_light' | 'appearance.theme_dark'
   | 'appearance.accent' | 'appearance.theme' | 'appearance.background' | 'appearance.density'
   | 'appearance.layout' | 'appearance.layout_list' | 'appearance.layout_grid' | 'appearance.layout_masonry'
+  | 'appearance.language_default'
   | 'appearance.hue' | 'appearance.color_style' | 'appearance.spec' | 'appearance.spec_2025' | 'appearance.spec_2021'
   | 'appearance.wallpaper' | 'appearance.wallpaper_plain' | 'appearance.wallpaper_banner' | 'appearance.texture'
   | 'appearance.texture_none' | 'appearance.texture_starlight' | 'appearance.texture_cyber_dots'
@@ -149,7 +156,7 @@ const en: Dictionary = {
   'archive.filter': 'Filter', 'archive.uncategorized': 'Uncategorized', 'archive.untagged': 'Untagged',
   'poster.open': 'Share poster', 'poster.title': 'Share poster', 'poster.download': 'Download PNG',
   'poster.generating': 'Generating poster…', 'poster.failed': 'Could not generate the poster.', 'poster.close': 'Close',
-  'appearance.title': 'Appearance', 'appearance.theme': 'Theme', 'appearance.background': 'Background', 'appearance.density': 'Density', 'appearance.theme_auto': 'Auto', 'appearance.theme_light': 'Light',
+  'appearance.title': 'Appearance', 'appearance.language_default': 'Site default', 'appearance.theme': 'Theme', 'appearance.background': 'Background', 'appearance.density': 'Density', 'appearance.theme_auto': 'Auto', 'appearance.theme_light': 'Light',
   'appearance.theme_dark': 'Dark', 'appearance.accent': 'Accent colour', 'appearance.background_paper': 'Paper',
   'appearance.background_white': 'Pure white', 'appearance.density_comfortable': 'Comfortable',
   'appearance.density_compact': 'Compact', 'appearance.accent_cinnabar': 'Cinnabar', 'appearance.accent_indigo': 'Indigo',
@@ -282,7 +289,7 @@ const zhCN: Dictionary = {
   'collections.games': '游戏', 'collections.anime': '番剧', 'collections.timeline': '时间线',
   'collections.compass': '罗盘',
   'page.about': '关于', 'page.archiveTitle': '归档', 'page.archiveHint': '按年份浏览全部已发布内容。',
-  'appearance.title': '外观', 'appearance.theme': '主题', 'appearance.background': '背景', 'appearance.density': '密度', 'appearance.theme_auto': '跟随系统', 'appearance.theme_light': '浅色',
+  'appearance.title': '外观', 'appearance.language_default': '站点默认', 'appearance.theme': '主题', 'appearance.background': '背景', 'appearance.density': '密度', 'appearance.theme_auto': '跟随系统', 'appearance.theme_light': '浅色',
   'appearance.theme_dark': '深色', 'appearance.accent': '强调色', 'appearance.background_paper': '暖纸',
   'appearance.background_white': '纯白', 'appearance.density_comfortable': '舒适',
   'appearance.density_compact': '紧凑', 'appearance.accent_cinnabar': '朱砂', 'appearance.accent_indigo': '靛蓝',
@@ -421,6 +428,7 @@ const zhTW: Dictionary = { ...zhCN,
   'collections.timeline': '時間線',
   'collections.compass': '羅盤',
   'appearance.title': '外觀',
+  'appearance.language_default': '站點預設',
   'appearance.theme': '主題',
   'appearance.background': '背景',
   'appearance.density': '密度',
@@ -589,6 +597,7 @@ const ja: Dictionary = { ...en,
   'collections.timeline': 'タイムライン',
   'collections.compass': 'コンパス',
   'appearance.title': '外観',
+  'appearance.language_default': 'サイトの既定',
   'appearance.theme': 'テーマ',
   'appearance.background': '背景',
   'appearance.density': '密度',
@@ -739,6 +748,7 @@ const ko: Dictionary = { ...en,
   'collections.timeline': '타임라인',
   'collections.compass': '나침반',
   'appearance.title': '모양',
+  'appearance.language_default': '사이트 기본값',
   'appearance.theme': '테마',
   'appearance.background': '배경',
   'appearance.density': '밀도',
@@ -889,6 +899,7 @@ const es: Dictionary = { ...en,
   'collections.timeline': 'Cronología',
   'collections.compass': 'Brújula',
   'appearance.title': 'Apariencia',
+  'appearance.language_default': 'Predeterminado del sitio',
   'appearance.theme': 'Tema',
   'appearance.background': 'Fondo',
   'appearance.density': 'Densidad',
@@ -1039,6 +1050,7 @@ const id: Dictionary = { ...en,
   'collections.timeline': 'Garis waktu',
   'collections.compass': 'Kompas',
   'appearance.title': 'Tampilan',
+  'appearance.language_default': 'Bawaan situs',
   'appearance.theme': 'Tema',
   'appearance.background': 'Latar',
   'appearance.density': 'Kepadatan',
@@ -1189,6 +1201,7 @@ const th: Dictionary = { ...en,
   'collections.timeline': 'ไทม์ไลน์',
   'collections.compass': 'เข็มทิศ',
   'appearance.title': 'รูปลักษณ์',
+  'appearance.language_default': 'ค่าเริ่มต้นของไซต์',
   'appearance.theme': 'ธีม',
   'appearance.background': 'พื้นหลัง',
   'appearance.density': 'ความหนาแน่น',
@@ -1339,6 +1352,7 @@ const tr: Dictionary = { ...en,
   'collections.timeline': 'Zaman çizelgesi',
   'collections.compass': 'Pusula',
   'appearance.title': 'Görünüm',
+  'appearance.language_default': 'Site varsayılanı',
   'appearance.theme': 'Tema',
   'appearance.background': 'Arka plan',
   'appearance.density': 'Yoğunluk',
@@ -1489,6 +1503,7 @@ const vi: Dictionary = { ...en,
   'collections.timeline': 'Dòng thời gian',
   'collections.compass': 'La bàn',
   'appearance.title': 'Giao diện',
+  'appearance.language_default': 'Mặc định của trang',
   'appearance.theme': 'Chủ đề',
   'appearance.background': 'Nền',
   'appearance.density': 'Mật độ',

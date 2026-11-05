@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import { LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, t, type BlogLocale } from '../../i18n'
 
-  let { locale }: { locale: BlogLocale } = $props()
+  let { locale, preferred }: { locale: BlogLocale; preferred: BlogLocale | null } = $props()
   type Theme = 'auto' | 'light' | 'dark'
   type Accent = 'cinnabar' | 'indigo' | 'celadon' | 'amber' | 'terracotta' | 'wisteria' | 'graphite'
   type Background = 'paper' | 'white'
@@ -135,6 +135,18 @@
     localStorage.setItem('post-list-mode', next)
     ;(window as unknown as { __blogApplyPostListMode?: (mode: string) => void }).__blogApplyPostListMode?.(next)
   }
+
+  // A reload lets SSR re-render `<html lang>`, copy, and date formats from the new cookie in one
+  // pass. There is no client-side language renderer, so swapping text in place would flash.
+  function persistLocale(next: BlogLocale | null) {
+    document.cookie = next
+      ? `${LOCALE_PREF_COOKIE}=${encodeURIComponent(next)}; Path=/; Max-Age=31536000; SameSite=Lax`
+      : `${LOCALE_PREF_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
+    const url = new URL(window.location.href)
+    url.searchParams.delete('lang')
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+    window.location.reload()
+  }
 </script>
 
 <details class="nav-menu appearance-menu">
@@ -209,6 +221,15 @@
         <button type="button" aria-pressed={layout === 'list'} onclick={() => setLayout('list')}>{t(locale, 'appearance.layout_list')}</button>
         <button type="button" aria-pressed={layout === 'grid'} onclick={() => setLayout('grid')}>{t(locale, 'appearance.layout_grid')}</button>
         <button type="button" aria-pressed={layout === 'masonry'} onclick={() => setLayout('masonry')}>{t(locale, 'appearance.layout_masonry')}</button>
+      </div>
+    </section>
+    <section>
+      <p class="appearance-label">{t(locale, 'common.language')}</p>
+      <div class="appearance-segment appearance-texture" role="group" aria-label={t(locale, 'common.language')}>
+        <button type="button" aria-pressed={preferred === null} onclick={() => persistLocale(null)}>{t(locale, 'appearance.language_default')}</button>
+        {#each LOCALES as code}
+          <button type="button" aria-pressed={preferred === code} onclick={() => persistLocale(code)}>{LOCALE_LABELS[code]}</button>
+        {/each}
       </div>
     </section>
   </div>
