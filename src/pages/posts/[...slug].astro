@@ -210,7 +210,23 @@ const commentsEnabled = externalComments
   : (comments?.enabled ?? false)
 const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
 const permalinkEnabled = Boolean(blog.site.permalink?.enable)
-const canonical = `${origin}${postUrl(slug, post?.permalink, permalinkEnabled)}`
+const canonicalPath = postUrl(slug, post?.permalink, permalinkEnabled)
+// The permalink route rewrites into this page, so a request that is already on the permalink must
+// keep rendering. Only a direct `/posts/:slug` request is the duplicate address to redirect.
+if ((Astro.request.method === 'GET' || Astro.request.method === 'HEAD') && permalinkEnabled && post?.permalink) {
+  const normalizePath = (value: string): string => {
+    let decoded = value
+    try { decoded = decodeURIComponent(value) } catch { decoded = value }
+    return decoded.replace(/\/+$/, '') || '/'
+  }
+  if (normalizePath(Astro.originPathname) !== normalizePath(canonicalPath)) {
+    return Astro.redirect(`${canonicalPath}${Astro.url.search}`, 301)
+  }
+}
+const canonical = `${origin}${canonicalPath}`
+// Posts carry category/tag names; the canonical taxonomy URLs are keyed by slug.
+const categoryHref = (name: string): string => `/categories/${encodeURIComponent(blog.categories.find((item) => item.name === name)?.slug ?? name)}`
+const tagHref = (name: string): string => `/tags/${encodeURIComponent(blog.tags.find((item) => item.name === name)?.slug ?? name)}`
 const runtimeOrigin = blogRuntimeOrigin()
 const runtimeVersion = post?.render?.rendererVersion ?? ''
 // A plain article keeps its stored still: the runtime is 2 MiB of interactive block code, and the
@@ -320,7 +336,7 @@ const jsonLd = post ? {
                 )}
                 <span>{post.readingMinutes} {t(locale, 'common.minRead')}</span>
                 <span>{post.viewCount} {t(locale, 'common.views')}</span>
-                {post.category && <a href={`/categories/${encodeURIComponent(post.category)}`}>{post.category}</a>}
+                {post.category && <a href={categoryHref(post.category)}>{post.category}</a>}
                 {blog.article.share && (
                   <>
                     <button type="button" class="article-share" data-share-link={canonical} data-copied-label={t(locale, 'common.copied')} data-copy-failed={t(locale, 'common.copyFailed')}>
@@ -342,7 +358,7 @@ const jsonLd = post ? {
               </div>
               {post.tags.length > 0 && (
                 <div class="post-card-tags" aria-label={t(locale, 'common.tags')}>
-                  {post.tags.map((tag) => <a class="chip" href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>)}
+                  {post.tags.map((tag) => <a class="chip" href={tagHref(tag)}>#{tag}</a>)}
                 </div>
               )}
             </header>

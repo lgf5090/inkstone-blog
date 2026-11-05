@@ -236,19 +236,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       const [site, taxonomies] = await Promise.all([loadSite(), loadTaxonomies()])
       const { categories, tags, series } = taxonomies
-      const blog = buildRuntimeConfig(site, categories.items, tags.items, series.items as never[])
-      const requested = context.url.searchParams.get('lang') ?? context.cookies.get('blog-locale')?.value
+      const requested = context.url.searchParams.get('lang')
       const selected = requested && (LOCALES as readonly string[]).includes(requested) ? blogLocale(requested) : null
-      if (selected) {
-        blog.site.site.locale = selected
-        context.cookies.set('blog-locale', selected, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' })
-      }
+      // `loadSite()` hands back the isolate-wide cached object for 30s, so writing `locale` on it
+      // leaked one visitor's `?lang=` into every later request. Apply the override to a copy that
+      // only this request (and the config built from it) can see.
+      const requestSite = selected ? { ...site, site: { ...site.site, locale: selected } } : site
+      const blog = buildRuntimeConfig(requestSite, categories.items, tags.items, series.items as never[])
       context.locals.blog = blog
       context.locals.blogError = null
     } catch (cause) {
       console.warn('[blog] site bootstrap failed', cause)
       context.locals.blog = buildRuntimeConfig(FALLBACK_SITE, [], [], [])
-      context.locals.blogError = t(blogLocale(context.cookies.get('blog-locale')?.value), 'common.loadError')
+      context.locals.blogError = t(blogLocale(undefined), 'common.loadError')
     }
   }
   const response = await next()
