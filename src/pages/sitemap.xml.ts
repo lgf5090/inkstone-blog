@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { loadCollection, loadFeeds, loadPages } from '../lib/blog-api'
-import { escapeXml, postLink, siteOrigin } from '../lib/feed'
+import { escapeXml, postLink, publicPosts, siteOrigin } from '../lib/feed'
 
 export const prerender = false
 
@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
   const albumPaths = albums.items.map((album) => `/albums/${encodeURIComponent(album.slug)}`)
   const entries = [
     ...[...new Set([...staticPaths, ...pagePaths, ...albumPaths])].map((path) => `<url><loc>${escapeXml(`${origin}${path}`)}</loc></url>`),
-    ...feed.posts.map((post) => `<url><loc>${escapeXml(postLink(origin, post.slug, post.permalink, feed.site.permalink.enable))}</loc><lastmod>${new Date(post.updatedAt).toISOString()}</lastmod></url>`),
+    ...publicPosts(feed.posts).map((post) => `<url><loc>${escapeXml(postLink(origin, post.slug, post.permalink, feed.site.permalink.enable))}</loc><lastmod>${new Date(post.updatedAt).toISOString()}</lastmod></url>`),
   ].join('\n')
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

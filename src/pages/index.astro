@@ -5,6 +5,7 @@ import PostCard from '../components/blog/PostCard.astro'
 import Pagination from '../components/blog/Pagination.astro'
 import { blogLocale, t } from '../i18n'
 import { loadPosts, userFacingError } from '../lib/blog-api'
+import { publicPosts } from '../lib/feed'
 import type { BlogPage, BlogPostSummary } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
 
@@ -18,7 +19,7 @@ try {
 } catch (cause) {
   error = userFacingError(cause, t(locale, 'common.loadError'))
 }
-const posts = page?.items ?? []
+const posts = publicPosts(page?.items ?? [])
 const mode = blog.display.postListMode
 const siteUrl = (import.meta.env.BLOG_SITE_URL ?? Astro.url.origin).replace(/\/+$/, '')
 const jsonLd = {

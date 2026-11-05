@@ -285,11 +285,19 @@ export async function loadDiscoveryCandidates(): Promise<BlogPostSummary[]> {
   return value
 }
 
-export function loadPost(slug: string, unlockToken?: string | null): Promise<BlogPostDetail> {
+export function loadPost(
+  slug: string,
+  unlockToken?: string | null,
+  options?: { countView?: boolean },
+): Promise<BlogPostDetail> {
+  const headers: Record<string, string> = {}
+  if (unlockToken) headers['x-blog-unlock'] = unlockToken
+  // Body replays (the reading runtime and llms-full) answer with the stored count and must not write.
+  if (options?.countView === false) headers['x-blog-view'] = 'none'
   return getJson<BlogPostDetail>(
     `/posts/${encodeURIComponent(slug)}`,
     undefined,
-    unlockToken ? { 'x-blog-unlock': unlockToken } : undefined,
+    Object.keys(headers).length > 0 ? headers : undefined,
   )
 }
 
