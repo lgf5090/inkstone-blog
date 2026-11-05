@@ -197,7 +197,6 @@
   .grid-badge--rating { top: 0.5rem; right: 0.5rem; color: var(--warning); }
   .grid-badge--status { top: 0.5rem; left: 0.5rem; color: var(--primary); }
   .grid-badge--featured { top: 0.5rem; left: 0.5rem; color: var(--on-primary-container); background: var(--primary-container); }
-  .grid-badge--featured + .grid-badge--status { top: 2rem; }
   .grid-body { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.8rem 0.9rem 0.95rem; min-width: 0; }
   .grid-title-row { display: flex; align-items: flex-start; gap: 0.5rem; min-width: 0; }
   .grid-title-main { min-width: 0; flex: 1; }

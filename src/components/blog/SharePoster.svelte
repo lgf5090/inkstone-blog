@@ -131,7 +131,7 @@
 
 {#if open}
   <div class="poster-overlay" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) close() }}>
-    <div class="poster-dialog" role="dialog" aria-modal="true" aria-labelledby="poster-title" onkeydown={onKeydown}>
+    <div class="poster-dialog" role="dialog" aria-modal="true" aria-labelledby="poster-title" tabindex="-1" onkeydown={onKeydown}>
       <h2 id="poster-title">{t(locale, 'poster.title')}</h2>
       {#if status === 'working'}
         <p class="poster-status">{t(locale, 'poster.generating')}</p>
