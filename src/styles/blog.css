@@ -369,18 +369,40 @@ select {
   grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
 }
 
+/* 1024 keeps the three-column reading layout, so the rails tighten instead of
+   collapsing; the article measure stays the same at this width. */
+@media (max-width: 1200px) and (min-width: 1024px) {
+  .layout-grid[data-sidebar='dual'] {
+    grid-template-columns: 13.5rem minmax(0, 1fr) 13.5rem;
+  }
+  .layout-grid[data-sidebar='single'][data-side='left'] {
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+  }
+  .layout-grid[data-sidebar='single'][data-side='right'] {
+    grid-template-columns: minmax(0, 1fr) 13.5rem;
+  }
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3-5);
   position: sticky;
   top: 5.5rem;
+  align-self: start;
 }
 
+/* The rail is sticky and only scrolls when it is genuinely taller than the
+   viewport. `overscroll-behavior: auto` lets the page resume as soon as the
+   rail reaches its end, so a wheel gesture never gets trapped. The capped
+   height keeps the top pinned at 5.5rem even when the page is scrolled to its
+   last pixel, instead of sliding under the header. */
 .layout-grid > .sidebar {
-  max-height: calc(100dvh - 6.5rem);
+  max-height: calc(100dvh - 13rem);
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
 }
 
 .sidebar-card {
@@ -821,11 +843,26 @@ select {
 }
 
 .article-body {
-  padding: 0 clamp(var(--sp-1), 3vw, var(--sp-8));
+  padding: 0 clamp(var(--sp-2), 3vw, var(--sp-5));
 }
 
 .article-body .ink-prose {
   padding-block: var(--sp-7) var(--sp-12);
+}
+
+/* The snapshot carries a bare copy label; the upgrade script turns it into a
+   real button, so it needs the button reset and a visible state on touch
+   devices where :hover never fires. */
+.ink-prose .code-copy {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (hover: none) {
+  .ink-prose .code-block-head .code-copy {
+    opacity: 1;
+  }
 }
 
 .article-body .ink-prose {
@@ -1181,7 +1218,7 @@ select {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .top-nav {
     display: none;
   }
@@ -2833,12 +2870,14 @@ html[data-reduce-motion='true'] *::after {
   gap: 0.9rem;
   min-width: 0;
   position: sticky;
-  top: 6.2rem;
+  top: 5.5rem;
   align-self: start;
-  max-height: calc(100dvh - 7rem);
+  max-height: calc(100dvh - 13rem);
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
 }
 
 /* The rail itself is sticky; two sticky children pinned at the same top overlapped each other. */
@@ -2850,7 +2889,7 @@ html[data-reduce-motion='true'] *::after {
   overflow: visible;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .secondary-column,
   .layout-grid > .sidebar {
     position: static;

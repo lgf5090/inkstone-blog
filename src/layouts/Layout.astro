@@ -312,6 +312,46 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
 </script>
 
 <script is:inline data-astro-rerun>
+  // The stored snapshot carries the code block's copy label as a bare text
+  // node. Upgrade it to the same button the reading runtime draws so the
+  // article behaves like the app's reading view even without the runtime.
+  (() => {
+    const zh = (document.documentElement.lang || '').toLowerCase().startsWith('zh')
+    const labelCopy = zh ? '复制' : 'Copy'
+    const labelCopied = zh ? '已复制' : 'Copied'
+    document.querySelectorAll('.ink-prose .code-block-head').forEach((head) => {
+      if (head.querySelector('.code-copy')) return
+      const block = head.closest('.code-block')
+      const pre = block && block.querySelector('pre')
+      if (!pre) return
+      const node = [...head.childNodes].find(
+        (child) => child.nodeType === 3 && child.textContent && child.textContent.trim(),
+      )
+      if (!node) return
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'code-copy'
+      button.setAttribute('aria-label', labelCopy)
+      button.textContent = node.textContent.trim()
+      node.parentNode.replaceChild(button, node)
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(pre.innerText)
+          button.textContent = labelCopied
+          button.classList.add('copied')
+        } catch {
+          button.textContent = labelCopy
+        }
+        window.setTimeout(() => {
+          button.textContent = labelCopy
+          button.classList.remove('copied')
+        }, 1600)
+      })
+    })
+  })()
+</script>
+
+<script is:inline data-astro-rerun>
   document.querySelectorAll('[data-share-link]').forEach((button) => {
     button.addEventListener('click', async () => {
       const link = button.getAttribute('data-share-link')

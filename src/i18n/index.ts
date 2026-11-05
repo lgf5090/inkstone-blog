@@ -36,7 +36,7 @@ export type MessageKey =
   | 'music.empty' | 'music.loading' | 'music.error' | 'music.nowPlaying' | 'music.configure' | 'music.libraryEmpty'
   | 'music.libraryNoR2' | 'music.libraryPlaylistEmpty' | 'music.libraryPlaylistMissing' | 'music.libraryUnavailable'
   | 'music.rewind' | 'music.forward' | 'music.queueSearch' | 'music.queueEmpty' | 'music.queueNoMatch'
-  | 'music.rate' | 'music.close' | 'music.minimize' | 'music.expand' | 'music.lyricsEmpty'
+  | 'music.rate' | 'music.close' | 'music.minimize' | 'music.expand' | 'music.lyricsEmpty' | 'music.drag'
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
@@ -199,6 +199,7 @@ const en: Dictionary = {
   'music.minimize': 'Minimize the player',
   'music.expand': 'Expand the player',
   'music.lyricsEmpty': 'No lyrics for this track',
+  'music.drag': 'Drag the player (arrow keys also move it)',
 
   'runtime.copyTable': 'Copy table',
   'runtime.copySelection': 'Copy selection',
@@ -331,6 +332,7 @@ const zhCN: Dictionary = {
   'music.minimize': '最小化播放器',
   'music.expand': '展开播放器',
   'music.lyricsEmpty': '这首歌暂无歌词',
+  'music.drag': '拖动播放器（也可用方向键移动）',
 
   'runtime.copyTable': '复制表格',
   'runtime.copySelection': '复制选中',
