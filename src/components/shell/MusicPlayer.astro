@@ -1,8 +1,8 @@
 ---
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
-import { blogRuntimeOrigin } from '../../server/origins'
 import type { BlogMusicConfig } from '../../lib/blog-types'
+import BlogMusicPlayer from './BlogMusicPlayer.svelte'
 
 const blog = Astro.locals.blog ?? {
   site: FALLBACK_SITE,
@@ -15,19 +15,14 @@ const music = blog.music ?? { enabled: false, provider: 'none', tracks: [], defa
 // The two differ when a provider is chosen but no track survived the public filter, and that state
 // must still be reachable instead of the button vanishing without a word.
 const configured = music.provider !== 'none'
-const playable = music.enabled
-const runtimeVersion = blog.runtimeVersion ?? 'inkstone-blog-v3'
-const runtimeOrigin = blogRuntimeOrigin()
-const runtimeUrl = import.meta.env.DEV
-  ? (runtimeOrigin ? `${runtimeOrigin}/src/blog-runtime/music.tsx` : '')
-  : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/music/music.js`
-const runtimeCss = import.meta.env.DEV ? '' : `/_blog/runtime/${encodeURIComponent(runtimeVersion)}/music/music.css`
 const labels = {
   title: t(locale, 'music.title'),
   play: t(locale, 'music.play'),
   pause: t(locale, 'music.pause'),
   previous: t(locale, 'music.previous'),
   next: t(locale, 'music.next'),
+  rewind: t(locale, 'music.rewind'),
+  forward: t(locale, 'music.forward'),
   mode: t(locale, 'music.mode'),
   modeSequence: t(locale, 'music.modeSequence'),
   modeRepeatOne: t(locale, 'music.modeRepeatOne'),
@@ -42,7 +37,14 @@ const labels = {
   error: t(locale, 'music.error'),
   nowPlaying: t(locale, 'music.nowPlaying'),
   configure: t(locale, 'music.configure'),
-  libraryEmpty: t(locale, 'music.libraryEmpty'),
+  queueSearch: t(locale, 'music.queueSearch'),
+  queueEmpty: t(locale, 'music.queueEmpty'),
+  queueNoMatch: t(locale, 'music.queueNoMatch'),
+  rate: t(locale, 'music.rate'),
+  close: t(locale, 'music.close'),
+  minimize: t(locale, 'music.minimize'),
+  expand: t(locale, 'music.expand'),
+  lyricsEmpty: t(locale, 'music.lyricsEmpty'),
 }
 const emptyMessage = music.provider === 'library' ? libraryEmptyMessage(music.libraryStatus) : labels.configure
 const options = { music, labels, locale, emptyMessage }
@@ -53,134 +55,8 @@ function libraryEmptyMessage(status: BlogMusicConfig['libraryStatus']): string {
     case 'playlist-empty': return t(locale, 'music.libraryPlaylistEmpty')
     case 'playlist-missing': return t(locale, 'music.libraryPlaylistMissing')
     case 'signing-unavailable': return t(locale, 'music.libraryUnavailable')
-    default: return labels.libraryEmpty
+    default: return t(locale, 'music.libraryEmpty')
   }
 }
 ---
-{configured && runtimeUrl && (
-  <>
-    <button
-      type="button"
-      class="blog-music-trigger"
-      data-blog-music-trigger
-      data-playable={playable ? 'true' : 'false'}
-      aria-label={labels.title}
-      title={labels.title}
-    >
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M9 18V5l12-2v13"></path>
-        <circle cx="6" cy="18" r="3"></circle>
-        <circle cx="18" cy="16" r="3"></circle>
-      </svg>
-      <span class="blog-music-trigger__label">{labels.title}</span>
-    </button>
-    <div class="blog-music-note" data-blog-music-note hidden role="status" aria-live="polite">
-      <strong>{labels.empty}</strong>
-      <span data-blog-music-note-text>{emptyMessage}</span>
-    </div>
-    <div
-      data-blog-music
-      hidden
-      data-playable={playable ? 'true' : 'false'}
-      data-runtime-url={runtimeUrl}
-      data-runtime-css={runtimeCss}
-      data-dev-origin={import.meta.env.DEV ? runtimeOrigin : ''}
-      data-options={JSON.stringify(options)}
-    ></div>
-  </>
-)}
-<script is:inline data-astro-rerun>
-  (() => {
-    const card = document.querySelector('[data-blog-music]')
-    if (!card) return
-    const runtimeUrl = card.getAttribute('data-runtime-url')
-    let options = null
-    try {
-      options = JSON.parse(card.getAttribute('data-options') || '{}')
-    } catch {
-      options = null
-    }
-    if (!runtimeUrl || !options) return
-    const devOrigin = card.getAttribute('data-dev-origin') || ''
-    const note = document.querySelector('[data-blog-music-note]')
-    const noteText = document.querySelector('[data-blog-music-note-text]')
-    let noteTimer = 0
-    const showNote = (message) => {
-      if (!note) return
-      if (noteText && message) noteText.textContent = message
-      note.hidden = false
-      if (noteTimer) window.clearTimeout(noteTimer)
-      noteTimer = window.setTimeout(() => { note.hidden = true }, 9000)
-    }
-    let cancelled = false
-    let playerHandle = null
-    window.__blogRegisterCleanup?.('music', () => {
-      cancelled = true
-      if (noteTimer) window.clearTimeout(noteTimer)
-      try {
-        playerHandle?.unmount()
-      } catch (error) {
-        console.warn('[blog] music player cleanup failed', error)
-      }
-    })
-    const boot = async () => {
-      if (cancelled || !document.contains(card)) return
-      try {
-        if (devOrigin) {
-          const refresh = await import(devOrigin + '/@react-refresh')
-          refresh.injectIntoGlobalHook(window)
-          window.$RefreshReg$ = () => {}
-          window.$RefreshSig$ = () => (type) => type
-          window.__vite_plugin_react_preamble_installed__ = true
-        }
-        const css = card.getAttribute('data-runtime-css')
-        if (css && !document.querySelector('link[data-blog-music-style]')) {
-          const link = document.createElement('link')
-          link.rel = 'stylesheet'
-          link.href = css
-          link.setAttribute('data-blog-music-style', '')
-          document.head.appendChild(link)
-        }
-        await import(runtimeUrl)
-      } catch (error) {
-        console.warn('[blog] music player unavailable', error)
-        showNote(options.labels.error)
-        return
-      }
-      const api = window.InkstoneBlogMusic
-      if (!api?.mountFloating) {
-        console.warn('[blog] music runtime missing mountFloating')
-        showNote(options.labels.error)
-        return
-      }
-      if (cancelled || !document.contains(card)) return
-      try {
-        playerHandle = await api.mountFloating({ music: options.music, labels: options.labels })
-        if (cancelled) playerHandle.unmount()
-      } catch (error) {
-        console.warn('[blog] music player mount failed', error)
-        showNote(options.labels.error)
-      }
-    }
-    const trigger = document.querySelector('[data-blog-music-trigger]')
-    if (!trigger) return
-    if (card.getAttribute('data-playable') !== 'true') {
-      trigger.addEventListener('click', () => showNote(options.emptyMessage))
-      return
-    }
-    let busy = false
-    const start = async () => {
-      if (busy) return
-      busy = true
-      trigger.disabled = true
-      await boot()
-      if (cancelled) return
-      if (playerHandle) trigger.remove()
-      else {
-        trigger.disabled = false
-        busy = false
-      }
-    }
-    trigger.addEventListener('click', () => { void start() })
-  })()
-</script>
+{configured && <BlogMusicPlayer client:load options={options} />}

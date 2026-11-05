@@ -35,6 +35,8 @@ export type MessageKey =
   | 'music.progress' | 'music.volume' | 'music.mute' | 'music.unmute' | 'music.playlist'
   | 'music.empty' | 'music.loading' | 'music.error' | 'music.nowPlaying' | 'music.configure' | 'music.libraryEmpty'
   | 'music.libraryNoR2' | 'music.libraryPlaylistEmpty' | 'music.libraryPlaylistMissing' | 'music.libraryUnavailable'
+  | 'music.rewind' | 'music.forward' | 'music.queueSearch' | 'music.queueEmpty' | 'music.queueNoMatch'
+  | 'music.rate' | 'music.close' | 'music.minimize' | 'music.expand' | 'music.lyricsEmpty'
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
@@ -187,6 +189,16 @@ const en: Dictionary = {
   'music.loading': 'Loading…',
   'music.error': 'Music is unavailable right now',
   'music.nowPlaying': 'Now playing',
+  'music.rewind': 'Rewind 10 seconds',
+  'music.forward': 'Forward 10 seconds',
+  'music.queueSearch': 'Search the queue',
+  'music.queueEmpty': 'The queue is empty',
+  'music.queueNoMatch': 'No matching tracks',
+  'music.rate': 'Playback speed',
+  'music.close': 'Close the player',
+  'music.minimize': 'Minimize the player',
+  'music.expand': 'Expand the player',
+  'music.lyricsEmpty': 'No lyrics for this track',
 
   'runtime.copyTable': 'Copy table',
   'runtime.copySelection': 'Copy selection',
@@ -309,6 +321,16 @@ const zhCN: Dictionary = {
   'music.loading': '加载中…',
   'music.error': '音乐暂时无法播放',
   'music.nowPlaying': '正在播放',
+  'music.rewind': '后退 10 秒',
+  'music.forward': '前进 10 秒',
+  'music.queueSearch': '搜索播放队列',
+  'music.queueEmpty': '播放队列为空',
+  'music.queueNoMatch': '没有匹配的歌曲',
+  'music.rate': '播放速度',
+  'music.close': '关闭播放器',
+  'music.minimize': '最小化播放器',
+  'music.expand': '展开播放器',
+  'music.lyricsEmpty': '这首歌暂无歌词',
 
   'runtime.copyTable': '复制表格',
   'runtime.copySelection': '复制选中',
