@@ -48,13 +48,13 @@
 <style>
   .album-gallery { display: grid; grid-template-columns: repeat(var(--album-columns, 3), minmax(0, 1fr)); gap: 0.55rem; align-items: start; }
   .album-gallery--masonry { display: block; column-count: var(--album-columns, 3); column-gap: 0.55rem; }
-  .album-photo { position: relative; display: block; width: 100%; margin: 0 0 0.55rem; padding: 0; overflow: hidden; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.75rem; background: var(--surface-container-low, #f7f3f6); cursor: zoom-in; break-inside: avoid; }
+  .album-photo { position: relative; display: block; width: 100%; margin: 0 0 0.55rem; padding: 0; overflow: hidden; border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); background: var(--surface-container-low); cursor: zoom-in; break-inside: avoid; }
   .album-photo img { display: block; width: 100%; height: auto; transition: transform 0.2s ease; }
   .album-gallery:not(.album-gallery--masonry) .album-photo img { aspect-ratio: 4 / 3; object-fit: cover; }
   .album-photo:hover img { transform: scale(1.015); }
-  .album-photo:focus-visible { outline: 2px solid var(--primary, #8a3a3a); outline-offset: 2px; }
-  .album-photo__caption { position: absolute; inset: auto 0 0; padding: 0.35rem 0.45rem; background: linear-gradient(transparent, rgba(0, 0, 0, 0.65)); color: #fff; font-size: 0.68rem; }
-  .album-gallery-empty { padding: 2.5rem 1rem; text-align: center; color: var(--on-surface-variant, #5d5b5e); border: 1px dashed var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.9rem; font-size: 0.8rem; }
+  .album-photo:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .album-photo__caption { position: absolute; inset: auto 0 0; padding: 0.35rem 0.45rem; background: linear-gradient(transparent, var(--media-control-hover)); color: var(--media-text-strong); font-size: var(--text-11); }
+  .album-gallery-empty { padding: 2.5rem 1rem; text-align: center; color: var(--on-surface-variant); border: 1px dashed var(--outline-variant); border-radius: var(--radius-lg); font-size: var(--text-13); }
   @media (max-width: 640px) {
     .album-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .album-gallery--masonry { column-count: 2; }

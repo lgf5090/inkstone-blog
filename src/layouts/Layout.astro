@@ -36,12 +36,35 @@ const canonical = canonicalUrl ? new URL(canonicalUrl) : new URL(Astro.url.pathn
 const absoluteImage = image ? new URL(image, origin).href : null
 const structured = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).filter(Boolean)
 const hue = Number(blog.site.site.themeColor?.hue ?? 315)
+// The site stores an arbitrary hue; the shared design system ships seven
+// curated accents. Map the stored hue to the nearest one so an old setting
+// still lands on the same palette the app uses.
+const ACCENT_HUES = [
+  ['cinnabar', 30],
+  ['indigo', 252],
+  ['celadon', 150],
+  ['amber', 95],
+  ['terracotta', 205],
+  ['wisteria', 300],
+] as const
+const themeStyle = blog.site.site.themeColor?.style
+const accent = themeStyle === 'monochrome' || themeStyle === 'neutral'
+  ? 'graphite'
+  : !Number.isFinite(hue) || hue === 315
+    ? 'cinnabar'
+    : ACCENT_HUES.reduce(
+        (best, [id, value]) => {
+          const distance = Math.min(Math.abs(hue - value), 360 - Math.abs(hue - value))
+          return distance < best.distance ? { id, distance } : best
+        },
+        { id: 'cinnabar' as string, distance: 360 },
+      ).id
 const progressStyle = blog.display?.progressStyle === 'single' ? 'single' : 'dual'
 const showTopProgress = type === 'article' && progressStyle === 'dual'
 ---
 
 <!doctype html>
-<html lang={locale} data-hue={hue} data-theme="light" class="light" data-accent="cinnabar" data-background="paper" data-density="comfortable" style={`--hue:${hue}`}>
+<html lang={locale} data-theme="light" class="light" data-accent={accent} data-background="paper" data-density="comfortable">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -63,7 +86,6 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description || pageTitle} />
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
-    <meta name="theme-color" content={`oklch(0.47 0.16 ${hue})`} />
     {structured.map((item) => (
       <script type="application/ld+json" set:html={JSON.stringify(item).replace(/</g, '\\u003c')} />
     ))}
@@ -73,7 +95,6 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     )}
     <script is:inline>
       (() => {
-        const hue = Number(document.documentElement.dataset.hue) || 315
         const stored = localStorage.getItem('theme')
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         const dark = stored === 'dark' || (stored !== 'light' && prefersDark)
@@ -81,21 +102,12 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
         root.classList.toggle('dark', dark)
         root.classList.toggle('light', !dark)
         root.dataset.theme = dark ? 'dark' : 'light'
-        root.style.setProperty('--hue', String(localStorage.getItem('hue') || hue))
         const accent = localStorage.getItem('accent')
         const background = localStorage.getItem('background')
         const density = localStorage.getItem('density')
         if (accent) root.dataset.accent = accent
         if (background) root.dataset.background = background
         if (density) root.dataset.density = density
-        for (const pair of [['--primary', 'm3-primary'], ['--primary-container', 'm3-primary-container'], ['--on-primary', 'm3-on-primary'], ['--on-primary-container', 'm3-on-primary-container'], ['--secondary', 'm3-secondary']]) {
-          const value = localStorage.getItem(pair[1])
-          if (value) root.style.setProperty(pair[0], value)
-        }
-        const style = localStorage.getItem('m3-style')
-        const spec = localStorage.getItem('m3-spec')
-        if (style) root.dataset.m3Style = style
-        if (spec) root.dataset.m3Spec = spec
         root.dataset.texture = localStorage.getItem('texture') || 'none'
         root.dataset.wallpaper = localStorage.getItem('wallpaper') || 'plain'
         root.dataset.reduceMotion = localStorage.getItem('reduce-motion') === '1' ? 'true' : 'false'

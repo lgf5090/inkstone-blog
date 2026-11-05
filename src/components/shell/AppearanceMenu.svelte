@@ -2,26 +2,15 @@
   import { onMount } from 'svelte'
   import { t, type BlogLocale } from '../../i18n'
 
-  let { locale, defaultHue = 315, defaultStyle = 'tonalSpot', defaultSpec = '2025' }: {
-    locale: BlogLocale
-    defaultHue?: number
-    defaultStyle?: string
-    defaultSpec?: '2025' | '2021'
-  } = $props()
+  let { locale }: { locale: BlogLocale } = $props()
   type Theme = 'auto' | 'light' | 'dark'
   type Accent = 'cinnabar' | 'indigo' | 'celadon' | 'amber' | 'terracotta' | 'wisteria' | 'graphite'
   type Background = 'paper' | 'white'
   type Density = 'comfortable' | 'compact'
 
-  const accents: { id: Accent; color: string }[] = [
-    { id: 'cinnabar', color: '#d9543c' },
-    { id: 'indigo', color: '#3b6fd4' },
-    { id: 'celadon', color: '#2f9b5f' },
-    { id: 'amber', color: '#d6a000' },
-    { id: 'terracotta', color: '#2196a6' },
-    { id: 'wisteria', color: '#8b5cf6' },
-    { id: 'graphite', color: '#6b7280' },
-  ]
+  // The same seven accents Inkstone ships as `[data-accent]` tokens. The swatch
+  // itself reads the accent token so the panel never hardcodes a colour.
+  const accents: Accent[] = ['cinnabar', 'indigo', 'celadon', 'amber', 'terracotta', 'wisteria', 'graphite']
 
   let theme = $state<Theme>('auto')
   let accent = $state<Accent>('cinnabar')
@@ -29,28 +18,18 @@
   let density = $state<Density>('comfortable')
   type LayoutMode = 'list' | 'grid' | 'masonry'
   let layout = $state<LayoutMode>('list')
-  type McStyle = 'tonalSpot' | 'vibrant' | 'expressive' | 'fidelity' | 'content' | 'monochrome' | 'neutral' | 'rainbow' | 'fruitSalad'
   type Texture = 'none' | 'starlight' | 'cyber_dots' | 'topography' | 'geometric' | 'sakura'
-  const styles: { id: McStyle; chroma: number; offset: number; secondaryChroma: number }[] = [
-    { id: 'tonalSpot', chroma: 0.13, offset: 60, secondaryChroma: 0.08 },
-    { id: 'vibrant', chroma: 0.19, offset: 45, secondaryChroma: 0.12 },
-    { id: 'expressive', chroma: 0.17, offset: 120, secondaryChroma: 0.14 },
-    { id: 'fidelity', chroma: 0.15, offset: 0, secondaryChroma: 0.1 },
-    { id: 'content', chroma: 0.12, offset: 30, secondaryChroma: 0.08 },
-    { id: 'monochrome', chroma: 0.02, offset: 0, secondaryChroma: 0.005 },
-    { id: 'neutral', chroma: 0.015, offset: 0, secondaryChroma: 0.01 },
-    { id: 'rainbow', chroma: 0.16, offset: 150, secondaryChroma: 0.15 },
-    { id: 'fruitSalad', chroma: 0.15, offset: 100, secondaryChroma: 0.15 },
-  ]
   const textures: Texture[] = ['none', 'starlight', 'cyber_dots', 'topography', 'geometric', 'sakura']
-  let hue = $state(defaultHue)
-  let m3Style = $state<McStyle>(styles.some((item) => item.id === defaultStyle) ? defaultStyle as McStyle : 'tonalSpot')
-  let m3Spec = $state<'2025' | '2021'>(defaultSpec === '2021' ? '2021' : '2025')
   let texture = $state<Texture>('none')
   let wallpaper = $state<'plain' | 'banner'>('plain')
   let reduceMotion = $state(false)
-  let m3Enabled = $state(false)
   let prefersDark = $state(false)
+
+  // Older builds stored a generated Material palette under these keys and wrote
+  // it straight onto the root element, which would shadow the Inkstone accent
+  // tokens forever. They are cleared once so the curated palette governs again.
+  const LEGACY_KEYS = ['hue', 'm3-primary', 'm3-primary-container', 'm3-on-primary', 'm3-on-primary-container', 'm3-secondary', 'm3-style', 'm3-spec']
+  const LEGACY_VARS = ['--primary', '--primary-container', '--on-primary', '--on-primary-container', '--secondary', '--hue']
 
   function applyTheme(next: Theme) {
     const dark = next === 'dark' || (next === 'auto' && prefersDark)
@@ -72,66 +51,6 @@
     applyTheme(theme)
   }
 
-  const M3_VARS = [
-    ['--primary', 'm3-primary'],
-    ['--primary-container', 'm3-primary-container'],
-    ['--on-primary', 'm3-on-primary'],
-    ['--on-primary-container', 'm3-on-primary-container'],
-    ['--secondary', 'm3-secondary'],
-  ] as const
-
-  function applyPalette(persist = true) {
-    const style = styles.find((item) => item.id === m3Style) ?? styles[0]!
-    const root = document.documentElement
-    const dark = root.classList.contains('dark')
-    const chroma = style.chroma * (m3Spec === '2021' ? 0.88 : 1)
-    const lightness = dark ? 0.72 : 0.52
-    const values: Record<string, string> = {
-      '--primary': `oklch(${lightness} ${chroma} ${hue})`,
-      '--primary-container': dark ? `oklch(0.38 0.1 ${hue})` : `oklch(0.91 0.055 ${hue})`,
-      '--on-primary': dark ? `oklch(0.2 0.06 ${hue})` : `oklch(0.99 0.01 ${hue})`,
-      '--on-primary-container': dark ? `oklch(0.92 0.05 ${hue})` : `oklch(0.3 0.1 ${hue})`,
-      '--secondary': `oklch(${dark ? 0.84 : 0.46} ${style.secondaryChroma} ${(hue + style.offset) % 360})`,
-    }
-    for (const [variable, key] of M3_VARS) {
-      root.style.setProperty(variable, values[variable]!)
-      if (persist) localStorage.setItem(key, values[variable]!)
-    }
-    root.dataset.m3Style = m3Style
-    root.dataset.m3Spec = m3Spec
-    m3Enabled = true
-  }
-
-  function clearPalette() {
-    const root = document.documentElement
-    for (const [variable, key] of M3_VARS) {
-      root.style.removeProperty(variable)
-      localStorage.removeItem(key)
-    }
-    root.removeAttribute('data-m3-style')
-    root.removeAttribute('data-m3-spec')
-    m3Enabled = false
-  }
-
-  function setHue(next: number) {
-    hue = Math.min(360, Math.max(0, Math.round(next)))
-    localStorage.setItem('hue', String(hue))
-    document.documentElement.style.setProperty('--hue', String(hue))
-    if (m3Enabled) applyPalette()
-  }
-
-  function setMcStyle(next: McStyle) {
-    m3Style = next
-    localStorage.setItem('m3-style', next)
-    applyPalette()
-  }
-
-  function setSpec(next: '2025' | '2021') {
-    m3Spec = next
-    localStorage.setItem('m3-spec', next)
-    applyPalette()
-  }
-
   function setTexture(next: Texture) {
     texture = next
     document.documentElement.dataset.texture = next
@@ -151,26 +70,21 @@
   }
 
   onMount(() => {
+    for (const key of LEGACY_KEYS) localStorage.removeItem(key)
+    for (const name of LEGACY_VARS) document.documentElement.style.removeProperty(name)
+    document.documentElement.removeAttribute('data-m3-style')
+    document.documentElement.removeAttribute('data-m3-spec')
+
     const storedTheme = localStorage.getItem('theme')
     theme = storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'auto'
-    const storedAccent = localStorage.getItem('accent')
-    if (accents.some((item) => item.id === storedAccent)) accent = storedAccent as Accent
-    const storedBackground = localStorage.getItem('background')
-    background = storedBackground === 'white' ? 'white' : 'paper'
+    const storedAccent = localStorage.getItem('accent') as Accent | null
+    if (storedAccent && accents.includes(storedAccent)) accent = storedAccent
+    background = localStorage.getItem('background') === 'white' ? 'white' : 'paper'
     density = localStorage.getItem('density') === 'compact' ? 'compact' : 'comfortable'
-    const storedHueRaw = localStorage.getItem('hue')
-    const storedHue = Number(storedHueRaw)
-    if (storedHueRaw !== null && Number.isFinite(storedHue) && storedHue >= 0 && storedHue <= 360) hue = Math.round(storedHue)
-    const storedStyle = localStorage.getItem('m3-style')
-    if (styles.some((item) => item.id === storedStyle)) m3Style = storedStyle as McStyle
-    else if (styles.some((item) => item.id === defaultStyle)) m3Style = defaultStyle as McStyle
-    m3Spec = localStorage.getItem('m3-spec') === '2021' ? '2021' : defaultSpec === '2021' ? '2021' : '2025'
     const storedTexture = localStorage.getItem('texture')
     if (textures.includes(storedTexture as Texture)) texture = storedTexture as Texture
     wallpaper = localStorage.getItem('wallpaper') === 'banner' ? 'banner' : 'plain'
     reduceMotion = localStorage.getItem('reduce-motion') === '1'
-    m3Enabled = Boolean(localStorage.getItem('m3-primary'))
-    if (!m3Enabled) applyPalette(false)
     document.documentElement.dataset.texture = texture
     document.documentElement.dataset.wallpaper = wallpaper
     document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false'
@@ -183,10 +97,7 @@
     prefersDark = media.matches
     media.addEventListener('change', () => {
       prefersDark = media.matches
-      if (theme === 'auto') {
-        applyTheme('auto')
-        if (m3Enabled) applyPalette(localStorage.getItem('m3-style') !== null)
-      }
+      if (theme === 'auto') applyTheme('auto')
     })
     rootDataset()
   })
@@ -202,12 +113,10 @@
   function setTheme(next: Theme) {
     theme = next
     persist()
-    if (m3Enabled) applyPalette(localStorage.getItem('m3-style') !== null)
   }
 
   function setAccent(next: Accent) {
     accent = next
-    clearPalette()
     persist()
   }
 
@@ -245,32 +154,19 @@
       </div>
     </section>
     <section>
-      <label class="appearance-label" for="appearance-hue">{t(locale, 'appearance.hue')} · {hue}</label>
-      <input id="appearance-hue" class="appearance-hue" type="range" min="0" max="360" value={hue} oninput={(event) => setHue(Number(event.currentTarget.value))} />
-    </section>
-    <section>
-      <p class="appearance-label">{t(locale, 'appearance.color_style')}</p>
-      <div class="appearance-style-grid" role="group" aria-label={t(locale, 'appearance.color_style')}>
-        {#each styles as item}
+      <p class="appearance-label">{t(locale, 'appearance.accent')}</p>
+      <div class="appearance-swatches" role="group" aria-label={t(locale, 'appearance.accent')}>
+        {#each accents as item}
           <button
             type="button"
-            class="appearance-style"
-            aria-pressed={m3Style === item.id}
-            onclick={() => setMcStyle(item.id)}
-            title={t(locale, `appearance.style_${item.id}`)}
-            style={`--swatch:oklch(0.62 ${item.chroma} ${hue});--swatch-2:oklch(0.75 ${item.secondaryChroma} ${(hue + item.offset) % 360})`}
-          >
-            <span aria-hidden="true"></span>
-            {t(locale, `appearance.style_${item.id}`)}
-          </button>
+            class="appearance-swatch appearance-swatch--{item}"
+            class:is-active={accent === item}
+            aria-pressed={accent === item}
+            aria-label={t(locale, `appearance.accent_${item}`)}
+            title={t(locale, `appearance.accent_${item}`)}
+            onclick={() => setAccent(item)}
+          ></button>
         {/each}
-      </div>
-    </section>
-    <section>
-      <p class="appearance-label">{t(locale, 'appearance.spec')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.spec')}>
-        <button type="button" aria-pressed={m3Spec === '2025'} onclick={() => setSpec('2025')}>{t(locale, 'appearance.spec_2025')}</button>
-        <button type="button" aria-pressed={m3Spec === '2021'} onclick={() => setSpec('2021')}>{t(locale, 'appearance.spec_2021')}</button>
       </div>
     </section>
     <section>
@@ -292,22 +188,6 @@
       <button type="button" class="appearance-motion" aria-pressed={reduceMotion} onclick={() => setReduceMotion(!reduceMotion)}>
         {t(locale, 'appearance.reduce_motion')}
       </button>
-    </section>
-    <section>
-      <p class="appearance-label">{t(locale, 'appearance.accent')}</p>
-      <div class="appearance-swatches" role="group" aria-label={t(locale, 'appearance.accent')}>
-        {#each accents as item}
-          <button
-            type="button"
-            class="appearance-swatch"
-            style={`--swatch:${item.color}`}
-            aria-pressed={accent === item.id}
-            aria-label={t(locale, `appearance.accent_${item.id}`)}
-            title={t(locale, `appearance.accent_${item.id}`)}
-            onclick={() => setAccent(item.id)}
-          ></button>
-        {/each}
-      </div>
     </section>
     <section>
       <p class="appearance-label">{t(locale, 'appearance.background')}</p>

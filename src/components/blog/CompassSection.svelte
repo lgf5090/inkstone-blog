@@ -113,27 +113,27 @@
 <style>
   .compass-section { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
   .compass-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
-  .compass-head h1 { margin: 0; color: var(--on-surface, #1d1b1e); font-size: 1.7rem; line-height: 1.2; letter-spacing: -0.02em; }
-  .compass-head p { margin: 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
-  .compass-tools { display: flex; flex-direction: column; gap: 0.65rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); }
+  .compass-head h1 { margin: 0; color: var(--on-surface); font-size: var(--text-30); line-height: 1.2; letter-spacing: -0.02em; }
+  .compass-head p { margin: 0; color: var(--on-surface-variant); font-size: var(--text-13); font-variant-numeric: tabular-nums; }
+  .compass-tools { display: flex; flex-direction: column; gap: 0.65rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--outline-variant); }
   .compass-search { position: relative; width: min(100%, 30rem); }
-  .compass-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 999px; background: var(--surface-container-low, #f7f3f6); color: var(--on-surface, #1d1b1e); padding: 0.5rem 2.2rem 0.5rem 0.85rem; font: inherit; font-size: 0.8rem; }
-  .compass-search button { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: 999px; background: transparent; color: var(--on-surface-variant, #5d5b5e); cursor: pointer; font-size: 1rem; }
+  .compass-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant); border-radius: var(--r-md); background: var(--bg-inset); color: var(--on-surface); padding: 0.5rem 2.2rem 0.5rem 0.85rem; font: inherit; font-size: var(--text-13); }
+  .compass-search button { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: var(--r-full); background: transparent; color: var(--on-surface-variant); cursor: pointer; font-size: var(--text-16); }
   .compass-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .compass-chips button { border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 999px; background: var(--surface-container-low, #f7f3f6); color: var(--on-surface-variant, #5d5b5e); padding: 0.25rem 0.65rem; font: inherit; font-size: 0.7rem; cursor: pointer; }
-  .compass-chips button.active { background: var(--primary-container, #ffdada); color: var(--on-primary-container, #3a0000); border-color: transparent; }
+  .compass-chips button { border: 1px solid var(--border-subtle); border-radius: var(--r-sm); background: transparent; color: var(--text-secondary); min-height: var(--btn-h-sm-compact); padding: 0 var(--sp-2-5); font: inherit; font-size: var(--text-11); cursor: pointer; }
+  .compass-chips button.active { background: var(--accent-soft); color: var(--accent-on-soft); border-color: transparent; }
   .compass-shelf { display: flex; flex-direction: column; gap: 0.6rem; }
   .compass-shelf__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.6rem; }
-  .compass-shelf__head h2 { margin: 0; color: var(--on-surface, #1d1b1e); font-size: 0.95rem; }
-  .compass-shelf__head p { margin: 0; color: var(--on-surface-variant, #5d5b5e); font-size: 0.72rem; }
+  .compass-shelf__head h2 { margin: 0; color: var(--on-surface); font-size: var(--text-15); }
+  .compass-shelf__head p { margin: 0; color: var(--on-surface-variant); font-size: var(--text-11-5); }
   .compass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.55rem; }
-  .compass-tile { min-width: 0; border: 1px solid var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.75rem; background: var(--card-bg, var(--surface-container-low, #f7f3f6)); }
+  .compass-tile { min-width: 0; border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); background: var(--card-bg, var(--surface-container-low)); }
   .compass-tile a { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.8rem 0.6rem; color: inherit; text-decoration: none; text-align: center; }
-  .compass-tile a:hover { background: var(--surface-container, #f1edf0); }
-  .compass-icon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; overflow: hidden; border-radius: 0.6rem; background: var(--surface-container, #f1edf0); color: var(--on-surface, #1d1b1e); font-size: 0.95rem; font-weight: 700; }
+  .compass-tile a:hover { background: var(--surface-container); }
+  .compass-icon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; overflow: hidden; border-radius: var(--radius-md); background: var(--surface-container); color: var(--on-surface); font-size: var(--text-15); font-weight: 700; }
   .compass-icon img { width: 100%; height: 100%; object-fit: contain; }
-  .compass-label { color: var(--on-surface, #1d1b1e); font-size: 0.78rem; font-weight: 600; }
-  .compass-note { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--on-surface-variant, #5d5b5e); font-size: 0.66rem; }
-  .compass-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant, #5d5b5e); border: 1px dashed var(--outline-variant, rgba(0, 0, 0, 0.12)); border-radius: 0.9rem; font-size: 0.8rem; }
+  .compass-label { color: var(--on-surface); font-size: var(--text-12-5); font-weight: 600; }
+  .compass-note { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--on-surface-variant); font-size: var(--text-10); }
+  .compass-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant); border: 1px dashed var(--outline-variant); border-radius: var(--radius-lg); font-size: var(--text-13); }
   .compass-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 </style>
