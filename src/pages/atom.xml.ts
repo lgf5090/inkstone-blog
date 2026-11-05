@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { loadFeeds } from '../lib/blog-api'
-import { escapeXml, postLink, siteOrigin } from '../lib/feed'
+import { escapeXml, postLink, publicPosts, siteOrigin } from '../lib/feed'
 
 export const prerender = false
 
@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ url }) => {
   if (!feed) return new Response('Blog feed unavailable', { status: 503 })
   const origin = siteOrigin(url, feed.site.site.url)
   const updated = feed.posts[0]?.updatedAt ? new Date(feed.posts[0].updatedAt).toISOString() : new Date().toISOString()
-  const entries = feed.posts.slice(0, 50).map((post) => {
+  const entries = publicPosts(feed.posts).slice(0, 50).map((post) => {
     const link = postLink(origin, post.slug, post.permalink, feed.site.permalink.enable)
     return `<entry>
       <title>${escapeXml(post.title)}</title>

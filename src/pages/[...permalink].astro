@@ -3,10 +3,18 @@ import { resolvePostPermalink, resolveRedirect } from '../lib/blog-api'
 import { safeRedirectTarget } from '../lib/format'
 
 const path = Astro.url.pathname
+// A redirect target replaces the path, not the query: `/old?utm=x` must keep `utm=x` on the
+// destination. A target that already carries `?` or a `#` is left exactly as it was authored.
+function withRequestSearch(target: string): string {
+  const search = Astro.url.search
+  if (!search || target.includes('?') || target.includes('#')) return target
+  return `${target}${search}`
+}
+
 const redirect = await resolveRedirect(path).catch(() => ({ found: false } as import('../lib/blog-types').BlogRedirectResult))
 if (redirect.found && redirect.to) {
   const target = safeRedirectTarget(redirect.to, Astro.url.origin)
-  if (target) return Astro.redirect(target, (redirect.status ?? 301) as 301 | 302)
+  if (target) return Astro.redirect(withRequestSearch(target), (redirect.status ?? 301) as 301 | 302)
 }
 const permalink = await resolvePostPermalink(path).catch(() => null)
 if (permalink?.found && permalink.slug) return Astro.rewrite(`/posts/${encodeURIComponent(permalink.slug)}`)

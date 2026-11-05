@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { loadFeeds } from '../lib/blog-api'
-import { postLink, siteOrigin } from '../lib/feed'
+import { postLink, publicPosts, siteOrigin } from '../lib/feed'
 
 export const prerender = false
 
@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ url }) => {
   if (!feed) return new Response('Unavailable', { status: 503 })
   if (feed.site.llms.enable === false) return new Response('Not found', { status: 404 })
   const excluded = new Set(feed.site.llms.excludeTags)
-  const posts = feed.posts.filter((post) => !post.tags.some((tag) => excluded.has(tag)))
+  const posts = publicPosts(feed.posts).filter((post) => !post.tags.some((tag) => excluded.has(tag)))
   const origin = siteOrigin(url, feed.site.site.url)
   const body = [
     `# ${feed.site.site.title}`,

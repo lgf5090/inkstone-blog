@@ -177,7 +177,7 @@ async function readingData(context: Parameters<Parameters<typeof defineMiddlewar
     return new Response(null, { status: 400 })
   }
   try {
-    const post = await loadPost(slug, context.cookies.get(unlockCookieName(slug))?.value)
+    const post = await loadPost(slug, context.cookies.get(unlockCookieName(slug))?.value, { countView: false })
     if (!post.content || !post.render) return new Response(null, { status: 404 })
     return new Response(JSON.stringify({
       title: post.title,
