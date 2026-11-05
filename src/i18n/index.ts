@@ -34,6 +34,7 @@ export type MessageKey =
   | 'music.mode' | 'music.modeSequence' | 'music.modeRepeatOne' | 'music.modeShuffle'
   | 'music.progress' | 'music.volume' | 'music.mute' | 'music.unmute' | 'music.playlist'
   | 'music.empty' | 'music.loading' | 'music.error' | 'music.nowPlaying' | 'music.configure' | 'music.libraryEmpty'
+  | 'music.libraryNoR2' | 'music.libraryPlaylistEmpty' | 'music.libraryPlaylistMissing' | 'music.libraryUnavailable'
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
@@ -179,6 +180,10 @@ const en: Dictionary = {
   'music.empty': 'No tracks yet',
   'music.configure': 'Add tracks in Inkstone → Blog admin → Settings → Appearance → Integrations → Music.',
   'music.libraryEmpty': 'The Inkstone music library is empty. Add tracks in the Music app.',
+  'music.libraryNoR2': 'The music library has tracks, but none has an R2 audio file. Online-only sources are not published; download or upload them to R2 in the Music app.',
+  'music.libraryPlaylistEmpty': 'The selected playlist has no track that can be published. Download its tracks to R2 in the Music app.',
+  'music.libraryPlaylistMissing': 'The playlist selected in the blog admin no longer exists. Choose another source in the admin.',
+  'music.libraryUnavailable': 'The music library is configured, but this deployment cannot sign playback links. Ask the site admin to check the blog signing secret.',
   'music.loading': 'Loading…',
   'music.error': 'Music is unavailable right now',
   'music.nowPlaying': 'Now playing',
@@ -297,6 +302,10 @@ const zhCN: Dictionary = {
   'music.empty': '暂无曲目',
   'music.configure': '在 Inkstone → 博客后台 → 设置 → 外观 → 集成 → 音乐 中添加曲目。',
   'music.libraryEmpty': 'Inkstone 音乐库为空，请先在音乐 App 中添加曲目。',
+  'music.libraryNoR2': '音乐库里有曲目，但都没有 R2 音频；在线源不会被博客公开，请先在音乐 App 下载到 R2 或上传本地文件。',
+  'music.libraryPlaylistEmpty': '所选歌单没有可用于博客的曲目，请先在音乐 App 中为该歌单下载到 R2。',
+  'music.libraryPlaylistMissing': '后台选择的歌单已不存在，请在博客后台重新选择曲目来源。',
+  'music.libraryUnavailable': '音乐库已配置，但当前部署无法生成播放链接；请站点管理员检查博客签名密钥。',
   'music.loading': '加载中…',
   'music.error': '音乐暂时无法播放',
   'music.nowPlaying': '正在播放',
