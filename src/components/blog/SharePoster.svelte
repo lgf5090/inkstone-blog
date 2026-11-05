@@ -49,8 +49,13 @@
       canvas.height = 1350
       const context = canvas.getContext('2d')
       if (!context) throw new Error('canvas unavailable')
-      const dark = document.documentElement.classList.contains('dark')
-      context.fillStyle = dark ? '#141216' : '#faf7f2'
+      const styles = getComputedStyle(document.documentElement)
+      const token = (name: string) => styles.getPropertyValue(name).trim()
+      const backdrop = token('--bg-base')
+      const ink = token('--text-primary')
+      const inkSoft = token('--text-secondary')
+      const inkFaint = token('--text-tertiary')
+      context.fillStyle = backdrop
       context.fillRect(0, 0, canvas.width, canvas.height)
       if (coverUrl) {
         try {
@@ -63,8 +68,8 @@
           })
           context.drawImage(image, 0, 0, canvas.width, 620)
           const fade = context.createLinearGradient(0, 380, 0, 700)
-          fade.addColorStop(0, 'rgba(0,0,0,0)')
-          fade.addColorStop(1, dark ? '#141216' : '#faf7f2')
+          fade.addColorStop(0, 'transparent')
+          fade.addColorStop(1, backdrop)
           context.fillStyle = fade
           context.fillRect(0, 380, canvas.width, 340)
         } catch {
@@ -72,19 +77,19 @@
         }
       }
       const startY = coverUrl ? 720 : 220
-      context.fillStyle = dark ? '#f3edf7' : '#201b24'
-      context.font = '700 64px system-ui, sans-serif'
+      context.fillStyle = ink
+      context.font = `700 64px ${token('--font-ui')}`
       const titleLines = wrap(context, title, 900, 3)
       titleLines.forEach((line, index) => context.fillText(line, 90, startY + index * 80))
-      context.fillStyle = dark ? '#cac4cf' : '#5b5560'
-      context.font = '400 30px system-ui, sans-serif'
+      context.fillStyle = inkSoft
+      context.font = `400 30px ${token('--font-ui')}`
       const descriptionLines = wrap(context, description, 900, 3)
       descriptionLines.forEach((line, index) => context.fillText(line, 90, startY + titleLines.length * 80 + 30 + index * 44))
-      context.fillStyle = dark ? '#a9a2b3' : '#7b7480'
-      context.font = '500 28px system-ui, sans-serif'
+      context.fillStyle = inkFaint
+      context.font = `500 28px ${token('--font-ui')}`
       context.fillText(`${author} · ${published}`, 90, 1210)
       context.fillText(siteTitle, 90, 1260)
-      context.font = '400 22px system-ui, sans-serif'
+      context.font = `400 22px ${token('--font-ui')}`
       context.fillText(url, 90, 1305)
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
       if (!blob) throw new Error('blob failed')

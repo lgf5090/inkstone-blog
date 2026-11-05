@@ -173,16 +173,16 @@
 <style>
   .grid-section { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
   .grid-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
-  .grid-head h1 { margin: 0; color: var(--on-surface); font-size: 1.7rem; line-height: 1.2; letter-spacing: -0.02em; }
-  .grid-head p { margin: 0; color: var(--on-surface-variant); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .grid-head h1 { margin: 0; color: var(--on-surface); font-size: var(--text-30); line-height: 1.2; letter-spacing: -0.02em; }
+  .grid-head p { margin: 0; color: var(--on-surface-variant); font-size: var(--text-13); font-variant-numeric: tabular-nums; }
   .grid-tools { display: flex; flex-direction: column; gap: 0.65rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--outline-variant); }
   .grid-search { position: relative; width: min(100%, 30rem); }
-  .grid-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant); border-radius: 999px; background: var(--surface-low); color: var(--on-surface); padding: 0.55rem 2.2rem 0.55rem 0.9rem; font: inherit; font-size: 0.82rem; }
-  .grid-search button { position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: 999px; background: transparent; color: var(--on-surface-variant); cursor: pointer; font-size: 1rem; }
+  .grid-search input { width: 100%; box-sizing: border-box; border: 1px solid var(--border-default); border-radius: var(--r-md); background: var(--bg-inset); color: var(--on-surface); padding: 0.55rem 2.2rem 0.55rem 0.9rem; font: inherit; font-size: var(--text-13); }
+  .grid-search button { position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; border-radius: var(--r-full); background: transparent; color: var(--on-surface-variant); cursor: pointer; font-size: var(--text-16); }
   .grid-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .grid-chips button { border: 1px solid var(--outline-variant); border-radius: 999px; background: var(--surface); color: var(--on-surface-variant); padding: 0.28rem 0.7rem; font: inherit; font-size: 0.72rem; cursor: pointer; }
+  .grid-chips button { border: 1px solid var(--border-subtle); border-radius: var(--r-sm); background: transparent; color: var(--text-secondary); min-height: var(--btn-h-sm-compact); padding: 0 var(--sp-3); font: inherit; font-size: var(--text-11-5); cursor: pointer; }
   .grid-chips button:hover { background: var(--surface-container); color: var(--on-surface); }
-  .grid-chips button.active { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent; }
+  .grid-chips button.active { background: var(--accent-soft); color: var(--accent-on-soft); border-color: transparent; }
   .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.9rem; align-items: start; }
   .grid-card { display: flex; flex-direction: column; overflow: hidden; min-width: 0; border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); background: var(--surface); transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
   .grid-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); border-color: color-mix(in oklab, var(--primary) 35%, var(--outline-variant)); }
@@ -193,26 +193,26 @@
   .grid-cover img { width: 100%; height: 100%; object-fit: cover; }
   .grid-cover--empty { background: linear-gradient(135deg, color-mix(in oklab, var(--primary) 18%, var(--surface-container)), color-mix(in oklab, var(--secondary) 16%, var(--surface-container))); }
   .grid-cover-initial { color: var(--on-primary-container); font-size: 2rem; font-weight: 750; opacity: 0.75; }
-  .grid-badge { position: absolute; display: inline-flex; align-items: center; gap: 0.2rem; border-radius: 999px; background: color-mix(in oklab, var(--surface) 88%, transparent); color: var(--on-surface); padding: 0.18rem 0.5rem; font-size: 0.66rem; font-weight: 600; backdrop-filter: blur(6px); }
-  .grid-badge--rating { top: 0.5rem; right: 0.5rem; color: #b7791f; }
+  .grid-badge { position: absolute; display: inline-flex; align-items: center; gap: 0.2rem; border-radius: var(--r-full); background: color-mix(in oklab, var(--surface) 88%, transparent); color: var(--on-surface); padding: 0.18rem 0.5rem; font-size: var(--text-10); font-weight: 600; backdrop-filter: blur(6px); }
+  .grid-badge--rating { top: 0.5rem; right: 0.5rem; color: var(--warning); }
   .grid-badge--status { top: 0.5rem; left: 0.5rem; color: var(--primary); }
   .grid-badge--featured { top: 0.5rem; left: 0.5rem; color: var(--on-primary-container); background: var(--primary-container); }
   .grid-badge--featured + .grid-badge--status { top: 2rem; }
   .grid-body { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.8rem 0.9rem 0.95rem; min-width: 0; }
   .grid-title-row { display: flex; align-items: flex-start; gap: 0.5rem; min-width: 0; }
   .grid-title-main { min-width: 0; flex: 1; }
-  .grid-title-row h2 { margin: 0; color: var(--on-surface); font-size: 0.95rem; line-height: 1.35; }
-  .grid-sub { display: block; margin-top: 0.1rem; color: var(--on-surface-variant); font-size: 0.7rem; }
-  .grid-icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; flex: none; border-radius: 0.55rem; background: var(--surface-container); color: var(--on-surface); font-size: 0.9rem; font-weight: 700; }
-  .grid-desc { margin: 0; color: var(--on-surface-variant); font-size: 0.76rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .grid-meta { margin: 0; color: var(--on-surface-variant); font-size: 0.7rem; }
-  .grid-specs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0; padding: 0; list-style: none; color: var(--on-surface-variant); font-size: 0.68rem; }
-  .grid-specs li { border: 1px solid var(--outline-variant); border-radius: 999px; padding: 0.1rem 0.45rem; }
-  .grid-meter { height: 0.4rem; overflow: hidden; border-radius: 999px; background: var(--surface-container); }
+  .grid-title-row h2 { margin: 0; color: var(--on-surface); font-size: var(--text-15); line-height: 1.35; }
+  .grid-sub { display: block; margin-top: 0.1rem; color: var(--on-surface-variant); font-size: var(--text-11); }
+  .grid-icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; flex: none; border-radius: var(--radius-sm); background: var(--surface-container); color: var(--on-surface); font-size: var(--text-14-5); font-weight: 700; }
+  .grid-desc { margin: 0; color: var(--on-surface-variant); font-size: var(--text-12); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .grid-meta { margin: 0; color: var(--on-surface-variant); font-size: var(--text-11); }
+  .grid-specs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0; padding: 0; list-style: none; color: var(--on-surface-variant); font-size: var(--text-11); }
+  .grid-specs li { border: 1px solid var(--outline-variant); border-radius: var(--r-full); padding: 0.1rem 0.45rem; }
+  .grid-meter { height: 0.4rem; overflow: hidden; border-radius: var(--r-full); background: var(--surface-container); }
   .grid-meter span { display: block; height: 100%; border-radius: inherit; background: var(--primary); }
-  .grid-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; color: var(--on-surface-variant); font-size: 0.68rem; }
-  .grid-tags span { border: 1px solid var(--outline-variant); border-radius: 999px; padding: 0.08rem 0.4rem; }
-  .grid-link { align-self: flex-start; margin-top: 0.15rem; color: var(--primary); font-size: 0.72rem; }
-  .grid-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant); border: 1px dashed var(--outline-variant); border-radius: var(--radius-lg); font-size: 0.8rem; }
+  .grid-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; color: var(--on-surface-variant); font-size: var(--text-11); }
+  .grid-tags span { border: 1px solid var(--outline-variant); border-radius: var(--r-full); padding: 0.08rem 0.4rem; }
+  .grid-link { align-self: flex-start; margin-top: 0.15rem; color: var(--primary); font-size: var(--text-11-5); }
+  .grid-empty { padding: 3rem 1rem; text-align: center; color: var(--on-surface-variant); border: 1px dashed var(--outline-variant); border-radius: var(--radius-lg); font-size: var(--text-13); }
   .grid-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 </style>

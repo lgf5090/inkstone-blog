@@ -2538,7 +2538,7 @@
   color: var(--accent);
   background: var(--bg-surface);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-xs);
 }
 .ink-prose .excalidraw-head-title {
   color: var(--text-secondary);
@@ -2643,15 +2643,15 @@
 .excalidraw .sidebar-tab-trigger.active,
 .excalidraw .sidebar-tab-trigger[data-state="active"],
 .excalidraw .sidebar-tab-trigger[aria-selected="true"] {
-  background-color: #6965db !important;
-  color: #ffffff !important;
+  background-color: var(--ex-accent) !important;
+  color: var(--ex-on-accent) !important;
 }
 
 .excalidraw .sidebar-tab-trigger.active svg,
 .excalidraw .sidebar-tab-trigger[data-state="active"] svg,
 .excalidraw .sidebar-tab-trigger[aria-selected="true"] svg {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
+  color: var(--ex-on-accent) !important;
+  stroke: var(--ex-on-accent) !important;
 }
 
 .excalidraw .sidebar .ExcTextField,
@@ -2678,8 +2678,8 @@
   transform: translateY(-50%) !important;
   width: 16px !important;
   height: 16px !important;
-  color: #8e8e93 !important;
-  stroke: #8e8e93 !important;
+  color: var(--ex-icon) !important;
+  stroke: var(--ex-icon) !important;
   pointer-events: none !important;
   z-index: 2 !important;
   opacity: 1 !important;
@@ -2688,8 +2688,8 @@
 .excalidraw.theme--dark .sidebar .ExcTextField svg,
 .excalidraw.theme--dark .layer-ui__search .ExcTextField svg,
 .excalidraw.theme--dark .layer-ui__library .ExcTextField svg {
-  color: #a1a1aa !important;
-  stroke: #a1a1aa !important;
+  color: var(--ex-icon-dark) !important;
+  stroke: var(--ex-icon-dark) !important;
 }
 
 .excalidraw .sidebar .ExcTextField__input,
@@ -2702,8 +2702,8 @@
   height: 38px !important;
   min-height: 38px !important;
   border-radius: 8px !important;
-  background-color: var(--bg-sunken, #f4f4f5) !important;
-  border: 1px solid var(--border-subtle, #e4e4e7) !important;
+  background-color: var(--bg-sunken) !important;
+  border: 1px solid var(--border-subtle) !important;
   padding: 0 12px 0 34px !important;
   transition: border-color 0.15s ease, background-color 0.15s ease !important;
 }
@@ -2711,23 +2711,23 @@
 .excalidraw.theme--dark .sidebar .ExcTextField__input,
 .excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input,
 .excalidraw.theme--dark .layer-ui__library .ExcTextField__input {
-  background-color: #232329 !important;
-  border-color: #31303b !important;
+  background-color: var(--ex-field-bg-dark) !important;
+  border-color: var(--ex-field-border-dark) !important;
 }
 
 .excalidraw .sidebar .ExcTextField__input:focus-within,
 .excalidraw .layer-ui__search-header .ExcTextField__input:focus-within,
 .excalidraw .layer-ui__library .ExcTextField__input:focus-within {
-  border-color: #6965db !important;
-  background-color: var(--bg-surface, #ffffff) !important;
-  box-shadow: 0 0 0 1px #6965db !important;
+  border-color: var(--ex-accent) !important;
+  background-color: var(--bg-surface) !important;
+  box-shadow: 0 0 0 1px var(--ex-accent) !important;
 }
 
 .excalidraw.theme--dark .sidebar .ExcTextField__input:focus-within,
 .excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input:focus-within,
 .excalidraw.theme--dark .layer-ui__library .ExcTextField__input:focus-within {
-  border-color: #6965db !important;
-  background-color: #1e1e24 !important;
+  border-color: var(--ex-accent) !important;
+  background-color: var(--ex-field-focus-bg-dark) !important;
 }
 
 .excalidraw .sidebar .ExcTextField__input input,
@@ -2742,7 +2742,7 @@
   box-shadow: none !important;
   font-size: 13px !important;
   line-height: normal !important;
-  color: var(--text-primary, #18181b) !important;
+  color: var(--text-primary) !important;
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -2750,13 +2750,13 @@
 .excalidraw.theme--dark .sidebar .ExcTextField__input input,
 .excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input input,
 .excalidraw.theme--dark .layer-ui__library .ExcTextField__input input {
-  color: #f4f4f5 !important;
+  color: var(--ex-text-dark) !important;
 }
 
 .excalidraw .sidebar .ExcTextField__input input::placeholder,
 .excalidraw .layer-ui__search-header .ExcTextField__input input::placeholder,
 .excalidraw .layer-ui__library .ExcTextField__input input::placeholder {
-  color: #a1a1aa !important;
+  color: var(--ex-icon-dark) !important;
   font-size: 13px !important;
   opacity: 1 !important;
 }
@@ -2764,7 +2764,7 @@
 .excalidraw.theme--dark .sidebar .ExcTextField__input input::placeholder,
 .excalidraw.theme--dark .layer-ui__search-header .ExcTextField__input input::placeholder,
 .excalidraw.theme--dark .layer-ui__library .ExcTextField__input input::placeholder {
-  color: #71717a !important;
+  color: var(--ex-placeholder-dark) !important;
 }
 
 .excalidraw .layer-ui__search-header {
@@ -2976,7 +2976,7 @@
     max-width: none;
     padding: 0;
     font-size: 11pt;
-    color: #000;
+    color: black;
   }
   .ink-prose .code-copy,
   .ink-prose .chart-block-tools,
@@ -3780,12 +3780,12 @@
 
 /* A reading mark kept in colour by the reader's own note. The six values are the reader's own
    palette, repeated here on purpose: a note has to look the same when no book is open. */
-.ink-prose mark[data-hl='yellow'] { background: rgba(255, 206, 64, 0.45); }
-.ink-prose mark[data-hl='green'] { background: rgba(118, 214, 108, 0.42); }
-.ink-prose mark[data-hl='blue'] { background: rgba(96, 165, 250, 0.42); }
-.ink-prose mark[data-hl='pink'] { background: rgba(248, 123, 168, 0.42); }
-.ink-prose mark[data-hl='red'] { background: rgba(245, 168, 160, 0.42); }
-.ink-prose mark[data-hl='purple'] { background: rgba(213, 184, 255, 0.42); }
+.ink-prose mark[data-hl='yellow'] { background: var(--hl-yellow); }
+.ink-prose mark[data-hl='green'] { background: var(--hl-green); }
+.ink-prose mark[data-hl='blue'] { background: var(--hl-blue); }
+.ink-prose mark[data-hl='pink'] { background: var(--hl-pink); }
+.ink-prose mark[data-hl='red'] { background: var(--hl-red); }
+.ink-prose mark[data-hl='purple'] { background: var(--hl-purple); }
 
 /* ── Reading runtime ────────────────────────────────────────────────────────
    The note app's own reading surface replaces the stored snapshot after it has rendered. While it

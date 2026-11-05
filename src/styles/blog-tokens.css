@@ -1,0 +1,106 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Blog semantic token layer
+
+   The colour source of truth is ./inkstone-tokens.css (a verbatim copy of the
+   Inkstone design tokens). This file only does two things:
+
+   1. Rename Inkstone tokens to the Material-flavoured names the blog
+      components already use, so no component has to change its vocabulary.
+   2. Name the few surfaces that only exist on the blog (the Excalidraw embed,
+      reader highlights, media scrims). Those are the ONLY literal colour
+      values allowed outside inkstone-tokens.css.
+
+   No page, component or stylesheet may write a raw colour. Run
+   `grep -rE "#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|oklch\(" src`
+   and only inkstone-tokens.css + this file should match.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Type ------------------------------------------------------------------ */
+  --font-outfit: var(--font-ui);
+  --font-code: var(--font-mono);
+  --blog-display: var(--font-display);
+
+  /* Radius — one scale, shared with the app -------------------------------- */
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-pill: var(--r-full);
+
+  /* Surfaces --------------------------------------------------------------- */
+  --page-bg: var(--bg-base);
+  --surface: var(--bg-surface);
+  --surface-low: var(--bg-sunken);
+  --surface-container: var(--bg-inset);
+  /* The blog's legacy Material names, kept as aliases of the same tokens. */
+  --surface-container-low: var(--bg-sunken);
+  --surface-container-high: var(--bg-raised);
+  --surface-high: var(--bg-raised);
+  --card-bg: var(--bg-surface);
+  --overlay-bg: var(--bg-overlay);
+
+  /* Text ------------------------------------------------------------------- */
+  --on-surface: var(--text-primary);
+  --on-surface-variant: var(--text-secondary);
+  --on-surface-muted: var(--text-tertiary);
+  --on-surface-faint: var(--text-quaternary);
+
+  /* Borders ---------------------------------------------------------------- */
+  --outline: var(--border-default);
+  --outline-variant: var(--border-subtle);
+  --outline-strong: var(--border-strong);
+
+  /* Accent ----------------------------------------------------------------- */
+  --primary: var(--accent);
+  --on-primary: var(--accent-contrast);
+  --on-accent: var(--accent-contrast);
+  --primary-container: var(--accent-soft);
+  --on-primary-container: var(--accent-on-soft);
+  --secondary: var(--accent-hover);
+  --secondary-container: var(--accent-softer);
+
+  /* Elevation -------------------------------------------------------------- */
+  --shadow-lift: var(--shadow-pop);
+  --shadow-float: var(--shadow-modal);
+
+  /* Media scrims (lightbox, video overlays) -------------------------------- */
+  --overlay-scrim: var(--media-scrim);
+  --overlay-control: var(--media-control);
+  --overlay-control-hover: var(--media-control-hover);
+  --overlay-text: var(--media-text);
+  --overlay-text-strong: var(--media-text-strong);
+  --overlay-surface: var(--media-surface);
+
+  /* Reader highlights — an editorial layer the app does not carry ---------- */
+  --hl-yellow: rgba(255, 206, 64, 0.45);
+  --hl-green: rgba(118, 214, 108, 0.42);
+  --hl-blue: rgba(96, 165, 250, 0.42);
+  --hl-pink: rgba(248, 123, 168, 0.42);
+  --hl-red: rgba(245, 168, 160, 0.42);
+  --hl-purple: rgba(213, 184, 255, 0.42);
+
+  /* Excalidraw — the embed's own canvas brand colours ---------------------- */
+  --ex-accent: #6965db;
+  --ex-on-accent: #ffffff;
+  --ex-icon: #8e8e93;
+  --ex-icon-dark: #a1a1aa;
+  --ex-field-bg-dark: #232329;
+  --ex-field-border-dark: #31303b;
+  --ex-field-focus-bg-dark: #1e1e24;
+  --ex-text-dark: #f4f4f5;
+  --ex-placeholder: #a1a1aa;
+  --ex-placeholder-dark: #71717a;
+  --ex-canvas-bg: #ffffff;
+
+  /* Accent preview chips — the seven Inkstone accents, shown as themselves. */
+  --swatch-cinnabar: oklch(66.5% 0.15 32);
+  --swatch-indigo: oklch(72% 0.13 252);
+  --swatch-celadon: oklch(74% 0.12 150);
+  --swatch-amber: oklch(80% 0.14 95);
+  --swatch-terracotta: oklch(76% 0.105 205);
+  --swatch-wisteria: oklch(72% 0.13 300);
+  --swatch-graphite: oklch(80% 0.025 250);
+}
