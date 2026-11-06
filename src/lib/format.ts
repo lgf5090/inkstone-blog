@@ -23,16 +23,6 @@ export function formatDateTime(value: number | null | undefined, locale: string,
   }
 }
 
-export function formatMonth(month: string, locale: string): string {
-  const value = Number(month)
-  if (!Number.isFinite(value) || value < 1 || value > 12) return month
-  try {
-    return new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2024, value - 1, 1))
-  } catch {
-    return month
-  }
-}
-
 export function postUrl(slug: string, permalink?: string | null, enabled = false): string {
   if (enabled && permalink) {
     const path = permalink.trim().replace(/^\/+|\/+$/g, '')
@@ -80,6 +70,3 @@ export function albumUnlockCookieName(slug: string): string {
   return `album_${unlockCookieName(slug)}`
 }
 
-export function collectionLabel(value: unknown): string {
-  return typeof value === 'string' ? value : ''
-}
