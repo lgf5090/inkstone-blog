@@ -40,11 +40,11 @@ const rail = primary || secondary || aside
             <slot />
           </div>
           <div class="secondary-column">
-            {/* The article outline leads the rail: it is the only contextual item
-                there, and it stays above the widgets instead of sitting under a
-                long taxonomy list. */}
-            <slot name="aside" />
+            {/* Widgets lead the secondary rail, then the article outline: the site's
+                calendar configuration therefore sits above On this page, and any
+                other widget the owner assigns to this column keeps that place. */}
             <SideBar page={page} column="secondary" />
+            <slot name="aside" />
           </div>
         </>
       ) : (

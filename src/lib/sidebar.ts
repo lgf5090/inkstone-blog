@@ -22,7 +22,7 @@ const FALLBACK_WIDGETS: BlogWidget[] = [
   { id: 'series', type: 'series', title: '', enabled: true, config: {} },
 ]
 
-const SECONDARY_TYPES = new Set(['categories', 'tags', 'series', 'stats', 'calendar'])
+const SECONDARY_TYPES = new Set(['categories', 'tags', 'series', 'calendar'])
 
 export function widgetColumn(widget: BlogWidget): SidebarColumn {
   return widget.column === 'primary' || widget.column === 'secondary'
