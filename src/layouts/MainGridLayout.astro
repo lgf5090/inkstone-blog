@@ -16,10 +16,12 @@ const { page = 'home', hero = false } = Astro.props
 const primary = sidebar.enable && sidebarHasContent(blog, page, 'primary')
 const secondary = sidebar.enable && sidebarHasContent(blog, page, 'secondary')
 const aside = Astro.slots.has('aside')
-// Three columns only when both rails carry a card; a disabled rail or an empty
-// widget set must not leave a blank track. The outline slot still counts: an
-// article with no cards but with headings keeps one narrow rail.
-const dual = primary && secondary
+// Three columns only when the site asked for a dual rail and both rails carry a card; a
+// disabled rail or an empty widget set must not leave a blank track, and a single-rail
+// site keeps one column of widgets even though it configures both primary and secondary
+// widget types. The outline slot still counts: an article with no cards but with headings
+// keeps one narrow rail.
+const dual = sidebar.enable && sidebar.arrangement === 'dual' && primary && secondary
 const rail = primary || secondary || aside
 ---
 <div class="site-shell" data-page={page}>
