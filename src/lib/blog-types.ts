@@ -86,6 +86,41 @@ export interface BlogPostDetail extends BlogPostSummary {
   viewCount: number
 }
 
+export interface BlogAuthor {
+  slug: string
+  name: string
+  avatar: string
+  bio: string
+  email: string
+  location: string
+  links: { label: string; url: string }[]
+  articleCount: number
+}
+
+export interface BlogAuthorPage extends BlogPage<BlogPostSummary> {
+  author: BlogAuthor
+}
+
+/** A draft read through its preview token; it is never part of a public listing. */
+export interface BlogPreviewDetail {
+  preview: true
+  id: string
+  slug: string
+  title: string
+  excerpt: string
+  description: string
+  coverUrl: string | null
+  category: string | null
+  series: string | null
+  tags: string[]
+  publishedAt: number | null
+  updatedAt: number
+  wordCount: number
+  readingMinutes: number
+  encrypted: boolean
+  content: string
+}
+
 export interface BlogWidget {
   id: string
   slot?: 'top' | 'sticky'
@@ -139,6 +174,7 @@ export interface BlogSitePublic {
     banner: { desktopLight: string; desktopDark: string; mobileLight: string; mobileDark: string }
   }
   profile: {
+    slug: string
     name: string
     bio: string
     avatar: string

@@ -1,0 +1,153 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import MainGridLayout from '../../layouts/MainGridLayout.astro'
+import PostCard from '../../components/blog/PostCard.astro'
+import Pagination from '../../components/blog/Pagination.astro'
+import Icon from '../../components/Icon.astro'
+import { blogLocale, t } from '../../i18n'
+import { BlogApiError, loadAuthor, mediaUrl, userFacingError, type AuthorSort } from '../../lib/blog-api'
+import { safeUrl } from '../../lib/format'
+import type { BlogAuthorPage } from '../../lib/blog-types'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, display: { pageSize: 10, postListMode: 'list' as const } }
+const locale = blogLocale(blog.site.site.locale)
+const rawSlug = Astro.params.slug ?? ''
+let slug = rawSlug
+try { slug = decodeURIComponent(rawSlug) } catch { slug = rawSlug }
+const requestedSort = Astro.url.searchParams.get('sort')
+const sort: AuthorSort = requestedSort === 'oldest' || requestedSort === 'title' ? requestedSort : 'latest'
+const pageNumber = Math.max(1, Math.trunc(Number(Astro.url.searchParams.get('page')) || 1))
+let page: BlogAuthorPage | null = null
+let error = ''
+let notFound = false
+try {
+  page = await loadAuthor(slug, pageNumber, blog.display.pageSize, sort)
+} catch (cause) {
+  if (cause instanceof BlogApiError && cause.status === 404) {
+    notFound = true
+    Astro.response.status = 404
+  } else {
+    error = userFacingError(cause, t(locale, 'common.loadError'))
+  }
+}
+const author = page?.author ?? null
+const origin = (blog.site.site.url || import.meta.env.BLOG_SITE_URL || Astro.url.origin).replace(/\/+$/, '')
+const authorPath = `/authors/${encodeURIComponent(slug)}`
+const canonicalUrl = author
+  ? `${origin}${authorPath}${pageNumber > 1 ? `?page=${pageNumber}` : ''}`
+  : undefined
+const avatar = mediaUrl(author?.avatar || null)
+const authorLinks = (author?.links ?? [])
+  .map((link) => ({ label: link.label, href: safeUrl(link.url) }))
+  .filter((link): link is { label: string; href: string } => Boolean(link.href))
+const mode = blog.display.postListMode
+const sortOptions: { value: AuthorSort; label: string }[] = [
+  { value: 'latest', label: t(locale, 'author.sortLatest') },
+  { value: 'oldest', label: t(locale, 'author.sortOldest') },
+  { value: 'title', label: t(locale, 'author.sortTitle') },
+]
+const sortHref = (value: AuthorSort): string => value === 'latest'
+  ? `/authors/${encodeURIComponent(slug)}`
+  : `/authors/${encodeURIComponent(slug)}?sort=${value}`
+const jsonLd = author ? {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: author.name || blog.site.site.title,
+  url: `${origin}${authorPath}`,
+  description: author.bio || undefined,
+  image: avatar ? new URL(avatar, origin).href : undefined,
+  sameAs: authorLinks.map((link) => link.href),
+} : undefined
+---
+
+<Layout
+  title={author ? author.name || t(locale, 'author.title') : t(locale, 'author.notFound')}
+  description={author?.bio || t(locale, 'author.title')}
+  canonicalUrl={canonicalUrl}
+  noIndex={notFound || !author}
+  jsonLd={jsonLd}
+>
+  <MainGridLayout page="author">
+    {notFound ? (
+      <div class="error-state" role="alert">
+        <strong>{t(locale, 'author.notFound')}</strong>
+        <p>{t(locale, 'author.notFoundHint')}</p>
+        <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+      </div>
+    ) : error || !author ? (
+      <div class="error-state" role="alert">
+        <strong>{t(locale, 'common.loadError')}</strong>
+        <p>{error}</p>
+        <a class="chip" href={authorPath}>{t(locale, 'common.retry')}</a>
+      </div>
+    ) : (
+      <>
+        <nav class="breadcrumb" aria-label={t(locale, 'author.breadcrumb')}>
+          <ol>
+            <li><a href="/">{t(locale, 'nav.home')}</a></li>
+            <li aria-current="page">{author.name || t(locale, 'author.title')}</li>
+          </ol>
+        </nav>
+
+        <header class="author-hero" aria-labelledby="author-name">
+          {avatar
+            ? <img class="author-avatar" src={avatar} alt="" loading="eager" decoding="async" />
+            : <span class="author-avatar author-avatar--placeholder" aria-hidden="true">{Array.from(author.name || '?')[0]?.toUpperCase() ?? '?'}</span>}
+          <div class="author-body">
+            <p class="author-kicker">{t(locale, 'author.title')}</p>
+            <h1 class="author-name" id="author-name">{author.name || t(locale, 'author.title')}</h1>
+            {author.bio && <p class="author-bio">{author.bio}</p>}
+            {(author.location || author.email) && (
+              <p class="author-meta">
+                {author.location && <span><Icon name="pin" size={12} />{author.location}</span>}
+                {author.email && <a href={`mailto:${author.email}`}>{author.email}</a>}
+              </p>
+            )}
+            {authorLinks.length > 0 && (
+              <ul class="author-links" aria-label={t(locale, 'author.links')}>
+                {authorLinks.map((link) => (
+                  <li><a class="chip" href={link.href} target={link.href.startsWith('mailto:') ? undefined : '_blank'} rel="noopener noreferrer">{link.label}</a></li>
+                ))}
+              </ul>
+            )}
+            <p class="author-count">{author.articleCount} {t(locale, 'common.posts')}</p>
+          </div>
+        </header>
+
+        <div class="section-heading author-list-heading">
+          <div>
+            <h2>{t(locale, 'author.articles')}</h2>
+            <p>{author.articleCount} {t(locale, 'common.posts')}</p>
+          </div>
+          <nav class="author-sort" aria-label={t(locale, 'author.sort')}>
+            {sortOptions.map((option) => (
+              <a
+                class:list={['chip', sort === option.value && 'is-active']}
+                href={sortHref(option.value)}
+                aria-current={sort === option.value ? 'page' : undefined}
+              >{option.label}</a>
+            ))}
+          </nav>
+        </div>
+
+        {page && page.items.length > 0 ? (
+          <>
+            <div class="post-list" data-post-list data-mode={mode}>
+              {page.items.map((post) => <PostCard post={post} mode={mode} />)}
+            </div>
+            <Pagination
+              page={page.page}
+              total={page.total}
+              limit={page.limit}
+              basePath={authorPath}
+              baseQuery={sort === 'latest' ? '' : `?sort=${sort}`}
+            />
+          </>
+        ) : (
+          <div class="empty-state">{t(locale, 'author.empty')}</div>
+        )}
+      </>
+    )}
+  </MainGridLayout>
+</Layout>

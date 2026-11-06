@@ -59,6 +59,11 @@ export type MessageKey =
   | 'appearance.style_neutral' | 'appearance.style_rainbow' | 'appearance.style_fruitSalad'
   | 'article.series' | 'article.partOf' | 'article.relatedReading' | 'article.randomReading'
   | 'article.continueReading' | 'article.daysAgo' | 'article.license' | 'article.author'
+  | 'author.title' | 'author.articles' | 'author.empty' | 'author.notFound'
+  | 'author.notFoundHint' | 'author.breadcrumb' | 'author.sort' | 'author.sortLatest'
+  | 'author.sortOldest' | 'author.sortTitle' | 'author.links' | 'author.viewProfile'
+  | 'preview.badge' | 'preview.notice' | 'preview.invalid' | 'preview.unavailable'
+  | 'preview.updated' | 'preview.protected'
   | 'calendar.title' | 'calendar.prevMonth' | 'calendar.nextMonth' | 'calendar.backToday' | 'calendar.posts'
   | 'archive.groupBy' | 'archive.byYear' | 'archive.byCategory' | 'archive.byTag' | 'archive.filter'
   | 'archive.uncategorized' | 'archive.untagged'
@@ -140,6 +145,18 @@ const en: Dictionary = {
   'article.series': 'Series', 'article.partOf': 'Part {index} of {total}', 'article.relatedReading': 'Related reading',
   'article.randomReading': 'Random picks', 'article.continueReading': 'Continue reading', 'article.daysAgo': 'days ago',
   'article.license': 'License', 'article.author': 'Author',
+  'author.title': 'Author', 'author.articles': 'Articles',
+  'author.empty': 'This author has not published any articles yet.',
+  'author.notFound': 'Author not found', 'author.notFoundHint': 'The author may have been renamed or never existed.',
+  'author.breadcrumb': 'Breadcrumb', 'author.sort': 'Sort', 'author.sortLatest': 'Newest',
+  'author.sortOldest': 'Oldest', 'author.sortTitle': 'Title', 'author.links': 'Links',
+  'author.viewProfile': 'View author page',
+  'preview.badge': 'Preview',
+  'preview.notice': 'This is a draft preview. It is not published, not indexed and not listed anywhere on the site.',
+  'preview.invalid': 'This preview link is invalid or has expired.',
+  'preview.unavailable': 'The preview could not be loaded.',
+  'preview.updated': 'Last updated',
+  'preview.protected': 'This draft is password-protected; a preview shows its source to whoever holds the link.',
   'calendar.title': 'Calendar', 'calendar.prevMonth': 'Previous month', 'calendar.nextMonth': 'Next month',
   'calendar.backToday': 'Back to today', 'calendar.posts': 'posts',
   'archive.groupBy': 'Group by', 'archive.byYear': 'Year', 'archive.byCategory': 'Category', 'archive.byTag': 'Tag',
@@ -251,6 +268,18 @@ const zhCN: Dictionary = {
   'article.series': '系列', 'article.partOf': '第 {index} 篇，共 {total} 篇', 'article.relatedReading': '相关阅读',
   'article.randomReading': '随便看看', 'article.continueReading': '继续阅读', 'article.daysAgo': '天前',
   'article.license': '许可协议', 'article.author': '作者',
+  'author.title': '作者', 'author.articles': '文章',
+  'author.empty': '这位作者还没有发布文章。',
+  'author.notFound': '作者不存在', 'author.notFoundHint': '作者可能已改名，或从未存在。',
+  'author.breadcrumb': '面包屑', 'author.sort': '排序', 'author.sortLatest': '最新',
+  'author.sortOldest': '最早', 'author.sortTitle': '标题', 'author.links': '链接',
+  'author.viewProfile': '查看作者主页',
+  'preview.badge': '预览',
+  'preview.notice': '这是草稿预览。内容尚未发布，不会被索引，也不会出现在站点任何列表、订阅或搜索中。',
+  'preview.invalid': '预览链接无效或已过期。',
+  'preview.unavailable': '预览加载失败。',
+  'preview.updated': '最后更新',
+  'preview.protected': '这篇草稿设有访问密码；持有链接的人可以在预览中看到其内容。',
   'calendar.title': '日历', 'calendar.prevMonth': '上个月', 'calendar.nextMonth': '下个月',
   'calendar.backToday': '回到今天', 'calendar.posts': '篇',
   'archive.groupBy': '分组', 'archive.byYear': '按年', 'archive.byCategory': '按分类', 'archive.byTag': '按标签',

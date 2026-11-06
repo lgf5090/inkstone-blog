@@ -4,6 +4,7 @@ import type {
   AdjacentPosts,
   BlogAlbumDetail,
   BlogArchiveYear,
+  BlogAuthorPage,
   BlogCalendarEntry,
   BlogCollectionItem,
   BlogCollectionKind,
@@ -15,6 +16,7 @@ import type {
   BlogPageItem,
   BlogPostDetail,
   BlogPostSummary,
+  BlogPreviewDetail,
   BlogRedirectResult,
   BlogSearchResult,
   BlogSitePublic,
@@ -60,13 +62,14 @@ const siteSchema = z.object({
     }).passthrough().default({ desktopLight: '', desktopDark: '', mobileLight: '', mobileDark: '' }),
   }).passthrough(),
   profile: z.object({
+    slug: z.string().default(''),
     name: z.string().default(''),
     bio: z.string().default(''),
     avatar: z.string().default(''),
     email: z.string().default(''),
     location: z.string().default(''),
     links: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
-  }).passthrough().default({ name: '', bio: '', avatar: '', email: '', location: '', links: [] }),
+  }).passthrough().default({ slug: '', name: '', bio: '', avatar: '', email: '', location: '', links: [] }),
   nav: z.array(z.object({
     label: z.string(),
     href: z.string(),
@@ -319,6 +322,16 @@ export function loadComments(slug: string, unlockToken?: string | null): Promise
 
 export function loadArchive(): Promise<{ years: BlogArchiveYear[] }> {
   return getJson<{ years: BlogArchiveYear[] }>('/archive')
+}
+
+export type AuthorSort = 'latest' | 'oldest' | 'title'
+
+export function loadAuthor(slug: string, page = 1, limit = 10, sort: AuthorSort = 'latest'): Promise<BlogAuthorPage> {
+  return getJson<BlogAuthorPage>(`/authors/${encodeURIComponent(slug)}`, { page, limit, sort })
+}
+
+export function loadPreview(token: string): Promise<BlogPreviewDetail> {
+  return getJson<BlogPreviewDetail>(`/preview/${encodeURIComponent(token)}`)
 }
 
 export function loadPages(): Promise<{ items: BlogPageItem[] }> {

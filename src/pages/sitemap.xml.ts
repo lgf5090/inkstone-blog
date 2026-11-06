@@ -36,6 +36,10 @@ export const GET: APIRoute = async ({ url }) => {
   // `/about` is a 302 to `/pages/about`; the sitemap lists the canonical page only.
   const staticPaths = ['/', '/archive', '/categories', '/tags', '/series', '/moments', '/albums', '/friends', '/projects', '/skills', '/devices', '/games', '/anime', '/timeline', '/compass']
   for (const path of staticPaths) add(path, latestPost)
+  // The author page is a public reading surface; a preview link never is, so only the stable
+  // profile address enters the sitemap.
+  const authorPath = feed.site.profile.slug ? `/authors/${encodeURIComponent(feed.site.profile.slug)}` : null
+  if (authorPath) add(authorPath, latestPost)
   for (const page of pages.items) {
     add(`/pages/${encodeURIComponent(page.slug)}`, page.updatedAt)
   }
