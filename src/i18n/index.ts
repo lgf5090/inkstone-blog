@@ -77,6 +77,18 @@ export type MessageKey =
   | 'comments.moderated' | 'comments.closed' | 'comments.replyingTo' | 'comments.cancel'
   | 'comments.pending' | 'comments.published' | 'comments.notPublished' | 'comments.loadFailed'
   | 'comments.externalMissing'
+  | 'newsletter.title' | 'newsletter.description' | 'newsletter.emailLabel' | 'newsletter.emailPlaceholder'
+  | 'newsletter.submit' | 'newsletter.submitting' | 'newsletter.pending' | 'newsletter.pendingNoMail'
+  | 'newsletter.pendingMailFailed' | 'newsletter.pendingCooldown' | 'newsletter.confirmed' | 'newsletter.unsubscribed'
+  | 'newsletter.invalidEmail' | 'newsletter.rateLimited' | 'newsletter.error' | 'newsletter.privacy'
+  | 'newsletter.confirmTitle' | 'newsletter.confirmSuccess' | 'newsletter.confirmAlready'
+  | 'newsletter.confirmInvalid' | 'newsletter.confirmError'
+  | 'newsletter.unsubscribeTitle' | 'newsletter.unsubscribeDescription' | 'newsletter.unsubscribeAction'
+  | 'newsletter.unsubscribeSuccess' | 'newsletter.unsubscribeInvalid' | 'newsletter.unsubscribeError'
+  | 'engagement.like' | 'engagement.liked' | 'engagement.likeCount' | 'engagement.favorite'
+  | 'engagement.favorited' | 'engagement.savedTitle' | 'engagement.savedDescription'
+  | 'engagement.savedEmpty' | 'engagement.savedEmptyHint' | 'engagement.savedRemove'
+  | 'engagement.savedLink' | 'engagement.error' | 'engagement.visitorStored'
 
 type Dictionary = Record<MessageKey, string>
 
@@ -231,6 +243,47 @@ const en: Dictionary = {
   'common.breadcrumb': 'Breadcrumb',
   'blog.serverError': 'Something went wrong',
   'blog.serverErrorHint': 'This page could not be loaded. Try again, or return home.',
+  'newsletter.title': 'Subscribe to updates',
+  'newsletter.description': 'Get new posts by email. No account needed.',
+  'newsletter.emailLabel': 'Email address',
+  'newsletter.emailPlaceholder': 'you@example.com',
+  'newsletter.submit': 'Subscribe',
+  'newsletter.submitting': 'Sending…',
+  'newsletter.pending': 'Almost done: check your inbox for the confirmation link.',
+  'newsletter.pendingNoMail': 'Subscription saved, but this site has no mail delivery configured. The owner can still confirm it from the admin panel.',
+  'newsletter.pendingMailFailed': 'Subscription saved, but the confirmation email could not be sent. Please try again later or contact the site owner.',
+  'newsletter.pendingCooldown': 'A confirmation email was sent recently. Please check your inbox before trying again.',
+  'newsletter.confirmed': 'You are already subscribed.',
+  'newsletter.unsubscribed': 'You have unsubscribed from these updates.',
+  'newsletter.invalidEmail': 'Enter a valid email address.',
+  'newsletter.rateLimited': 'Too many requests. Please try again in a few minutes.',
+  'newsletter.error': 'The subscription could not be saved. Please try again.',
+  'newsletter.privacy': 'Used only for updates. You can unsubscribe at any time.',
+  'newsletter.confirmTitle': 'Confirm subscription',
+  'newsletter.confirmSuccess': 'Your subscription is confirmed. Thank you!',
+  'newsletter.confirmAlready': 'This subscription was already confirmed.',
+  'newsletter.confirmInvalid': 'This confirmation link is invalid or has expired.',
+  'newsletter.confirmError': 'The confirmation service is unavailable. Please try again later.',
+  'newsletter.unsubscribeTitle': 'Unsubscribe',
+  'newsletter.unsubscribeDescription': 'This stops all email updates to this address.',
+  'newsletter.unsubscribeAction': 'Confirm unsubscribe',
+  'newsletter.unsubscribeSuccess': 'You have been unsubscribed.',
+  'newsletter.unsubscribeInvalid': 'This unsubscribe link is invalid or has expired.',
+  'newsletter.unsubscribeError': 'The unsubscribe request could not be processed. Please try again later.',
+
+  'engagement.like': 'Like',
+  'engagement.liked': 'Liked',
+  'engagement.likeCount': '{count} likes',
+  'engagement.favorite': 'Save for later',
+  'engagement.favorited': 'Saved',
+  'engagement.savedTitle': 'Reading list',
+  'engagement.savedDescription': 'Articles saved in this browser. No account needed.',
+  'engagement.savedEmpty': 'Nothing saved yet.',
+  'engagement.savedEmptyHint': 'Open an article and choose “Save for later” to build your reading list.',
+  'engagement.savedRemove': 'Remove',
+  'engagement.savedLink': 'Reading list',
+  'engagement.error': 'That could not be saved. Please try again.',
+  'engagement.visitorStored': 'Likes and saves are remembered in this browser.',
 }
 
 const zhCN: Dictionary = {
@@ -383,6 +436,47 @@ const zhCN: Dictionary = {
   'common.breadcrumb': '面包屑',
   'blog.serverError': '服务器出错了',
   'blog.serverErrorHint': '页面暂时无法加载，请重试或返回首页。',
+  'newsletter.title': '订阅更新',
+  'newsletter.description': '通过邮件收到新文章，无需注册账号。',
+  'newsletter.emailLabel': '邮箱地址',
+  'newsletter.emailPlaceholder': 'you@example.com',
+  'newsletter.submit': '订阅',
+  'newsletter.submitting': '提交中…',
+  'newsletter.pending': '就差一步：请在收件箱中打开确认链接。',
+  'newsletter.pendingNoMail': '订阅已记录，但当前站点未配置发信。站长仍可在后台手动确认。',
+  'newsletter.pendingMailFailed': '订阅已记录，但确认邮件发送失败。请稍后重试或联系站长。',
+  'newsletter.pendingCooldown': '刚刚已发送确认邮件，请先检查收件箱再重试。',
+  'newsletter.confirmed': '你已经订阅过了。',
+  'newsletter.unsubscribed': '你已退订这些更新。',
+  'newsletter.invalidEmail': '请输入有效的邮箱地址。',
+  'newsletter.rateLimited': '请求过于频繁，请过几分钟再试。',
+  'newsletter.error': '订阅未能保存，请稍后重试。',
+  'newsletter.privacy': '邮箱仅用于发送更新，可随时退订。',
+  'newsletter.confirmTitle': '确认订阅',
+  'newsletter.confirmSuccess': '订阅已确认，谢谢！',
+  'newsletter.confirmAlready': '这个订阅已经确认过了。',
+  'newsletter.confirmInvalid': '确认链接无效或已过期。',
+  'newsletter.confirmError': '确认服务暂不可用，请稍后重试。',
+  'newsletter.unsubscribeTitle': '退订',
+  'newsletter.unsubscribeDescription': '退订后，这个邮箱将不再收到更新。',
+  'newsletter.unsubscribeAction': '确认退订',
+  'newsletter.unsubscribeSuccess': '已成功退订。',
+  'newsletter.unsubscribeInvalid': '退订链接无效或已过期。',
+  'newsletter.unsubscribeError': '退订请求未能处理，请稍后重试。',
+
+  'engagement.like': '点赞',
+  'engagement.liked': '已赞',
+  'engagement.likeCount': '{count} 个赞',
+  'engagement.favorite': '收藏稍后读',
+  'engagement.favorited': '已收藏',
+  'engagement.savedTitle': '稍后读',
+  'engagement.savedDescription': '保存在当前浏览器中的文章，无需登录。',
+  'engagement.savedEmpty': '还没有收藏。',
+  'engagement.savedEmptyHint': '打开文章并选择“收藏稍后读”，就能在这里看到它。',
+  'engagement.savedRemove': '移除',
+  'engagement.savedLink': '稍后读',
+  'engagement.error': '保存失败，请稍后重试。',
+  'engagement.visitorStored': '点赞与收藏会记录在当前浏览器中。',
 }
 
 const zhTW: Dictionary = { ...zhCN,

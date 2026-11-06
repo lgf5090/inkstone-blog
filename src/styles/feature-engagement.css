@@ -1,0 +1,210 @@
+/* Like and reading-list surfaces, separate from blog.css so this feature never edits a block
+   another branch owns. Colour, spacing and radius come from the shared token layer. */
+
+.engagement-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1-5);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.engagement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.engagement-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1-5);
+  min-height: 2.25rem;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-full);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--text-12-5);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.engagement-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.engagement-button.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.engagement-button:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.engagement-count {
+  min-width: 1.2ch;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.engagement-saved-link {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: var(--text-12);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.engagement-saved-link:hover {
+  color: var(--accent);
+}
+
+.engagement-hint {
+  margin: 0;
+  font-size: var(--text-11-5);
+  color: var(--text-tertiary);
+}
+
+.engagement-error {
+  margin: 0;
+  font-size: var(--text-12);
+  color: var(--danger);
+}
+
+.saved-page {
+  width: min(100%, var(--prose-width));
+  margin-inline: auto;
+}
+
+.saved-page-head h1 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--text-22);
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
+}
+
+.saved-page-head p {
+  margin: 0 0 var(--sp-4);
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+}
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.saved-list-title {
+  margin: 0;
+  font-size: var(--text-15);
+  color: var(--text-primary);
+}
+
+.saved-list-description {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--text-12-5);
+  color: var(--text-tertiary);
+}
+
+.saved-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+}
+
+.saved-item-main {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.saved-item-title {
+  display: inline-block;
+  font-size: var(--text-13-5);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.saved-item-title:hover {
+  color: var(--accent);
+}
+
+.saved-item-meta {
+  margin: var(--sp-0-5) 0 0;
+  font-size: var(--text-11-5);
+  color: var(--text-tertiary);
+}
+
+.saved-item-remove {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  padding: 0 var(--sp-2-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: var(--text-12);
+  cursor: pointer;
+}
+
+.saved-item-remove:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.saved-item-remove:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.saved-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1-5);
+  align-items: flex-start;
+  padding: var(--sp-5);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.saved-empty p {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .engagement-saved-link {
+    margin-left: 0;
+  }
+
+  .saved-item {
+    align-items: flex-start;
+  }
+
+  .saved-item-remove {
+    width: 100%;
+  }
+}

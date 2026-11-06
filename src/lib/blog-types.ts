@@ -72,6 +72,23 @@ export interface BlogPostSummary {
   readingMinutes: number
   encrypted: boolean
   hideHomeContent: boolean
+  likeCount: number
+}
+
+export interface BlogEngagementState {
+  likeCount: number
+  liked: boolean
+  favorited: boolean
+}
+
+export interface BlogSavedPost extends BlogPostSummary {
+  savedAt: number
+}
+
+export interface BlogNewsletterSubscribeResult {
+  status: 'pending' | 'confirmed' | 'unsubscribed'
+  emailSent: boolean
+  delivery: 'sent' | 'unavailable' | 'failed' | 'cooldown' | 'already_confirmed' | 'ignored'
 }
 
 export interface BlogPostDetail extends BlogPostSummary {

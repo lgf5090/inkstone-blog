@@ -1,15 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
+import '../../styles/feature-engagement.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import Toc from '../../components/blog/Toc.astro'
 import Breadcrumb from '../../components/blog/Breadcrumb.astro'
 import Comments from '../../components/Comments.svelte'
 import ArticleImageLightbox from '../../components/blog/ArticleImageLightbox.svelte'
 import SharePoster from '../../components/blog/SharePoster.svelte'
+import PostEngagement from '../../components/blog/PostEngagement.svelte'
 import Icon from '../../components/Icon.astro'
 import { blogLocale, localizedMessages, pickMessages, t } from '../../i18n'
-import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadDiscoveryCandidates, loadPost, loadPosts, resolveRedirect, unlockPost, userFacingError } from '../../lib/blog-api'
+import { BLOG_VISITOR_COOKIE, mediaUrl, BlogApiError, loadAdjacent, loadComments, loadDiscoveryCandidates, loadEngagement, loadPost, loadPosts, resolveRedirect, unlockPost, userFacingError } from '../../lib/blog-api'
 import { formatDate, postUrl, safeRedirectTarget, unlockCookieName } from '../../lib/format'
 import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail, BlogPostSummary, SeriesItem } from '../../lib/blog-types'
 import { FALLBACK_SITE } from '../../server/site-config'
@@ -155,6 +157,15 @@ if (post) {
       .filter((item) => !excludedSlugs.has(item.slug))
       .sort((a, b) => rank(a.slug) - rank(b.slug))
       .slice(0, blog.article.randomCount)
+  }
+}
+const visitorId = Astro.cookies.get(BLOG_VISITOR_COOKIE)?.value ?? ''
+let engagement: Awaited<ReturnType<typeof loadEngagement>> | null = null
+if (post && !post.encrypted) {
+  try {
+    engagement = await loadEngagement(post.slug, visitorId)
+  } catch (cause) {
+    console.warn('[blog] engagement state failed', cause)
   }
 }
 const updatedDays = post?.updatedAt ? Math.max(0, Math.floor((Date.now() - post.updatedAt) / 86_400_000)) : 0
@@ -386,6 +397,9 @@ const jsonLd = post ? {
                 </div>
               )}
             </div>
+            {engagement && (
+              <PostEngagement client:load slug={post.slug} locale={locale} initial={engagement} />
+            )}
           </article>
           <ArticleImageLightbox
             client:only="svelte"

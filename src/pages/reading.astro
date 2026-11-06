@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import SavedPosts from '../components/blog/SavedPosts.svelte'
+import '../styles/feature-engagement.css'
+import { BLOG_VISITOR_COOKIE, loadSavedPosts } from '../lib/blog-api'
+import { blogLocale, t } from '../i18n'
+import { FALLBACK_SITE } from '../server/site-config'
+import type { BlogSavedPost } from '../lib/blog-types'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const visitor = Astro.cookies.get(BLOG_VISITOR_COOKIE)?.value ?? ''
+let items: BlogSavedPost[] = []
+let loadError = ''
+if (visitor) {
+  try {
+    items = (await loadSavedPosts(visitor, 1, 50)).items
+  } catch (cause) {
+    console.warn('[blog] reading list failed', cause)
+    loadError = t(locale, 'common.loadError')
+  }
+}
+const permalinkEnabled = Boolean(blog.site.permalink?.enable)
+const timeZone = blog.site.site.timeZone
+---
+<Layout title={t(locale, 'engagement.savedTitle')} description={t(locale, 'engagement.savedDescription')} noIndex>
+  <MainGridLayout page="reading">
+    <div class="saved-page">
+      <header class="saved-page-head">
+        <h1>{t(locale, 'engagement.savedTitle')}</h1>
+        <p>{t(locale, 'engagement.savedDescription')}</p>
+      </header>
+      {loadError && <p class="engagement-error" role="alert">{loadError}</p>}
+      <SavedPosts client:load {items} {locale} {permalinkEnabled} {timeZone} />
+    </div>
+  </MainGridLayout>
+</Layout>
