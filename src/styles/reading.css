@@ -42,7 +42,8 @@
   font-weight: 650;
   line-height: var(--heading-line, 1.28);
   letter-spacing: -0.019em;
-  scroll-margin-top: 24px;
+  /* Clear the sticky top bar when an outline link jumps to a heading. */
+  scroll-margin-top: 5.25rem;
   position: relative;
 }
 .ink-prose > h1:first-child,

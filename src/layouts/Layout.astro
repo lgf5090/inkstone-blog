@@ -177,7 +177,6 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     const items = [...list.querySelectorAll('[data-toc-item]')]
     const folds = new Map()
     let filtering = ''
-    let observer = null
 
     const depthOf = (item) => Number(item.getAttribute('data-depth')) || 1
     const applyVisibility = () => {
@@ -255,28 +254,50 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     window.addEventListener('scroll', updateProgress, { passive: true })
     window.addEventListener('resize', updateProgress)
 
-    const bindSpy = () => {
-      observer?.disconnect()
-      const links = [...document.querySelectorAll('[data-toc-link]')]
-      if (links.length === 0 || !('IntersectionObserver' in window)) return
-      const byId = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]))
-      observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          links.forEach((link) => link.removeAttribute('aria-current'))
-          byId.get(entry.target.id)?.setAttribute('aria-current', 'location')
-        }
-      }, { rootMargin: '-20% 0px -70% 0px' })
-      for (const id of byId.keys()) {
-        const heading = document.getElementById(id)
-        if (heading) observer.observe(heading)
+    let tocHeadings = []
+    let spyFrame = 0
+    const updateActiveHeading = () => {
+      spyFrame = 0
+      if (tocHeadings.length === 0) return
+      const threshold = Math.max(96, Math.min(240, window.innerHeight * 0.28))
+      let current = tocHeadings[0].id
+      for (const heading of tocHeadings) {
+        if (heading.element.getBoundingClientRect().top <= threshold) current = heading.id
+        else break
+      }
+      // A short final section may never cross the threshold; at the document's
+      // end the last heading must still become current so it stays reachable.
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+        current = tocHeadings[tocHeadings.length - 1].id
+      }
+      for (const heading of tocHeadings) {
+        if (heading.id === current) heading.link.setAttribute('aria-current', 'location')
+        else heading.link.removeAttribute('aria-current')
       }
     }
+    const scheduleActiveHeading = () => {
+      if (spyFrame) return
+      spyFrame = requestAnimationFrame(updateActiveHeading)
+    }
+    const bindSpy = () => {
+      const links = [...document.querySelectorAll('[data-toc-link]')]
+      tocHeadings = links
+        .map((link) => {
+          const id = link.getAttribute('data-toc-link') || ''
+          return { id, link, element: id ? document.getElementById(id) : null }
+        })
+        .filter((heading) => heading.id && heading.element)
+      updateActiveHeading()
+    }
     bindSpy()
+    window.addEventListener('scroll', scheduleActiveHeading, { passive: true })
+    window.addEventListener('resize', scheduleActiveHeading)
     document.addEventListener('blog:reading-ready', bindSpy)
     document.addEventListener('blog:reading-ready', updateProgress)
     window.__blogRegisterCleanup?.('toc', () => {
-      observer?.disconnect()
+      cancelAnimationFrame(spyFrame)
+      window.removeEventListener('scroll', scheduleActiveHeading)
+      window.removeEventListener('resize', scheduleActiveHeading)
       window.removeEventListener('scroll', updateProgress)
       window.removeEventListener('resize', updateProgress)
       document.removeEventListener('blog:reading-ready', bindSpy)

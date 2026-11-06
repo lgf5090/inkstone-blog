@@ -442,12 +442,11 @@ select {
   }
 }
 
-/* The rail takes its natural height and scrolls with the page. A sticky rail
-   taller than the viewport cannot be read to its end, and the capped height +
-   inner scroller that used to keep it pinned also clipped the second-level
-   sticky card and the lazily hydrated calendar: both lived below the rail's
-   scrollport and never became visible. `min-width: 0` stops a long list item's
-   min-content width from widening the whole rail. */
+/* The rail takes its natural height on narrow screens. On desktop it becomes a
+   capped sticky scrollport (see the media query below), so a rail taller than
+   the viewport can still be read to its end without dragging the cards away
+   from the article. `min-width: 0` stops a long list item's min-content width
+   from widening the whole rail. */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -2367,6 +2366,28 @@ select {
   font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
+  /* The month label is one word ("2026年11月", "November 2026"); letting it wrap
+     split the year from the month in a narrow rail. */
+  white-space: nowrap;
+}
+
+/* A tablet rail is narrow enough that the two arrows and the full month label
+   no longer fit at the desktop size. */
+@media (max-width: 1200px) and (min-width: 769px) {
+  .calendar-head {
+    gap: 0;
+  }
+
+  .calendar-nav {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  .calendar-month {
+    min-width: 0;
+    padding-inline: 2px;
+    font-size: 0.78rem;
+  }
 }
 
 .calendar-weekdays,
@@ -2380,6 +2401,24 @@ select {
   color: var(--on-surface-variant);
   font-size: 0.66rem;
   text-align: center;
+}
+
+/* Two-character Chinese weekday labels wrapped onto two lines in the narrow
+   tablet rail; dropping the gap and the font size keeps all seven on one line. */
+@media (max-width: 1200px) and (min-width: 769px) {
+  .calendar-weekdays,
+  .calendar-grid {
+    gap: 0;
+  }
+
+  .calendar-weekdays {
+    font-size: 0.58rem;
+    letter-spacing: -0.02em;
+  }
+
+  .calendar-weekdays span {
+    white-space: nowrap;
+  }
 }
 
 .calendar-day {
@@ -3051,14 +3090,32 @@ html[data-reduce-motion='true'] *::after {
   color: var(--on-primary-container);
 }
 
-/* Same natural-height rule as the primary rail: no capped scrollport means no
-   nested sticky to fight with and no hidden card for `client:visible` to miss. */
+/* Same rail contract as the primary column: natural height in flow, capped
+   sticky scrollport on desktop. The article outline stays static inside this
+   rail so the rail remains the one scroller (no nested sticky to fight with). */
 .secondary-column {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   min-width: 0;
   align-self: start;
+}
+
+/* Desktop rails stay put while the article scrolls, and each rail scrolls on its
+   own when its cards are taller than the viewport. Tablets and phones keep the
+   normal document flow (and the mobile card strip below 769px). */
+@media (min-width: 1024px) {
+  .layout-grid > .sidebar,
+  .layout-grid > .secondary-column {
+    position: sticky;
+    top: 5.25rem;
+    max-height: calc(100vh - 6.25rem);
+    max-height: calc(100dvh - 6.25rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
 }
 
 /* The outline keeps its own scroll when it is a direct grid item; inside the
