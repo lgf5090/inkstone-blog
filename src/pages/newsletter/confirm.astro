@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { confirmNewsletter } from '../../lib/blog-api'
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const token = (Astro.url.searchParams.get('token') ?? '').trim()
+let state: 'success' | 'already' | 'invalid' | 'error' = 'invalid'
+if (token) {
+  try {
+    const result = await confirmNewsletter(token)
+    if (result.status === 'confirmed') state = result.already ? 'already' : 'success'
+  } catch (cause) {
+    console.warn('[blog] newsletter confirmation failed', cause)
+    state = 'error'
+  }
+}
+const messages = {
+  success: t(locale, 'newsletter.confirmSuccess'),
+  already: t(locale, 'newsletter.confirmAlready'),
+  invalid: t(locale, 'newsletter.confirmInvalid'),
+  error: t(locale, 'newsletter.confirmError'),
+}
+---
+<Layout title={t(locale, 'newsletter.confirmTitle')} noIndex>
+  <div class="newsletter-page">
+    <h1>{t(locale, 'newsletter.confirmTitle')}</h1>
+    <p class={state === 'invalid' || state === 'error' ? 'newsletter-page-error' : 'newsletter-page-notice'} role={state === 'invalid' || state === 'error' ? 'alert' : 'status'}>
+      {messages[state]}
+    </p>
+    <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+  </div>
+</Layout>

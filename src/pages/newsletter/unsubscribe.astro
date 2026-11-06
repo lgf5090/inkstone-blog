@@ -1,0 +1,51 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { unsubscribeNewsletter } from '../../lib/blog-api'
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+let token = (Astro.url.searchParams.get('token') ?? '').trim()
+let state: 'form' | 'success' | 'invalid' | 'error' = token ? 'form' : 'invalid'
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData()
+  const submitted = typeof form.get('token') === 'string' ? String(form.get('token')).trim() : ''
+  token = submitted || token
+  if (!token) {
+    state = 'invalid'
+  } else {
+    try {
+      const result = await unsubscribeNewsletter(token)
+      state = result.status === 'unsubscribed' ? 'success' : 'invalid'
+    } catch (cause) {
+      console.warn('[blog] newsletter unsubscribe failed', cause)
+      state = 'error'
+    }
+  }
+}
+
+const messages = {
+  form: t(locale, 'newsletter.unsubscribeDescription'),
+  success: t(locale, 'newsletter.unsubscribeSuccess'),
+  invalid: t(locale, 'newsletter.unsubscribeInvalid'),
+  error: t(locale, 'newsletter.unsubscribeError'),
+}
+---
+<Layout title={t(locale, 'newsletter.unsubscribeTitle')} noIndex>
+  <div class="newsletter-page">
+    <h1>{t(locale, 'newsletter.unsubscribeTitle')}</h1>
+    <p class={state === 'invalid' || state === 'error' ? 'newsletter-page-error' : 'newsletter-page-notice'} role={state === 'invalid' || state === 'error' ? 'alert' : 'status'}>
+      {messages[state]}
+    </p>
+    {state === 'form' ? (
+      <form method="post" class="newsletter-unsubscribe-form">
+        <input type="hidden" name="token" value={token} />
+        <button type="submit" class="chip">{t(locale, 'newsletter.unsubscribeAction')}</button>
+      </form>
+    ) : (
+      <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+    )}
+  </div>
+</Layout>

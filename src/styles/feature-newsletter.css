@@ -1,0 +1,194 @@
+/* Newsletter surfaces. Kept apart from blog.css so the engagement and newsletter work never edits
+   a block another branch owns. Every colour comes from the existing token layer. */
+
+.site-footer > .newsletter-panel {
+  flex-basis: 100%;
+}
+
+.newsletter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-5);
+  align-items: flex-start;
+  width: 100%;
+  padding: var(--sp-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.newsletter-copy {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.newsletter-title {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--text-15);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
+}
+
+.newsletter-description {
+  margin: 0;
+  font-size: var(--text-12-5);
+  color: var(--text-secondary);
+}
+
+.newsletter-form {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  gap: var(--sp-1-5);
+  min-width: 0;
+}
+
+.newsletter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.newsletter-label {
+  font-size: var(--text-12);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.newsletter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.newsletter-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 2.25rem;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  font-size: var(--text-13);
+}
+
+.newsletter-input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.newsletter-input:hover {
+  border-color: var(--border-strong);
+}
+
+.newsletter-submit {
+  flex: 0 0 auto;
+  min-height: 2.25rem;
+  padding: 0 var(--sp-4);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: var(--text-13);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+.newsletter-submit:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));
+}
+
+.newsletter-submit:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.newsletter-hint {
+  margin: 0;
+  font-size: var(--text-11-5);
+  color: var(--text-tertiary);
+}
+
+.newsletter-error {
+  margin: 0;
+  font-size: var(--text-12);
+  color: var(--danger);
+}
+
+.newsletter-notice {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-2-5);
+  border-radius: var(--r-md);
+  background: var(--success-soft);
+  color: var(--text-primary);
+  font-size: var(--text-12);
+}
+
+.newsletter-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.newsletter-page {
+  width: min(calc(100% - var(--sp-8)), 42rem);
+  margin: var(--sp-8) auto;
+  padding: var(--sp-6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.newsletter-page h1 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--text-18);
+  color: var(--text-primary);
+}
+
+.newsletter-page-notice {
+  color: var(--text-secondary);
+}
+
+.newsletter-page-error {
+  color: var(--danger);
+}
+
+.newsletter-unsubscribe-form {
+  margin: var(--sp-3) 0 0;
+}
+
+@media (max-width: 720px) {
+  .newsletter-panel {
+    padding: var(--sp-3);
+  }
+
+  .newsletter-row {
+    flex-direction: column;
+  }
+
+  .newsletter-input {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .newsletter-submit {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .newsletter-page {
+    width: min(calc(100% - var(--sp-4)), 42rem);
+    margin: var(--sp-5) auto;
+    padding: var(--sp-4);
+  }
+}

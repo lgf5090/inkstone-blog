@@ -4,7 +4,7 @@ import { unlockCookieName } from '../../../lib/format'
 
 export const prerender = false
 
-const ALLOWED = /^posts\/[^/]+\/comments$|^friends\/apply$|^friends\/icon$|^friends\/icon-upload$|^friends\/qr$/
+const ALLOWED = /^posts\/[^/]+\/comments$|^friends\/apply$|^friends\/icon$|^friends\/icon-upload$|^friends\/qr$|^engagement\/posts\/[^/]+$|^engagement\/saved$|^newsletter\/(?:subscribe|confirm|unsubscribe)$/
 
 async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   const { params, request, cookies } = context
@@ -20,6 +20,12 @@ async function proxy(context: Parameters<APIRoute>[0]): Promise<Response> {
   if (contentType) headers.set('content-type', contentType)
   const accept = request.headers.get('accept')
   if (accept) headers.set('accept', accept)
+  // The visitor cookie is the only identity the public engagement endpoints accept; the header form
+  // is what the browser component sends so a server-side read can pass it without a Cookie header.
+  const cookie = request.headers.get('cookie')
+  if (cookie) headers.set('cookie', cookie)
+  const visitor = request.headers.get('x-blog-visitor')
+  if (visitor) headers.set('x-blog-visitor', visitor)
   const slugMatch = /^posts\/([^/]+)\/comments$/.exec(path)
   if (slugMatch) {
     let postSlug = slugMatch[1]!

@@ -1,4 +1,5 @@
 ---
+import NewsletterForm from '../blog/NewsletterForm.svelte'
 import { blogLocale, t } from '../../i18n'
 import { FALLBACK_SITE } from '../../server/site-config'
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
@@ -6,9 +7,10 @@ const locale = blogLocale(blog.site.site.locale)
 const year = new Date().getFullYear()
 const footer = blog.site.footer ?? { enable: true, html: '' }
 ---
-{footer.enable && (
-  <footer class="site-footer">
-    {footer.html ? (
+<footer class="site-footer">
+  <NewsletterForm client:load locale={locale} />
+  {footer.enable ? (
+    footer.html ? (
       <div class="footer-custom" set:html={footer.html} />
     ) : (
       <>
@@ -16,8 +18,14 @@ const footer = blog.site.footer ?? { enable: true, html: '' }
         <span class="muted">
           {blog.site.counts.posts} {t(locale, 'common.posts')} · {blog.site.counts.tags} {t(locale, 'common.tags')} · {blog.site.counts.categories} {t(locale, 'common.categories')}
         </span>
-        <span class="muted"><a href="/rss.xml">RSS</a> · <a href="/rss">{t(locale, 'nav.rss')}</a> · {t(locale, 'blog.poweredBy')}</span>
+        <span class="muted">
+          <a href="/rss.xml">RSS</a> · <a href="/rss">{t(locale, 'nav.rss')}</a> · <a href="/reading">{t(locale, 'engagement.savedLink')}</a> · {t(locale, 'blog.poweredBy')}
+        </span>
       </>
-    )}
-  </footer>
-)}
+    )
+  ) : (
+    <span class="muted">
+      <a href="/rss.xml">RSS</a> · <a href="/reading">{t(locale, 'engagement.savedLink')}</a>
+    </span>
+  )}
+</footer>

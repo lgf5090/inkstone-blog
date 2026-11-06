@@ -9,13 +9,16 @@ import type {
   BlogCollectionKind,
   BlogCommentsResponse,
   BlogCompassShelf,
+  BlogEngagementState,
   BlogFeedData,
   BlogFriends,
+  BlogNewsletterSubscribeResult,
   BlogPage,
   BlogPageItem,
   BlogPostDetail,
   BlogPostSummary,
   BlogRedirectResult,
+  BlogSavedPost,
   BlogSearchResult,
   BlogSitePublic,
   SeriesItem,
@@ -236,12 +239,12 @@ async function getJson<T>(
   return (await response.json()) as T
 }
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
+async function postJson<T>(path: string, body: unknown, headers?: Record<string, string>): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${blogApiOrigin()}/api/blog${path}`, {
       method: 'POST',
-      headers: apiHeaders({ 'content-type': 'application/json' }),
+      headers: apiHeaders({ 'content-type': 'application/json', ...headers }),
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(blogApiTimeoutMs()),
     })
@@ -315,6 +318,57 @@ export function loadComments(slug: string, unlockToken?: string | null): Promise
     undefined,
     unlockToken ? { 'x-blog-unlock': unlockToken } : undefined,
   )
+}
+
+/** The one cookie this blog writes. It is read on the client and sent as a header to the backend. */
+export const BLOG_VISITOR_COOKIE = 'inkstone_blog_visitor'
+
+function visitorHeader(visitorId?: string | null): Record<string, string> | undefined {
+  return visitorId ? { 'x-blog-visitor': visitorId } : undefined
+}
+
+export function loadEngagement(slug: string, visitorId?: string | null): Promise<BlogEngagementState> {
+  return getJson<BlogEngagementState>(
+    `/engagement/posts/${encodeURIComponent(slug)}`,
+    undefined,
+    visitorHeader(visitorId),
+  )
+}
+
+export function updateEngagement(
+  slug: string,
+  visitorId: string,
+  patch: { like?: boolean; favorite?: boolean },
+): Promise<BlogEngagementState> {
+  return postJson<BlogEngagementState>(
+    `/engagement/posts/${encodeURIComponent(slug)}`,
+    patch,
+    visitorHeader(visitorId),
+  )
+}
+
+export function loadSavedPosts(
+  visitorId: string,
+  page = 1,
+  limit = 50,
+): Promise<{ items: BlogSavedPost[]; page: number; limit: number; total: number }> {
+  return getJson<{ items: BlogSavedPost[]; page: number; limit: number; total: number }>(
+    '/engagement/saved',
+    { page, limit },
+    visitorHeader(visitorId),
+  )
+}
+
+export function subscribeNewsletter(email: string, source = 'footer'): Promise<BlogNewsletterSubscribeResult> {
+  return postJson<BlogNewsletterSubscribeResult>('/newsletter/subscribe', { email, source })
+}
+
+export function confirmNewsletter(token: string): Promise<{ status: string; already: boolean }> {
+  return postJson<{ status: string; already: boolean }>('/newsletter/confirm', { token })
+}
+
+export function unsubscribeNewsletter(token: string): Promise<{ status: string; already: boolean }> {
+  return postJson<{ status: string; already: boolean }>('/newsletter/unsubscribe', { token })
 }
 
 export function loadArchive(): Promise<{ years: BlogArchiveYear[] }> {
