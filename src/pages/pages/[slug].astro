@@ -71,7 +71,7 @@ const permalinkEnabled = Boolean(blog.site.permalink?.enable)
           {page.updatedAt && <p class="article-meta">{new Date(page.updatedAt).toLocaleDateString(locale)}</p>}
         </header>
         <div class="article-body">
-          <div class="ink-prose" set:html={isAbout ? html.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/, '') : html} />
+          <div class="ink-prose" set:html={isAbout ? html.replace(/^\s*<h2[^>]*>[\s\S]*?<\/h2>/, '') : html} />
         </div>
       </article>
     )}

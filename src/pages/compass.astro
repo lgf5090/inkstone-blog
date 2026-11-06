@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import CompassSection from '../components/blog/CompassSection.svelte'
-import { blogLocale, t } from '../i18n'
+import { blogLocale, pickMessages, t } from '../i18n'
 import { loadCompass, userFacingError } from '../lib/blog-api'
 import type { BlogCompassShelf } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -18,7 +18,12 @@ try { shelves = (await loadCompass()).items } catch (cause) { error = userFacing
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
     ) : (
-      <CompassSection {shelves} {locale} client:visible />
+      <CompassSection
+        {shelves}
+        {locale}
+        messages={pickMessages(locale, ['collections.all', 'collections.empty', 'collections.noResults', 'collections.search', 'friends.close', 'nav.compass'])}
+        client:visible
+      />
     )}
   </MainGridLayout>
 </Layout>

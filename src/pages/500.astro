@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro'
+import MainGridLayout from '../layouts/MainGridLayout.astro'
+import { blogLocale, t } from '../i18n'
+import { FALLBACK_SITE } from '../server/site-config'
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+---
+<Layout title={t(locale, 'blog.serverError')} noIndex>
+  <MainGridLayout page="500">
+    <div class="article-shell">
+      <header class="article-header">
+        <span class="chip">500</span>
+        <h1 class="article-title">{t(locale, 'blog.serverError')}</h1>
+        <p class="post-card-excerpt">{t(locale, 'blog.serverErrorHint')}</p>
+      </header>
+      <div class="article-body" style="padding:1.4rem">
+        <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
+      </div>
+    </div>
+  </MainGridLayout>
+</Layout>

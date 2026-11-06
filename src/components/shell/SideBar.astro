@@ -2,7 +2,8 @@
 import Icon from '../Icon.astro'
 import { loadCalendar, loadPosts, mediaUrl } from '../../lib/blog-api'
 import { safeUrl } from '../../lib/format'
-import { blogLocale, t } from '../../i18n'
+import { blogLocale, pickMessages, t } from '../../i18n'
+import { allWidgets, isSortedTop, sidebarWidgets } from '../../lib/sidebar'
 import { FALLBACK_SITE } from '../../server/site-config'
 import type { BlogCalendarEntry, BlogPostSummary, BlogWidget } from '../../lib/blog-types'
 import CalendarWidget from '../blog/CalendarWidget.svelte'
@@ -22,23 +23,9 @@ const blog = Astro.locals.blog ?? {
 const locale = blogLocale(blog.site.site.locale)
 const column = Astro.props.column ?? 'primary'
 const page = Astro.props.page ?? 'home'
-const widgets = blog.site.widgets ?? []
-const fallbackWidgets = [
-  { id: 'profile', type: 'profile', title: '', enabled: true, config: {} },
-  { id: 'search', type: 'search', title: '', enabled: true, config: {} },
-  { id: 'categories', type: 'categories', title: '', enabled: true, config: {} },
-  { id: 'tags', type: 'tags', title: '', enabled: true, config: {} },
-  { id: 'series', type: 'series', title: '', enabled: true, config: {} },
-]
-const all: BlogWidget[] = widgets.length ? widgets : fallbackWidgets
-const secondaryTypes = new Set(['categories', 'tags', 'series', 'stats', 'calendar'])
-const columnOf = (widget: BlogWidget): 'primary' | 'secondary' => widget.column === 'primary' || widget.column === 'secondary'
-  ? widget.column
-  : secondaryTypes.has(widget.type) ? 'secondary' : 'primary'
-const visible = all.filter((widget) => widget.enabled
-  && (!widget.pages?.length || widget.pages.includes(page))
-  && (column === 'all' || columnOf(widget) === column))
-const ordered = [...visible].sort((left, right) => (left.slot === 'top' ? 0 : 1) - (right.slot === 'top' ? 0 : 1))
+const all: BlogWidget[] = allWidgets(blog)
+const visible = sidebarWidgets(blog, page, column)
+const ordered = [...visible].sort((left, right) => Number(isSortedTop(right)) - Number(isSortedTop(left)))
 const recentWidget = visible.some((widget) => widget.type === 'recent')
 let recent: BlogPostSummary[] = []
 if (recentWidget) {
@@ -89,9 +76,9 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
 
 ---
 
-{(visible.length > 0 || (siteAnnouncement.enable && siteAnnouncement.text)) && (
-  <aside class="sidebar" aria-label={t(locale, 'common.categories')}>
-    {siteAnnouncement.enable && siteAnnouncement.text && (
+{(visible.length > 0 || (column !== 'secondary' && siteAnnouncement.enable && siteAnnouncement.text)) && (
+  <aside class="sidebar" aria-label={t(locale, 'common.sidebar')}>
+    {column !== 'secondary' && siteAnnouncement.enable && siteAnnouncement.text && (
       <section class="sidebar-card announcement-card" data-announcement={siteAnnouncement.text.slice(0, 120)}>
         <p class="profile-bio">{siteAnnouncement.text}</p>
         {siteAnnouncement.linkText && safeUrl(siteAnnouncement.linkUrl) && (
@@ -196,7 +183,13 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
       if (widget.type === 'calendar') return (
         <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
-          <CalendarWidget client:visible locale={locale} timeZone={blog.site.site.timeZone} items={calendarItems} />
+          <CalendarWidget
+            client:visible
+            locale={locale}
+            timeZone={blog.site.site.timeZone}
+            items={calendarItems}
+            messages={pickMessages(locale, ['calendar.prevMonth', 'calendar.nextMonth', 'calendar.backToday', 'calendar.posts'])}
+          />
         </section>
       )
       if (widget.type === 'stats') return (

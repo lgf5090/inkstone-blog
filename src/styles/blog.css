@@ -22,6 +22,28 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Keyboard readers reach the article without tabbing through both navigation
+   rails. It is taken out of the visual flow until focused. */
+.skip-link {
+  position: fixed;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: var(--z-tooltip);
+  padding: var(--sp-2-5) var(--sp-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--text-13);
+  transform: translateY(-180%);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -381,15 +403,23 @@ select {
   grid-template-columns: minmax(0, 1fr) 17.5rem;
 }
 
-/* The sidebar element is emitted before the content column, so the right-hand
-   variant has to place it in the second track explicitly. */
-.layout-grid[data-sidebar='single'][data-side='right'] > .sidebar {
-  grid-column: 2;
+/* A single rail is emitted before the content column, so the right-hand variant
+   places the content in the first track explicitly. */
+.layout-grid[data-sidebar='single'][data-side='right'] > .content-column {
+  grid-column: 1;
   grid-row: 1;
 }
 
-.layout-grid[data-sidebar='single'][data-side='right'] > .content-column {
+/* A single rail is a secondary-column wrapper because it can hold the article
+   outline above the widget cards. Place that wrapper instead of the bare
+   `.sidebar` the old markup emitted. */
+.layout-grid[data-sidebar='single'][data-side='left'] > .secondary-column {
   grid-column: 1;
+  grid-row: 1;
+}
+
+.layout-grid[data-sidebar='single'][data-side='right'] > .secondary-column {
+  grid-column: 2;
   grid-row: 1;
 }
 
@@ -631,6 +661,54 @@ select {
 
 .content-column {
   min-width: 0;
+}
+
+/* Breadcrumb: the visible counterpart to the canonical URL, so a reader deep in
+   a category can walk back without the main navigation. */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  margin: 0 0 var(--sp-3);
+  color: var(--text-tertiary);
+  font-size: var(--text-12);
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb li {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sp-1-5);
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  color: var(--text-quaternary);
+}
+
+.breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+
+.breadcrumb [aria-current='page'] {
+  overflow: hidden;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .section-heading {
@@ -1312,8 +1390,9 @@ select {
   .layout-grid > .sidebar,
   .layout-grid > .content-column,
   .layout-grid > .secondary-column,
-  .layout-grid[data-sidebar='single'][data-side='right'] > .sidebar,
-  .layout-grid[data-sidebar='single'][data-side='right'] > .content-column {
+  .layout-grid[data-sidebar='single'][data-side='right'] > .content-column,
+  .layout-grid[data-sidebar='single'][data-side='left'] > .secondary-column,
+  .layout-grid[data-sidebar='single'][data-side='right'] > .secondary-column {
     grid-column: auto;
     grid-row: auto;
   }
@@ -3031,4 +3110,75 @@ html[data-reduce-motion='true'] *::after {
 .profile-social-glyph {
   font-size: 0.7rem;
   font-weight: 700;
+}
+
+/* ── Touch targets ─────────────────────────────────────────────────────────
+   WCAG 2.5.8 asks for 44×44 CSS px on touch. Compact pills and icon buttons
+   keep their visual size; an invisible ::after grows the hit box instead. Row
+   controls that are stacked (mobile menu, widget lists, language list) grow to
+   44px directly, because overlapping hit boxes would make neighbours tap the
+   wrong row. The calendar day grid is the one exception: seven 44px cells do
+   not fit a 17.5rem rail without horizontal overflow, so the month navigation
+   is expanded and the days stay at the rail's natural width. */
+@media (pointer: coarse) {
+  .chip,
+  .icon-button,
+  .brand,
+  .nav-link,
+  .article-share,
+  .appearance-swatch,
+  .appearance-segment button,
+  .appearance-motion,
+  .calendar-nav,
+  .calendar-month,
+  .toc-fold,
+  .pagination a,
+  .profile-social-btn,
+  .lightbox__close,
+  .lightbox__nav,
+  .bm-icon,
+  .bm-rate,
+  .bm-orb-toggle {
+    position: relative;
+  }
+
+  .chip::after,
+  .icon-button::after,
+  .brand::after,
+  .nav-link::after,
+  .article-share::after,
+  .appearance-swatch::after,
+  .appearance-segment button::after,
+  .appearance-motion::after,
+  .calendar-nav::after,
+  .calendar-month::after,
+  .toc-fold::after,
+  .pagination a::after,
+  .profile-social-btn::after,
+  .lightbox__close::after,
+  .lightbox__nav::after,
+  .bm-icon::after,
+  .bm-rate::after,
+  .bm-orb-toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, var(--touch-h));
+    height: max(100%, var(--touch-h));
+    transform: translate(-50%, -50%);
+  }
+
+  .appearance-swatches {
+    gap: 0.75rem;
+  }
+
+  .nav-menu-panel a,
+  .mobile-menu-panel .nav-link,
+  .mobile-nav a,
+  .widget-list a,
+  .search-form input,
+  .search-form button {
+    min-height: var(--touch-h);
+  }
 }

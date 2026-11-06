@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import MomentFeed from '../components/blog/MomentFeed.svelte'
-import { blogLocale, t } from '../i18n'
+import { blogLocale, pickMessages, t } from '../i18n'
 import { loadCollection, userFacingError } from '../lib/blog-api'
 import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -22,7 +22,14 @@ const author = {
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
     ) : (
-      <MomentFeed items={items} {locale} timeZone={blog.site.site.timeZone} {author} client:visible />
+      <MomentFeed
+        items={items}
+        {locale}
+        timeZone={blog.site.site.timeZone}
+        {author}
+        messages={pickMessages(locale, ['collections.all', 'collections.empty', 'collections.loadMore', 'collections.noResults', 'collections.search', 'common.photos', 'common.pinned', 'common.tags', 'friends.close', 'friends.open', 'nav.moments', 'common.previous', 'common.next'])}
+        client:visible
+      />
     )}
   </MainGridLayout>
 </Layout>

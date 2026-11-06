@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import ProjectGrid from '../components/blog/ProjectGrid.svelte'
-import { blogLocale, t } from '../i18n'
+import { blogLocale, pickMessages, t } from '../i18n'
 import { loadCollection, userFacingError } from '../lib/blog-api'
 import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -18,7 +18,12 @@ try { items = (await loadCollection('projects')).items } catch (cause) { error =
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
     ) : (
-      <ProjectGrid {items} {locale} client:visible />
+      <ProjectGrid
+        {items}
+        {locale}
+        messages={pickMessages(locale, ['collections.all', 'collections.empty', 'collections.noResults', 'collections.search', 'common.link', 'common.pinned', 'common.repository', 'friends.close', 'nav.projects'])}
+        client:visible
+      />
     )}
   </MainGridLayout>
 </Layout>

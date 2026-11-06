@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css'
-import { blogLocale } from '../i18n'
+import { blogLocale, t } from '../i18n'
 import { FALLBACK_SITE } from '../server/site-config'
 import FloatingActions from '../components/shell/FloatingActions.astro'
 import MusicPlayer from '../components/shell/MusicPlayer.astro'
@@ -115,6 +115,7 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">{t(locale, 'common.skipToContent')}</a>
     <script is:inline>
       (() => {
         if (window.__blogSwapCleanupInstalled) return
@@ -500,6 +501,15 @@ const showTopProgress = type === 'article' && progressStyle === 'dual'
             }
             window.setTimeout(reveal, 16)
             return
+          }
+          // The page already owns the single H1 (the article title). The runtime renders the note
+          // body verbatim, so a body-level H1 would compete with it; demote those to H2 while
+          // keeping their ids for TOC anchors.
+          for (const heading of stage.querySelectorAll('h1')) {
+            const replacement = document.createElement('h2')
+            for (const attribute of [...heading.attributes]) replacement.setAttribute(attribute.name, attribute.value)
+            replacement.innerHTML = heading.innerHTML
+            heading.replaceWith(replacement)
           }
           // Removed rather than hidden: both surfaces carry the same heading ids, and a hidden
           // duplicate would win `getElementById` for every TOC anchor and scroll-spy lookup.

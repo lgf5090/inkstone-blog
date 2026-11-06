@@ -3,42 +3,60 @@ import TopAppBar from '../components/shell/TopAppBar.astro'
 import SideBar from '../components/shell/SideBar.astro'
 import Footer from '../components/shell/Footer.astro'
 import HeroBanner from '../components/shell/HeroBanner.astro'
+import { sidebarHasContent } from '../lib/sidebar'
 import { FALLBACK_SITE } from '../server/site-config'
 
 interface Props {
   page?: string
   hero?: boolean
-  wide?: boolean
 }
 const blog = Astro.locals.blog ?? { site: FALLBACK_SITE, categories: [], tags: [], series: [] }
 const sidebar = blog.site.sidebar
-const dual = sidebar.arrangement === 'dual'
-const showSidebar = sidebar.enable
 const { page = 'home', hero = false } = Astro.props
+const primary = sidebar.enable && sidebarHasContent(blog, page, 'primary')
+const secondary = sidebar.enable && sidebarHasContent(blog, page, 'secondary')
+const aside = Astro.slots.has('aside')
+// Three columns only when both rails carry a card; a disabled rail or an empty
+// widget set must not leave a blank track. The outline slot still counts: an
+// article with no cards but with headings keeps one narrow rail.
+const dual = primary && secondary
+const rail = primary || secondary || aside
 ---
-
 <div class="site-shell" data-page={page}>
   <TopAppBar />
   {hero && <HeroBanner />}
-  <main class="site-main">
+  <main id="main-content" tabindex="-1" class="site-main">
     <div
       class="layout-grid"
       data-sidebar={dual ? 'dual' : 'single'}
       data-side={sidebar.side}
-      data-has-sidebar={showSidebar ? 'true' : 'false'}
     >
-      {showSidebar && <SideBar page={page} column={dual ? 'primary' : 'all'} />}
-      <div class="content-column">
-        <slot />
-      </div>
-      {showSidebar && dual && (
-        <div class="secondary-column">
-          {/* The article outline leads the rail: it is the only contextual item
-              there, and it stays above the widgets instead of sitting under a
-              long taxonomy list. */}
-          <slot name="aside" />
-          <SideBar page={page} column="secondary" />
-        </div>
+      {dual ? (
+        <>
+          <SideBar page={page} column="primary" />
+          <div class="content-column">
+            <slot />
+          </div>
+          <div class="secondary-column">
+            {/* The article outline leads the rail: it is the only contextual item
+                there, and it stays above the widgets instead of sitting under a
+                long taxonomy list. */}
+            <slot name="aside" />
+            <SideBar page={page} column="secondary" />
+          </div>
+        </>
+      ) : (
+        <>
+          {rail && (
+            <div class="secondary-column">
+              <slot name="aside" />
+              {sidebar.enable && <SideBar page={page} column="all" />}
+            </div>
+          )}
+          <div class="content-column">
+            <slot />
+          </div>
+        </>
       )}
     </div>
   </main>
