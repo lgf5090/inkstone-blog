@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import PhotoLightbox from './PhotoLightbox.svelte'
-  import { blogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n/config'
+  import type { ClientMessages } from '../../i18n/client'
 
   interface Props {
-    locale?: ReturnType<typeof blogLocale>
+    locale?: BlogLocale
+    messages: ClientMessages
   }
 
   interface LightboxPhoto {
@@ -13,7 +15,7 @@
     caption?: string
   }
 
-  let { locale = blogLocale('en') }: Props = $props()
+  let { locale = 'en', messages }: Props = $props()
   let photos = $state<LightboxPhoto[]>([])
   let index = $state<number | null>(null)
 
@@ -32,8 +34,18 @@
       if (bound.has(image)) continue
       bound.add(image)
       image.addEventListener('click', onClick)
+      image.addEventListener('keydown', onKeydown)
       image.style.cursor = 'zoom-in'
+      if (!image.hasAttribute('tabindex')) image.setAttribute('tabindex', '0')
+      if (!image.hasAttribute('role')) image.setAttribute('role', 'button')
+      if (!image.hasAttribute('aria-label')) image.setAttribute('aria-label', image.alt || `Image ${collect().indexOf(image) + 1}`)
     }
+  }
+
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    onClick(event)
   }
 
   function onClick(event: Event): void {
@@ -61,10 +73,13 @@
 
   onDestroy(() => {
     observer?.disconnect()
-    for (const image of collect()) image.removeEventListener('click', onClick)
+    for (const image of collect()) {
+      image.removeEventListener('click', onClick)
+      image.removeEventListener('keydown', onKeydown)
+    }
   })
 </script>
 
 {#if index !== null && photos.length > 0}
-  <PhotoLightbox {photos} index={Math.min(index, photos.length - 1)} {locale} onclose={() => (index = null)} />
+  <PhotoLightbox {photos} index={Math.min(index, photos.length - 1)} {locale} {messages} onclose={() => (index = null)} />
 {/if}

@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCollectionItem } from '../../lib/blog-types'
 
-  let { items, locale }: { items: BlogCollectionItem[]; locale: BlogLocale } = $props()
+  let { items, locale, messages }: { items: BlogCollectionItem[]; locale: BlogLocale; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   const text = (data: Record<string, unknown>, key: string): string =>
     typeof data[key] === 'string' ? data[key] as string : ''
@@ -51,14 +53,14 @@
 <section class="timeline-section" aria-labelledby="timeline-title">
   <div class="timeline-head">
     <div>
-      <h1 id="timeline-title">{t(locale, 'nav.timeline')}</h1>
+      <h1 id="timeline-title">{tr('nav.timeline')}</h1>
       <p>{filtered.length}</p>
     </div>
   </div>
 
   {#if categories.length > 1}
-    <div class="timeline-chips" role="group" aria-label={t(locale, 'nav.timeline')}>
-      <button type="button" class:active={!selected} aria-pressed={!selected} onclick={() => (selected = '')}>{t(locale, 'collections.all')}</button>
+    <div class="timeline-chips" role="group" aria-label={tr('nav.timeline')}>
+      <button type="button" class:active={!selected} aria-pressed={!selected} onclick={() => (selected = '')}>{tr('collections.all')}</button>
       {#each categories as category (category)}
         <button type="button" class:active={selected === category} aria-pressed={selected === category} onclick={() => (selected = category)}>{category}</button>
       {/each}
@@ -66,7 +68,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="timeline-empty">{t(locale, 'collections.noResults')}</div>
+    <div class="timeline-empty">{tr('collections.noResults')}</div>
   {:else}
     <div class="timeline-list">
       {#each filtered as item, index (item.id)}

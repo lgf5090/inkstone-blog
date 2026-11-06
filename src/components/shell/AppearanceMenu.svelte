@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, t, type BlogLocale } from '../../i18n'
+  import { LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, type BlogLocale } from '../../i18n/config'
+  import { translator, type ClientMessages } from '../../i18n/client'
 
-  let { locale, preferred }: { locale: BlogLocale; preferred: BlogLocale | null } = $props()
+  let { locale, preferred, messages }: { locale: BlogLocale; preferred: BlogLocale | null; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
   type Theme = 'auto' | 'light' | 'dark'
   type Accent = 'cinnabar' | 'indigo' | 'celadon' | 'amber' | 'terracotta' | 'wisteria' | 'graphite'
   type Background = 'paper' | 'white'
@@ -150,7 +152,7 @@
 </script>
 
 <details class="nav-menu appearance-menu">
-  <summary class="icon-button" aria-label={t(locale, 'appearance.title')} title={t(locale, 'appearance.title')}>
+  <summary class="icon-button" aria-label={tr('appearance.title')} title={tr('appearance.title')}>
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="9"></circle>
       <path d="M12 3a9 9 0 0 0 0 18V3Z" fill="currentColor" stroke="none"></path>
@@ -158,75 +160,75 @@
   </summary>
   <div class="nav-menu-panel appearance-panel">
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.theme')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.theme')}>
-        <button type="button" aria-pressed={theme === 'auto'} onclick={() => setTheme('auto')}>{t(locale, 'appearance.theme_auto')}</button>
-        <button type="button" aria-pressed={theme === 'light'} onclick={() => setTheme('light')}>{t(locale, 'appearance.theme_light')}</button>
-        <button type="button" aria-pressed={theme === 'dark'} onclick={() => setTheme('dark')}>{t(locale, 'appearance.theme_dark')}</button>
+      <p class="appearance-label">{tr('appearance.theme')}</p>
+      <div class="appearance-segment" role="group" aria-label={tr('appearance.theme')}>
+        <button type="button" aria-pressed={theme === 'auto'} onclick={() => setTheme('auto')}>{tr('appearance.theme_auto')}</button>
+        <button type="button" aria-pressed={theme === 'light'} onclick={() => setTheme('light')}>{tr('appearance.theme_light')}</button>
+        <button type="button" aria-pressed={theme === 'dark'} onclick={() => setTheme('dark')}>{tr('appearance.theme_dark')}</button>
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.accent')}</p>
-      <div class="appearance-swatches" role="group" aria-label={t(locale, 'appearance.accent')}>
+      <p class="appearance-label">{tr('appearance.accent')}</p>
+      <div class="appearance-swatches" role="group" aria-label={tr('appearance.accent')}>
         {#each accents as item}
           <button
             type="button"
             class="appearance-swatch appearance-swatch--{item}"
             class:is-active={accent === item}
             aria-pressed={accent === item}
-            aria-label={t(locale, `appearance.accent_${item}`)}
-            title={t(locale, `appearance.accent_${item}`)}
+            aria-label={tr(`appearance.accent_${item}`)}
+            title={tr(`appearance.accent_${item}`)}
             onclick={() => setAccent(item)}
           ></button>
         {/each}
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.wallpaper')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.wallpaper')}>
-        <button type="button" aria-pressed={wallpaper === 'plain'} onclick={() => setWallpaper('plain')}>{t(locale, 'appearance.wallpaper_plain')}</button>
-        <button type="button" aria-pressed={wallpaper === 'banner'} onclick={() => setWallpaper('banner')}>{t(locale, 'appearance.wallpaper_banner')}</button>
+      <p class="appearance-label">{tr('appearance.wallpaper')}</p>
+      <div class="appearance-segment" role="group" aria-label={tr('appearance.wallpaper')}>
+        <button type="button" aria-pressed={wallpaper === 'plain'} onclick={() => setWallpaper('plain')}>{tr('appearance.wallpaper_plain')}</button>
+        <button type="button" aria-pressed={wallpaper === 'banner'} onclick={() => setWallpaper('banner')}>{tr('appearance.wallpaper_banner')}</button>
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.texture')}</p>
-      <div class="appearance-segment appearance-texture" role="group" aria-label={t(locale, 'appearance.texture')}>
+      <p class="appearance-label">{tr('appearance.texture')}</p>
+      <div class="appearance-segment appearance-texture" role="group" aria-label={tr('appearance.texture')}>
         {#each textures as item}
-          <button type="button" aria-pressed={texture === item} onclick={() => setTexture(item)}>{t(locale, `appearance.texture_${item}`)}</button>
+          <button type="button" aria-pressed={texture === item} onclick={() => setTexture(item)}>{tr(`appearance.texture_${item}`)}</button>
         {/each}
       </div>
     </section>
     <section>
       <button type="button" class="appearance-motion" aria-pressed={reduceMotion} onclick={() => setReduceMotion(!reduceMotion)}>
-        {t(locale, 'appearance.reduce_motion')}
+        {tr('appearance.reduce_motion')}
       </button>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.background')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.background')}>
-        <button type="button" aria-pressed={background === 'paper'} onclick={() => setBackground('paper')}>{t(locale, 'appearance.background_paper')}</button>
-        <button type="button" aria-pressed={background === 'white'} onclick={() => setBackground('white')}>{t(locale, 'appearance.background_white')}</button>
+      <p class="appearance-label">{tr('appearance.background')}</p>
+      <div class="appearance-segment" role="group" aria-label={tr('appearance.background')}>
+        <button type="button" aria-pressed={background === 'paper'} onclick={() => setBackground('paper')}>{tr('appearance.background_paper')}</button>
+        <button type="button" aria-pressed={background === 'white'} onclick={() => setBackground('white')}>{tr('appearance.background_white')}</button>
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.density')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.density')}>
-        <button type="button" aria-pressed={density === 'comfortable'} onclick={() => setDensity('comfortable')}>{t(locale, 'appearance.density_comfortable')}</button>
-        <button type="button" aria-pressed={density === 'compact'} onclick={() => setDensity('compact')}>{t(locale, 'appearance.density_compact')}</button>
+      <p class="appearance-label">{tr('appearance.density')}</p>
+      <div class="appearance-segment" role="group" aria-label={tr('appearance.density')}>
+        <button type="button" aria-pressed={density === 'comfortable'} onclick={() => setDensity('comfortable')}>{tr('appearance.density_comfortable')}</button>
+        <button type="button" aria-pressed={density === 'compact'} onclick={() => setDensity('compact')}>{tr('appearance.density_compact')}</button>
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'appearance.layout')}</p>
-      <div class="appearance-segment" role="group" aria-label={t(locale, 'appearance.layout')}>
-        <button type="button" aria-pressed={layout === 'list'} onclick={() => setLayout('list')}>{t(locale, 'appearance.layout_list')}</button>
-        <button type="button" aria-pressed={layout === 'grid'} onclick={() => setLayout('grid')}>{t(locale, 'appearance.layout_grid')}</button>
-        <button type="button" aria-pressed={layout === 'masonry'} onclick={() => setLayout('masonry')}>{t(locale, 'appearance.layout_masonry')}</button>
+      <p class="appearance-label">{tr('appearance.layout')}</p>
+      <div class="appearance-segment" role="group" aria-label={tr('appearance.layout')}>
+        <button type="button" aria-pressed={layout === 'list'} onclick={() => setLayout('list')}>{tr('appearance.layout_list')}</button>
+        <button type="button" aria-pressed={layout === 'grid'} onclick={() => setLayout('grid')}>{tr('appearance.layout_grid')}</button>
+        <button type="button" aria-pressed={layout === 'masonry'} onclick={() => setLayout('masonry')}>{tr('appearance.layout_masonry')}</button>
       </div>
     </section>
     <section>
-      <p class="appearance-label">{t(locale, 'common.language')}</p>
-      <div class="appearance-segment appearance-texture" role="group" aria-label={t(locale, 'common.language')}>
-        <button type="button" aria-pressed={preferred === null} onclick={() => persistLocale(null)}>{t(locale, 'appearance.language_default')}</button>
+      <p class="appearance-label">{tr('common.language')}</p>
+      <div class="appearance-segment appearance-texture" role="group" aria-label={tr('common.language')}>
+        <button type="button" aria-pressed={preferred === null} onclick={() => persistLocale(null)}>{tr('appearance.language_default')}</button>
         {#each LOCALES as code}
           <button type="button" aria-pressed={preferred === code} onclick={() => persistLocale(code)}>{LOCALE_LABELS[code]}</button>
         {/each}

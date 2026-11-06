@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCollectionItem } from '../../lib/blog-types'
 
-  let { items, locale }: { items: BlogCollectionItem[]; locale: BlogLocale } = $props()
+  let { items, locale, messages }: { items: BlogCollectionItem[]; locale: BlogLocale; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   const text = (data: Record<string, unknown>, key: string): string =>
     typeof data[key] === 'string' ? data[key] as string : ''
@@ -65,7 +67,7 @@
 <section class="project-section" aria-labelledby="projects-title">
   <div class="project-head">
     <div>
-      <h1 id="projects-title">{t(locale, 'nav.projects')}</h1>
+      <h1 id="projects-title">{tr('nav.projects')}</h1>
       <p>{filtered.length}</p>
     </div>
   </div>
@@ -73,13 +75,13 @@
   {#if items.length > 0}
     <div class="project-tools">
       <div class="project-search">
-        <label class="project-sr" for="project-search">{t(locale, 'collections.search')}</label>
-        <input id="project-search" type="search" placeholder={t(locale, 'collections.search')} bind:value={query} autocomplete="off" />
-        {#if query}<button type="button" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>{/if}
+        <label class="project-sr" for="project-search">{tr('collections.search')}</label>
+        <input id="project-search" type="search" placeholder={tr('collections.search')} bind:value={query} autocomplete="off" />
+        {#if query}<button type="button" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>{/if}
       </div>
       {#if categories.length > 1}
-        <div class="project-chips" role="group" aria-label={t(locale, 'nav.projects')}>
-          <button type="button" class:active={!selectedCategory} aria-pressed={!selectedCategory} onclick={() => (selectedCategory = '')}>{t(locale, 'collections.all')}</button>
+        <div class="project-chips" role="group" aria-label={tr('nav.projects')}>
+          <button type="button" class:active={!selectedCategory} aria-pressed={!selectedCategory} onclick={() => (selectedCategory = '')}>{tr('collections.all')}</button>
           {#each categories as category (category)}<button type="button" class:active={selectedCategory === category} aria-pressed={selectedCategory === category} onclick={() => (selectedCategory = category)}>{category}</button>{/each}
         </div>
       {/if}
@@ -87,7 +89,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="project-empty">{items.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
+    <div class="project-empty">{items.length === 0 ? tr('collections.empty') : tr('collections.noResults')}</div>
   {:else}
     <div class="project-grid">
       {#each filtered as item (item.id)}
@@ -107,15 +109,15 @@
                 <h2>{item.title}</h2>
                 {#if text(item.data, 'year')}<span class="project-year">{text(item.data, 'year')}</span>{/if}
               </div>
-              {#if featured}<span class="project-featured">{t(locale, 'common.pinned')}</span>{/if}
+              {#if featured}<span class="project-featured">{tr('common.pinned')}</span>{/if}
             </div>
             {#if text(item.data, 'phase')}<span class="project-phase">{text(item.data, 'phase')}</span>{/if}
             {#if text(item.data, 'summary')}<p class="project-summary">{text(item.data, 'summary')}</p>{/if}
             {#if technologies.length > 0}<div class="project-tech">{#each technologies as technology (technology)}<span>{technology}</span>{/each}</div>{/if}
             {#if website || repository}
               <div class="project-actions">
-                {#if website}<a href={website} target="_blank" rel="noopener noreferrer">{t(locale, 'common.link')}</a>{/if}
-                {#if repository}<a href={repository} target="_blank" rel="noopener noreferrer">{t(locale, 'common.repository')}</a>{/if}
+                {#if website}<a href={website} target="_blank" rel="noopener noreferrer">{tr('common.link')}</a>{/if}
+                {#if repository}<a href={repository} target="_blank" rel="noopener noreferrer">{tr('common.repository')}</a>{/if}
               </div>
             {/if}
           </div>

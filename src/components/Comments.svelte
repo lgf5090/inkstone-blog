@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import type { BlogCommentsResponse, BlogSitePublic, PublicBlogComment } from '../lib/blog-types'
-  import { t, type BlogLocale } from '../i18n'
+  import type { BlogLocale } from '../i18n'
+  import { translator, type ClientMessages } from '../i18n/client'
   import { safeUrl } from '../lib/format'
 
   interface Props {
@@ -10,11 +11,13 @@
     discussion: BlogCommentsResponse['discussion']
     initial: PublicBlogComment[]
     locale: BlogLocale
+    messages: ClientMessages
     provider?: BlogSitePublic['comment']['provider']
     providerConfig?: BlogSitePublic['comment']
   }
 
-  let { slug, enabled, discussion, initial, locale, provider = 'none', providerConfig }: Props = $props()
+  let { slug, enabled, discussion, initial, locale, messages, provider = 'none', providerConfig }: Props = $props()
+  const tr = $derived(translator(messages))
   const external = $derived(provider === 'twikoo' || provider === 'giscus' || provider === 'waline')
   let externalHost: HTMLDivElement | undefined = $state()
   let externalError = $state('')
@@ -101,7 +104,7 @@
       Waline.init({ el: externalHost, serverURL: providerConfig.waline.serverURL, path: `/posts/${slug}`, dark: 'html.dark' })
     } catch (cause) {
       console.warn('[blog] external comment provider failed', cause)
-      externalError = t(locale, 'comments.externalMissing')
+      externalError = tr('comments.externalMissing')
     }
   }
 
@@ -187,14 +190,14 @@
       const payload = await response.json().catch(() => null) as
         | { status?: string; error?: { message?: string } }
         | null
-      if (!response.ok) throw new Error(payload?.error?.message || t(locale, 'comments.loadFailed'))
+      if (!response.ok) throw new Error(payload?.error?.message || tr('comments.loadFailed'))
       content = ''
       cancelReply()
       if (payload?.status === 'pending') {
-        notice = t(locale, 'comments.pending')
+        notice = tr('comments.pending')
       } else {
         await reload()
-        notice = t(locale, 'comments.published')
+        notice = tr('comments.published')
       }
     } catch (cause) {
       error = cause instanceof Error ? cause.message : String(cause)
@@ -206,7 +209,7 @@
 
 <section class="comments-section" aria-labelledby="comments-heading" data-blog-comments>
   <h2 id="comments-heading" class="comments-title">
-    {t(locale, 'comments.title')}{#if !external} <span class="muted">({flat.length})</span>{/if}
+    {tr('comments.title')}{#if !external} <span class="muted">({flat.length})</span>{/if}
   </h2>
 
   {#if external}
@@ -214,7 +217,7 @@
     {#if externalError}<p class="comment-error" role="alert">{externalError}</p>{/if}
   {:else}
   {#if flat.length === 0}
-    <p class="comments-empty">{t(locale, 'comments.empty')}</p>
+    <p class="comments-empty">{tr('comments.empty')}</p>
   {:else}
     <ol class="comments-list">
       {#each flat as entry (entry.node.id)}
@@ -234,7 +237,7 @@
             <p class="comment-body">{entry.node.content}</p>
             {#if enabled && discussion.allowReplies}
               <button type="button" class="comment-action" onclick={() => startReply(entry.node)}>
-                {t(locale, 'comments.reply')}
+                {tr('comments.reply')}
               </button>
             {/if}
           </article>
@@ -245,11 +248,11 @@
 
   {#if enabled}
     <form class="comment-form" onsubmit={submit}>
-      <h3>{t(locale, 'comments.leave')}</h3>
+      <h3>{tr('comments.leave')}</h3>
       {#if replyToName}
         <p class="comment-notice">
-          {t(locale, 'comments.replyingTo')} {replyToName}.
-          <button type="button" class="comment-action" onclick={cancelReply}>{t(locale, 'comments.cancel')}</button>
+          {tr('comments.replyingTo')} {replyToName}.
+          <button type="button" class="comment-action" onclick={cancelReply}>{tr('comments.cancel')}</button>
         </p>
       {/if}
       <div class="hidden" aria-hidden="true">
@@ -258,7 +261,7 @@
       </div>
       <div class="comment-fields">
         <div>
-          <label for="comment-name" class="comment-label">{t(locale, 'comments.name')}</label>
+          <label for="comment-name" class="comment-label">{tr('comments.name')}</label>
           <input
             id="comment-name"
             bind:value={authorName}
@@ -269,7 +272,7 @@
           />
         </div>
         <div>
-          <label for="comment-email" class="comment-label">{t(locale, 'comments.email')}</label>
+          <label for="comment-email" class="comment-label">{tr('comments.email')}</label>
           <input
             id="comment-email"
             type="email"
@@ -279,11 +282,11 @@
             autocomplete="email"
             class="comment-input"
           />
-          <p class="comment-hint">{t(locale, 'comments.emailHint')}</p>
+          <p class="comment-hint">{tr('comments.emailHint')}</p>
         </div>
       </div>
       <div>
-        <label for="comment-content" class="comment-label">{t(locale, 'comments.content')}</label>
+        <label for="comment-content" class="comment-label">{tr('comments.content')}</label>
         <textarea
           id="comment-content"
           bind:this={textarea}
@@ -298,14 +301,14 @@
       {#if error}<p id="comment-error" role="alert" class="comment-error">{error}</p>{/if}
       {#if notice}<p role="status" class="comment-notice">{notice}</p>{/if}
       <button type="submit" disabled={submitting} class="comment-submit">
-        {submitting ? t(locale, 'comments.posting') : t(locale, 'comments.submit')}
+        {submitting ? tr('comments.posting') : tr('comments.submit')}
       </button>
       {#if discussion.requireApproval}
-        <p class="comment-hint">{t(locale, 'comments.moderated')}</p>
+        <p class="comment-hint">{tr('comments.moderated')}</p>
       {/if}
     </form>
   {:else}
-    <p class="comments-empty">{t(locale, 'comments.closed')}</p>
+    <p class="comments-empty">{tr('comments.closed')}</p>
   {/if}
   {/if}
 </section>

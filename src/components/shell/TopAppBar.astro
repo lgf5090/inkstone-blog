@@ -1,7 +1,7 @@
 ---
 import Icon from '../Icon.astro'
 import AppearanceMenu from './AppearanceMenu.svelte'
-import { blogLocale, t, LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, type BlogLocale, type MessageKey } from '../../i18n'
+import { blogLocale, localizedMessages, t, LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, type BlogLocale, type MessageKey } from '../../i18n'
 import { safeUrl } from '../../lib/format'
 import { FALLBACK_SITE } from '../../server/site-config'
 
@@ -64,7 +64,7 @@ const searchLabels = {
       </span>
     </a>
 
-    <nav class="top-nav" aria-label={t(locale, 'nav.home')}>
+    <nav class="top-nav" aria-label={t(locale, 'common.mainNavigation')}>
       {links.map((item) => (
         item.children?.length ? (
           <details class="nav-menu">
@@ -103,7 +103,7 @@ const searchLabels = {
           <Icon name="menu" size={17} />
         </summary>
         <div class="nav-menu-panel mobile-menu-panel">
-          <nav class="mobile-nav" aria-label={t(locale, 'nav.home')}>
+          <nav class="mobile-nav" aria-label={t(locale, 'common.mainNavigation')}>
             {links.map((item) => (
               item.children?.length ? (
                 <details class="mobile-nav-group">
@@ -140,6 +140,7 @@ const searchLabels = {
         client:idle
         locale={locale}
         preferred={preferredLocale}
+        messages={localizedMessages(locale)}
       />
     </div>
   </div>

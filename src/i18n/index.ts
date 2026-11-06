@@ -1,16 +1,6 @@
-export const LOCALES = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'id', 'th', 'tr', 'vi'] as const
-export type BlogLocale = (typeof LOCALES)[number]
+import { LOCALES, type BlogLocale } from './config'
 
-export const LOCALE_LABELS: Record<BlogLocale, string> = {
-  en: 'English', 'zh-CN': '简体中文', 'zh-TW': '繁體中文', ja: '日本語', ko: '한국어',
-  es: 'Español', id: 'Bahasa Indonesia', th: 'ไทย', tr: 'Türkçe', vi: 'Tiếng Việt',
-}
-
-/**
- * The only cookie that may store a language choice. `?lang=` is a one-request override and never
- * touches it; the appearance panel is the single writer.
- */
-export const LOCALE_PREF_COOKIE = 'blog-locale-pref'
+export { LOCALES, LOCALE_LABELS, LOCALE_PREF_COOKIE, type BlogLocale } from './config'
 
 export type MessageKey =
   | 'nav.home' | 'nav.archive' | 'nav.categories' | 'nav.tags' | 'nav.series'
@@ -45,9 +35,9 @@ export type MessageKey =
   | 'music.rate' | 'music.close' | 'music.minimize' | 'music.expand' | 'music.lyricsEmpty' | 'music.drag'
   | 'runtime.copyTable' | 'runtime.copySelection' | 'runtime.copyLink' | 'runtime.openImage'
   | 'runtime.copyImage' | 'runtime.backToTop' | 'runtime.article' | 'runtime.copied'
-  | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
+  | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'common.skipToContent' | 'common.mainNavigation' | 'common.sidebar' | 'common.breadcrumb' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
   | 'search.close' | 'search.loading' | 'search.error' | 'search.viewAll'
-  | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint'
+  | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint' | 'blog.serverError' | 'blog.serverErrorHint'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
   | 'collections.search' | 'collections.all' | 'collections.noResults' | 'collections.loadMore'
   | 'albums.protected' | 'albums.protectedHint'
@@ -217,6 +207,13 @@ const en: Dictionary = {
   'runtime.article': 'Read article',
 
   'runtime.copied': 'Copied',
+
+  'common.skipToContent': 'Skip to content',
+  'common.mainNavigation': 'Main navigation',
+  'common.sidebar': 'Sidebar',
+  'common.breadcrumb': 'Breadcrumb',
+  'blog.serverError': 'Something went wrong',
+  'blog.serverErrorHint': 'This page could not be loaded. Try again, or return home.',
 }
 
 const zhCN: Dictionary = {
@@ -350,6 +347,13 @@ const zhCN: Dictionary = {
   'runtime.article': '阅读文章',
 
   'runtime.copied': '已复制',
+
+  'common.skipToContent': '跳到正文',
+  'common.mainNavigation': '主导航',
+  'common.sidebar': '侧栏',
+  'common.breadcrumb': '面包屑',
+  'blog.serverError': '服务器出错了',
+  'blog.serverErrorHint': '页面暂时无法加载，请重试或返回首页。',
 }
 
 const zhTW: Dictionary = { ...zhCN,
@@ -512,6 +516,13 @@ const zhTW: Dictionary = { ...zhCN,
   'runtime.article': '閱讀文章',
 
   'runtime.copied': '已複製',
+
+  'common.skipToContent': '跳至正文',
+  'common.mainNavigation': '主導覽',
+  'common.sidebar': '側欄',
+  'common.breadcrumb': '麵包屑',
+  'blog.serverError': '伺服器發生錯誤',
+  'blog.serverErrorHint': '頁面暫時無法載入，請重試或返回首頁。',
 }
 
 const ja: Dictionary = { ...en,
@@ -663,6 +674,13 @@ const ja: Dictionary = { ...en,
   'runtime.article': '記事を読む',
 
   'runtime.copied': 'コピーしました',
+
+  'common.skipToContent': '本文へスキップ',
+  'common.mainNavigation': 'メインナビゲーション',
+  'common.sidebar': 'サイドバー',
+  'common.breadcrumb': 'パンくずリスト',
+  'blog.serverError': 'サーバーエラーが発生しました',
+  'blog.serverErrorHint': 'このページを読み込めませんでした。再試行するか、ホームに戻ってください。',
 }
 
 const ko: Dictionary = { ...en,
@@ -814,6 +832,13 @@ const ko: Dictionary = { ...en,
   'runtime.article': '글 읽기',
 
   'runtime.copied': '복사됨',
+
+  'common.skipToContent': '콘텐츠로 건너뛰기',
+  'common.mainNavigation': '주 내비게이션',
+  'common.sidebar': '사이드바',
+  'common.breadcrumb': '탐색 경로',
+  'blog.serverError': '서버에 문제가 발생했습니다',
+  'blog.serverErrorHint': '페이지를 불러오지 못했습니다. 다시 시도하거나 홈으로 돌아가세요.',
 }
 
 const es: Dictionary = { ...en,
@@ -965,6 +990,13 @@ const es: Dictionary = { ...en,
   'runtime.article': 'Leer artículo',
 
   'runtime.copied': 'Copiado',
+
+  'common.skipToContent': 'Saltar al contenido',
+  'common.mainNavigation': 'Navegación principal',
+  'common.sidebar': 'Barra lateral',
+  'common.breadcrumb': 'Migas de pan',
+  'blog.serverError': 'Algo salió mal',
+  'blog.serverErrorHint': 'No se pudo cargar esta página. Vuelve a intentarlo o regresa al inicio.',
 }
 
 const id: Dictionary = { ...en,
@@ -1116,6 +1148,13 @@ const id: Dictionary = { ...en,
   'runtime.article': 'Baca artikel',
 
   'runtime.copied': 'Disalin',
+
+  'common.skipToContent': 'Lewati ke konten',
+  'common.mainNavigation': 'Navigasi utama',
+  'common.sidebar': 'Bilah sisi',
+  'common.breadcrumb': 'Remah roti',
+  'blog.serverError': 'Terjadi kesalahan',
+  'blog.serverErrorHint': 'Halaman ini tidak dapat dimuat. Coba lagi atau kembali ke beranda.',
 }
 
 const th: Dictionary = { ...en,
@@ -1267,6 +1306,13 @@ const th: Dictionary = { ...en,
   'runtime.article': 'อ่านบทความ',
 
   'runtime.copied': 'คัดลอกแล้ว',
+
+  'common.skipToContent': 'ข้ามไปยังเนื้อหา',
+  'common.mainNavigation': 'การนำทางหลัก',
+  'common.sidebar': 'แถบด้านข้าง',
+  'common.breadcrumb': 'เส้นทางนำทาง',
+  'blog.serverError': 'เกิดข้อผิดพลาด',
+  'blog.serverErrorHint': 'ไม่สามารถโหลดหน้านี้ได้ โปรดลองอีกครั้งหรือกลับไปหน้าแรก',
 }
 
 const tr: Dictionary = { ...en,
@@ -1418,6 +1464,13 @@ const tr: Dictionary = { ...en,
   'runtime.article': 'Yazıyı oku',
 
   'runtime.copied': 'Kopyalandı',
+
+  'common.skipToContent': 'İçeriğe geç',
+  'common.mainNavigation': 'Ana gezinme',
+  'common.sidebar': 'Kenar çubuğu',
+  'common.breadcrumb': 'Gezinti izi',
+  'blog.serverError': 'Bir sorun oluştu',
+  'blog.serverErrorHint': 'Bu sayfa yüklenemedi. Tekrar deneyin veya ana sayfaya dönün.',
 }
 
 const vi: Dictionary = { ...en,
@@ -1569,6 +1622,13 @@ const vi: Dictionary = { ...en,
   'runtime.article': 'Đọc bài',
 
   'runtime.copied': 'Đã sao chép',
+
+  'common.skipToContent': 'Chuyển đến nội dung',
+  'common.mainNavigation': 'Điều hướng chính',
+  'common.sidebar': 'Thanh bên',
+  'common.breadcrumb': 'Đường dẫn',
+  'blog.serverError': 'Đã xảy ra lỗi',
+  'blog.serverErrorHint': 'Không thể tải trang này. Hãy thử lại hoặc quay về trang chủ.',
 }
 
 const dictionaries: Record<BlogLocale, Dictionary> = {
@@ -1581,4 +1641,19 @@ export function blogLocale(value: string | undefined): BlogLocale {
 
 export function t(locale: BlogLocale, key: MessageKey): string {
   return dictionaries[locale]?.[key] ?? en[key]
+}
+
+/**
+ * Server-side helpers for client islands. Only the strings an island renders
+ * are serialised into its props; `localizedMessages` is for the few panels
+ * (appearance, comments, friends) whose copy is too interleaved to enumerate.
+ */
+export function localizedMessages(locale: BlogLocale): Record<string, string> {
+  return dictionaries[locale] ?? en
+}
+
+export function pickMessages(locale: BlogLocale, keys: readonly MessageKey[]): Record<string, string> {
+  const messages: Record<string, string> = {}
+  for (const key of keys) messages[key] = t(locale, key)
+  return messages
 }

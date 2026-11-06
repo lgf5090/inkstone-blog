@@ -1,16 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import { formatDateTime } from '../../lib/format'
   import type { BlogCollectionItem } from '../../lib/blog-types'
   import PhotoLightbox from './PhotoLightbox.svelte'
 
-  let { items, locale, timeZone, author }: {
+  let { items, locale, timeZone, author, messages }: {
     items: BlogCollectionItem[]
     locale: BlogLocale
     timeZone: string
     author: { name: string; avatar: string }
+    messages: ClientMessages
   } = $props()
+  const tr = $derived(translator(messages))
 
   const PAGE_SIZE = 10
   const text = (data: Record<string, unknown>, key: string): string =>
@@ -80,7 +83,7 @@
 <section class="moment-section" aria-labelledby="moments-title">
   <div class="moment-head">
     <div>
-      <h1 id="moments-title">{t(locale, 'nav.moments')}</h1>
+      <h1 id="moments-title">{tr('nav.moments')}</h1>
       <p>{filtered.length}</p>
     </div>
   </div>
@@ -88,13 +91,13 @@
   {#if items.length > 0}
     <div class="moment-tools">
       <div class="moment-search">
-        <label class="moment-sr" for="moment-search">{t(locale, 'collections.search')}</label>
-        <input id="moment-search" type="search" placeholder={t(locale, 'collections.search')} bind:value={query} autocomplete="off" />
-        {#if query}<button type="button" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>{/if}
+        <label class="moment-sr" for="moment-search">{tr('collections.search')}</label>
+        <input id="moment-search" type="search" placeholder={tr('collections.search')} bind:value={query} autocomplete="off" />
+        {#if query}<button type="button" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>{/if}
       </div>
       {#if tagOptions.length > 0}
-        <div class="moment-chips" role="group" aria-label={t(locale, 'common.tags')}>
-          <button type="button" class:active={!selectedTag} aria-pressed={!selectedTag} onclick={() => (selectedTag = '')}>{t(locale, 'collections.all')}</button>
+        <div class="moment-chips" role="group" aria-label={tr('common.tags')}>
+          <button type="button" class:active={!selectedTag} aria-pressed={!selectedTag} onclick={() => (selectedTag = '')}>{tr('collections.all')}</button>
           {#each tagOptions as tag (tag)}<button type="button" class:active={selectedTag === tag} aria-pressed={selectedTag === tag} onclick={() => (selectedTag = tag)}>#{tag}</button>{/each}
         </div>
       {/if}
@@ -102,7 +105,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="moment-empty">{items.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
+    <div class="moment-empty">{items.length === 0 ? tr('collections.empty') : tr('collections.noResults')}</div>
   {:else}
     <div class="moment-list">
       {#each visible as item (item.id)}
@@ -115,7 +118,7 @@
               {#if authorAvatar}<img src={authorAvatar} alt="" loading="lazy" />{:else}<span aria-hidden="true">{authorInitial}</span>{/if}
             </span>
             <span class="moment-author">{author.name}</span>
-            {#if item.data.pinned === true || item.data.pinned === 1}<span class="moment-pin">{t(locale, 'common.pinned')}</span>{/if}
+            {#if item.data.pinned === true || item.data.pinned === 1}<span class="moment-pin">{tr('common.pinned')}</span>{/if}
             {#if mood}<span class="moment-mood" aria-hidden="true">{mood}</span>{/if}
             {#if item.publishedAt}<time datetime={new Date(item.publishedAt).toISOString()}>{formatDateTime(item.publishedAt, locale, timeZone)}</time>{/if}
           </header>
@@ -123,7 +126,7 @@
           {#if photos.length > 0}
             <div class="moment-gallery" class:moment-gallery--many={photos.length > 1}>
               {#each photos.slice(0, 6) as photo, index (photo + index)}
-                <button type="button" class="moment-photo" aria-label={`${t(locale, 'friends.open')} ${index + 1}`} onclick={() => openPhoto(item, index)}>
+                <button type="button" class="moment-photo" aria-label={`${tr('friends.open')} ${index + 1}`} onclick={() => openPhoto(item, index)}>
                   <img src={photo} alt="" loading="lazy" decoding="async" />
                   {#if photos.length > 6 && index === 5}<span class="moment-more">+{photos.length - 6}</span>{/if}
                 </button>
@@ -140,13 +143,13 @@
       {/each}
     </div>
     {#if filtered.length > shown}
-      <div class="moment-more-row"><button type="button" class="moment-more-btn" onclick={more}>{t(locale, 'collections.loadMore')}</button></div>
+      <div class="moment-more-row"><button type="button" class="moment-more-btn" onclick={more}>{tr('collections.loadMore')}</button></div>
     {/if}
   {/if}
 </section>
 
 {#if lightbox}
-  <PhotoLightbox photos={lightbox.photos} index={lightbox.index} {locale} onclose={() => (lightbox = null)} />
+  <PhotoLightbox photos={lightbox.photos} index={lightbox.index} {locale} {messages} onclose={() => (lightbox = null)} />
 {/if}
 
 <style>

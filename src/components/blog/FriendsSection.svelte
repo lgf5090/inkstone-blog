@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import { safeUrl } from '../../lib/format'
   import type { BlogFriendCategory, BlogFriendLink, BlogFriends } from '../../lib/blog-types'
 
@@ -9,7 +10,8 @@
     if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
-  let { friends, locale }: { friends: BlogFriends; locale: BlogLocale } = $props()
+  let { friends, locale, messages }: { friends: BlogFriends; locale: BlogLocale; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   let query = $state('')
   let selected = $state('')
@@ -147,9 +149,9 @@
   async function copy(value: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(value)
-      copied = t(locale, 'common.copied')
+      copied = tr('common.copied')
     } catch {
-      copied = t(locale, 'common.copyFailed')
+      copied = tr('common.copyFailed')
     }
     window.setTimeout(() => { copied = '' }, 1600)
   }
@@ -254,7 +256,7 @@
       iconPreviewFailed = false
       iconError = ''
     } catch {
-      applyError = t(locale, 'friends.error')
+      applyError = tr('friends.error')
     } finally {
       applyBusy = false
     }
@@ -293,7 +295,7 @@
       target = new URL(url)
       if (target.protocol !== 'http:' && target.protocol !== 'https:') throw new Error('scheme')
     } catch {
-      iconError = t(locale, 'friends.iconFetchFailed')
+      iconError = tr('friends.iconFetchFailed')
       return
     }
     // Fill the conventional favicon immediately; the guarded server read may refine it.
@@ -324,7 +326,7 @@
     if (!file) return
     iconError = ''
     if (file.size > 256 * 1024) {
-      iconError = t(locale, 'friends.iconUploadFailed')
+      iconError = tr('friends.iconUploadFailed')
       input.value = ''
       return
     }
@@ -338,7 +340,7 @@
       icon = body.icon
       iconPreviewFailed = false
     } catch {
-      iconError = t(locale, 'friends.iconUploadFailed')
+      iconError = tr('friends.iconUploadFailed')
     } finally {
       iconUploadBusy = false
       input.value = ''
@@ -370,47 +372,47 @@
 <section class="friend-section" aria-labelledby="friends-title">
   <div class="friend-toolbar">
     <div class="friend-toolbar__heading">
-      <h1 id="friends-title" class="friend-title">{t(locale, 'nav.friends')}</h1>
+      <h1 id="friends-title" class="friend-title">{tr('nav.friends')}</h1>
       <span class="friend-count">{filtered.length}</span>
     </div>
     <div class="friend-toolbar__actions">
       <button type="button" class="friend-view" aria-pressed={cardStyle === 'simple'} onclick={toggleCardStyle}>
-        {cardStyle === 'detailed' ? t(locale, 'friends.viewSimple') : t(locale, 'friends.viewDetailed')}
+        {cardStyle === 'detailed' ? tr('friends.viewSimple') : tr('friends.viewDetailed')}
       </button>
-      <button bind:this={applyButton} type="button" class="friend-apply" onclick={openApply}>{t(locale, 'friends.apply')}</button>
+      <button bind:this={applyButton} type="button" class="friend-apply" onclick={openApply}>{tr('friends.apply')}</button>
     </div>
   </div>
 
   <form class="friend-search-row" onsubmit={submitSearch}>
-    <div class="friend-search-mode" role="group" aria-label={t(locale, 'friends.search')}>
-      <button type="button" aria-pressed={searchMode === 'internal'} onclick={() => (searchMode = 'internal')}>{t(locale, 'friends.searchInternal')}</button>
-      <button type="button" aria-pressed={searchMode === 'external'} disabled={friends.search.sources.length === 0} onclick={() => (searchMode = 'external')}>{t(locale, 'friends.searchExternal')}</button>
+    <div class="friend-search-mode" role="group" aria-label={tr('friends.search')}>
+      <button type="button" aria-pressed={searchMode === 'internal'} onclick={() => (searchMode = 'internal')}>{tr('friends.searchInternal')}</button>
+      <button type="button" aria-pressed={searchMode === 'external'} disabled={friends.search.sources.length === 0} onclick={() => (searchMode = 'external')}>{tr('friends.searchExternal')}</button>
     </div>
     {#if searchMode === 'external'}
-      <select class="friend-search-source" bind:value={sourceId} aria-label={t(locale, 'friends.engine')}>
+      <select class="friend-search-source" bind:value={sourceId} aria-label={tr('friends.engine')}>
         {#each friends.search.sources as source (source.id)}
           <option value={source.id}>{source.name}</option>
         {/each}
       </select>
     {/if}
     <div class="friend-search">
-      <label class="friend-sr" for="friend-search-input">{t(locale, 'friends.search')}</label>
-      <input id="friend-search-input" type="search" placeholder={t(locale, 'friends.search')} bind:value={query} autocomplete="off" />
+      <label class="friend-sr" for="friend-search-input">{tr('friends.search')}</label>
+      <input id="friend-search-input" type="search" placeholder={tr('friends.search')} bind:value={query} autocomplete="off" />
       {#if query}
-        <button type="button" class="friend-search__clear" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>
+        <button type="button" class="friend-search__clear" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>
       {/if}
     </div>
   </form>
 
   <div class="friend-layout">
-    <aside class="friend-tree" aria-label={t(locale, 'friends.categories')}>
+    <aside class="friend-tree" aria-label={tr('friends.categories')}>
       <div class="friend-tree__head">
-        <span>{t(locale, 'friends.categories')}</span>
+        <span>{tr('friends.categories')}</span>
         {#if collapsible.length > 0}
           <button
             type="button"
             class="friend-tree__toggle"
-            aria-label={allCollapsed ? t(locale, 'common.tocUnfold') : t(locale, 'common.tocFold')}
+            aria-label={allCollapsed ? tr('common.tocUnfold') : tr('common.tocFold')}
             onclick={toggleAllCategories}
           >{allCollapsed ? '▸' : '▾'}</button>
         {/if}
@@ -418,8 +420,8 @@
       <input
         class="friend-tree__filter"
         type="search"
-        placeholder={t(locale, 'friends.filterCategories')}
-        aria-label={t(locale, 'friends.filterCategories')}
+        placeholder={tr('friends.filterCategories')}
+        aria-label={tr('friends.filterCategories')}
         bind:value={categoryFilter}
         autocomplete="off"
       />
@@ -431,7 +433,7 @@
         onclick={() => (selected = '')}
       >
         <span class="friend-cat__spacer" aria-hidden="true"></span>
-        <span class="friend-cat__select-inner"><span class="friend-cat__label">{t(locale, 'friends.all')}</span><span class="friend-cat__count">{friends.links.length}</span></span>
+        <span class="friend-cat__select-inner"><span class="friend-cat__label">{tr('friends.all')}</span><span class="friend-cat__count">{friends.links.length}</span></span>
       </button>
       {#each visibleTree as category (category.id)}
         <div class="friend-cat" class:friend-cat--root={category.depth === 0} style={`--depth:${category.depth}`}>
@@ -440,7 +442,7 @@
               type="button"
               class="friend-cat__toggle"
               aria-expanded={!collapsed.has(category.id)}
-              aria-label={collapsed.has(category.id) ? t(locale, 'common.tocUnfold') : t(locale, 'common.tocFold')}
+              aria-label={collapsed.has(category.id) ? tr('common.tocUnfold') : tr('common.tocFold')}
               onclick={() => toggleCollapse(category.id)}
             >{collapsed.has(category.id) ? '▸' : '▾'}</button>
           {:else}
@@ -462,9 +464,9 @@
 
     <div class="friend-results">
       {#if friends.links.length === 0}
-        <div class="friend-empty">{t(locale, 'collections.empty')}</div>
+        <div class="friend-empty">{tr('collections.empty')}</div>
       {:else if filtered.length === 0}
-        <div class="friend-empty">{t(locale, 'friends.empty')}</div>
+        <div class="friend-empty">{tr('friends.empty')}</div>
       {:else}
         <div class="friend-grid">
           {#each filtered as link (link.id)}
@@ -476,7 +478,7 @@
               href={href ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`${t(locale, 'friends.open')}: ${link.title}`}
+              aria-label={`${tr('friends.open')}: ${link.title}`}
               oncontextmenu={(event) => openMenu(event, link)}
             >
               <span class="friend-icon" style={`--friend-hue:${tint(link.title)}`}>
@@ -489,7 +491,7 @@
               <span class="friend-card__body">
                 <span class="friend-card__top">
                   <strong class="friend-card__title">{link.title}</strong>
-                  {#if link.pinned}<span class="friend-pin">{t(locale, 'common.pinned')}</span>{/if}
+                  {#if link.pinned}<span class="friend-pin">{tr('common.pinned')}</span>{/if}
                 </span>
                 {#if cardStyle === 'detailed'}
                   {#if link.description}<span class="friend-card__desc">{link.description}</span>{/if}
@@ -507,11 +509,11 @@
 
 {#if menu}
   <div class="friend-menu" role="menu" tabindex="-1" bind:this={menuEl} style={`left:${menu.x}px;top:${menu.y}px`} onkeydown={menuKey}>
-    <button type="button" role="menuitem" onclick={() => { openFriend(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↗</span>{t(locale, 'friends.open')}</button>
-    <button type="button" role="menuitem" onclick={() => { void copy(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">⧉</span>{t(locale, 'friends.copyLink')}</button>
-    <button type="button" role="menuitem" onclick={() => { openQr(menu!.link); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">▦</span>{t(locale, 'friends.qr')}</button>
-    <button type="button" role="menuitem" onclick={() => { void copy(hostOf(menu!.link.url)); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">◈</span>{t(locale, 'friends.copyDomain')}</button>
-    <button type="button" role="menuitem" onclick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↑</span>{t(locale, 'runtime.backToTop')}</button>
+    <button type="button" role="menuitem" onclick={() => { openFriend(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↗</span>{tr('friends.open')}</button>
+    <button type="button" role="menuitem" onclick={() => { void copy(menu!.link.url); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">⧉</span>{tr('friends.copyLink')}</button>
+    <button type="button" role="menuitem" onclick={() => { openQr(menu!.link); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">▦</span>{tr('friends.qr')}</button>
+    <button type="button" role="menuitem" onclick={() => { void copy(hostOf(menu!.link.url)); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">◈</span>{tr('friends.copyDomain')}</button>
+    <button type="button" role="menuitem" onclick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); closeMenu() }}><span class="friend-menu__icon" aria-hidden="true">↑</span>{tr('runtime.backToTop')}</button>
   </div>
 {/if}
 
@@ -520,24 +522,24 @@
   <div class="friend-backdrop" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) closeApply() }}>
     <div class="friend-dialog" role="dialog" aria-modal="true" aria-labelledby="friend-dialog-title" tabindex="-1" bind:this={dialogEl} onkeydown={trapFocus}>
       <div class="friend-dialog__head">
-        <h2 id="friend-dialog-title">{t(locale, 'friends.apply')}</h2>
-        <button type="button" class="friend-dialog__close" aria-label={t(locale, 'friends.close')} onclick={closeApply}>×</button>
+        <h2 id="friend-dialog-title">{tr('friends.apply')}</h2>
+        <button type="button" class="friend-dialog__close" aria-label={tr('friends.close')} onclick={closeApply}>×</button>
       </div>
       {#if applyDone}
-        <p class="friend-dialog__success" role="status">{t(locale, 'friends.success')}</p>
+        <p class="friend-dialog__success" role="status">{tr('friends.success')}</p>
         <div class="friend-dialog__actions">
-          <button type="button" class="friend-submit" onclick={closeApply}>{t(locale, 'friends.close')}</button>
+          <button type="button" class="friend-submit" onclick={closeApply}>{tr('friends.close')}</button>
         </div>
       {:else}
-        <p class="friend-dialog__hint">{t(locale, 'friends.applicationHint')}</p>
+        <p class="friend-dialog__hint">{tr('friends.applicationHint')}</p>
         <form class="friend-form" onsubmit={submitApply}>
-          <label for="friend-name">{t(locale, 'friends.siteName')}</label>
+          <label for="friend-name">{tr('friends.siteName')}</label>
           <input id="friend-name" bind:this={nameInput} bind:value={name} required maxlength="200" autocomplete="organization" />
-          <label for="friend-url">{t(locale, 'friends.siteUrl')}</label>
+          <label for="friend-url">{tr('friends.siteUrl')}</label>
           <input id="friend-url" bind:value={url} required type="url" maxlength="2048" placeholder="https://" autocomplete="url" />
-          <label for="friend-description">{t(locale, 'friends.description')}</label>
+          <label for="friend-description">{tr('friends.description')}</label>
           <textarea id="friend-description" bind:value={description} maxlength="500" rows="3"></textarea>
-          <label for="friend-icon">{t(locale, 'friends.icon')}</label>
+          <label for="friend-icon">{tr('friends.icon')}</label>
           <div class="friend-icon-field">
             <span class="friend-icon-preview" aria-hidden="true">
               {#if icon && !iconPreviewFailed}
@@ -548,11 +550,11 @@
             </span>
             <input id="friend-icon" bind:value={icon} oninput={() => { iconPreviewFailed = false; iconError = '' }} type="text" inputmode="url" maxlength="2048" placeholder="https://" autocomplete="off" />
             <button type="button" class="friend-icon-fetch" onclick={() => void fetchIcon()} disabled={iconBusy || !url.trim()}>
-              {iconBusy ? t(locale, 'friends.fetchingIcon') : t(locale, 'friends.fetchIcon')}
+              {iconBusy ? tr('friends.fetchingIcon') : tr('friends.fetchIcon')}
             </button>
             <input bind:this={iconFileInput} class="friend-sr" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" onchange={uploadIcon} />
             <button type="button" class="friend-icon-fetch" onclick={() => iconFileInput?.click()} disabled={iconUploadBusy}>
-              {iconUploadBusy ? t(locale, 'friends.uploadingIcon') : t(locale, 'friends.uploadIcon')}
+              {iconUploadBusy ? tr('friends.uploadingIcon') : tr('friends.uploadIcon')}
             </button>
           </div>
           {#if iconError}<p class="friend-dialog__error" role="alert">{iconError}</p>{/if}
@@ -562,8 +564,8 @@
           </div>
           {#if applyError}<p class="friend-dialog__error" role="alert">{applyError}</p>{/if}
           <div class="friend-dialog__actions">
-            <button type="button" class="friend-cancel" onclick={closeApply}>{t(locale, 'comments.cancel')}</button>
-            <button type="submit" class="friend-submit" disabled={applyBusy}>{applyBusy ? '…' : t(locale, 'friends.submit')}</button>
+            <button type="button" class="friend-cancel" onclick={closeApply}>{tr('comments.cancel')}</button>
+            <button type="submit" class="friend-submit" disabled={applyBusy}>{applyBusy ? '…' : tr('friends.submit')}</button>
           </div>
         </form>
       {/if}
@@ -574,12 +576,12 @@
 {#if qrLink}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div class="friend-backdrop" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) closeQr() }}>
-    <div class="friend-qr" role="dialog" aria-modal="true" aria-label={t(locale, 'friends.qr')} tabindex="-1" bind:this={qrDialog} onkeydown={(event) => trapFocus(event, qrDialog)}>
+    <div class="friend-qr" role="dialog" aria-modal="true" aria-label={tr('friends.qr')} tabindex="-1" bind:this={qrDialog} onkeydown={(event) => trapFocus(event, qrDialog)}>
       <div class="friend-dialog__head">
-        <h2>{t(locale, 'friends.qr')}</h2>
-        <button type="button" class="friend-dialog__close" aria-label={t(locale, 'friends.close')} onclick={closeQr}>×</button>
+        <h2>{tr('friends.qr')}</h2>
+        <button type="button" class="friend-dialog__close" aria-label={tr('friends.close')} onclick={closeQr}>×</button>
       </div>
-      <img class="friend-qr__image" src={qrSource(qrLink)} alt={t(locale, 'friends.qr')} width="240" height="240" />
+      <img class="friend-qr__image" src={qrSource(qrLink)} alt={tr('friends.qr')} width="240" height="240" />
       <p class="friend-qr__url">{qrLink.url}</p>
     </div>
   </div>

@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCompassShelf } from '../../lib/blog-types'
 
-  let { shelves, locale }: { shelves: BlogCompassShelf[]; locale: BlogLocale } = $props()
+  let { shelves, locale, messages }: { shelves: BlogCompassShelf[]; locale: BlogLocale; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   let query = $state('')
   let selectedGroup = $state('')
@@ -60,19 +62,19 @@
 
 <section class="compass-section" aria-labelledby="compass-title">
   <div class="compass-head">
-    <div><h1 id="compass-title">{t(locale, 'nav.compass')}</h1><p>{filtered.length}</p></div>
+    <div><h1 id="compass-title">{tr('nav.compass')}</h1><p>{filtered.length}</p></div>
   </div>
 
   {#if shelves.length > 0}
     <div class="compass-tools">
       <div class="compass-search">
-        <label class="compass-sr" for="compass-search">{t(locale, 'collections.search')}</label>
-        <input id="compass-search" type="search" placeholder={t(locale, 'collections.search')} bind:value={query} autocomplete="off" />
-        {#if query}<button type="button" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>{/if}
+        <label class="compass-sr" for="compass-search">{tr('collections.search')}</label>
+        <input id="compass-search" type="search" placeholder={tr('collections.search')} bind:value={query} autocomplete="off" />
+        {#if query}<button type="button" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>{/if}
       </div>
       {#if groups.length > 1}
-        <div class="compass-chips" role="group" aria-label={t(locale, 'nav.compass')}>
-          <button type="button" class:active={!selectedGroup} aria-pressed={!selectedGroup} onclick={() => (selectedGroup = '')}>{t(locale, 'collections.all')}</button>
+        <div class="compass-chips" role="group" aria-label={tr('nav.compass')}>
+          <button type="button" class:active={!selectedGroup} aria-pressed={!selectedGroup} onclick={() => (selectedGroup = '')}>{tr('collections.all')}</button>
           {#each groups as group (group.id)}<button type="button" class:active={selectedGroup === group.id} aria-pressed={selectedGroup === group.id} onclick={() => (selectedGroup = group.id)}>{group.label}</button>{/each}
         </div>
       {/if}
@@ -80,7 +82,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="compass-empty">{shelves.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
+    <div class="compass-empty">{shelves.length === 0 ? tr('collections.empty') : tr('collections.noResults')}</div>
   {:else}
     {#each filtered as shelf (shelf.id)}
       <section class="compass-shelf" aria-labelledby={`shelf-${shelf.id}`}>
