@@ -224,6 +224,8 @@ if ((Astro.request.method === 'GET' || Astro.request.method === 'HEAD') && perma
   }
 }
 const canonical = `${origin}${canonicalPath}`
+const authorName = blog.site.profile.name || blog.site.site.title
+const authorHref = blog.site.profile.slug ? `/authors/${encodeURIComponent(blog.site.profile.slug)}` : ''
 // Posts carry category/tag names; the canonical taxonomy URLs are keyed by slug.
 const categoryHref = (name: string): string => `/categories/${encodeURIComponent(blog.categories.find((item) => item.name === name)?.slug ?? name)}`
 const tagHref = (name: string): string => `/tags/${encodeURIComponent(blog.tags.find((item) => item.name === name)?.slug ?? name)}`
@@ -282,7 +284,7 @@ const jsonLd = post ? {
   image: cover ? new URL(cover, origin).href : undefined,
   datePublished: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
   dateModified: new Date(post.updatedAt).toISOString(),
-  author: { '@type': 'Person', name: blog.site.profile.name || blog.site.site.title },
+  author: { '@type': 'Person', name: authorName, url: authorHref ? `${origin}${authorHref}` : undefined, image: blog.site.profile.avatar ? new URL(mediaUrl(blog.site.profile.avatar) ?? blog.site.profile.avatar, origin).href : undefined },
   mainEntityOfPage: canonical,
   inLanguage: post.language || blog.site.site.locale,
 } : undefined
@@ -336,6 +338,7 @@ const jsonLd = post ? {
                 )}
                 <span>{post.readingMinutes} {t(locale, 'common.minRead')}</span>
                 <span>{post.viewCount} {t(locale, 'common.views')}</span>
+                <span>{t(locale, 'article.author')} {authorHref ? <a href={authorHref}>{authorName}</a> : authorName}</span>
                 {post.category && <a href={categoryHref(post.category)}>{post.category}</a>}
                 {blog.article.share && (
                   <>
@@ -408,7 +411,7 @@ const jsonLd = post ? {
               <h2 id="article-license-title">{t(locale, 'article.license')}</h2>
               <p class="article-license-work"><strong>{post.title || t(locale, 'common.untitled')}</strong> · <a href={canonical}>{canonical}</a></p>
               <dl>
-                <div><dt>{t(locale, 'article.author')}</dt><dd>{blog.site.profile.name || blog.site.site.title}</dd></div>
+                <div><dt>{t(locale, 'article.author')}</dt><dd>{authorHref ? <a href={authorHref}>{authorName}</a> : authorName}</dd></div>
                 {post.publishedAt && <div><dt>{t(locale, 'common.published')}</dt><dd>{formatDate(post.publishedAt, locale, blog.site.site.timeZone)}</dd></div>}
                 <div><dt>{t(locale, 'article.license')}</dt><dd>{blog.site.license.url ? <a href={blog.site.license.url} rel="license noopener noreferrer" target="_blank">{licenseName}</a> : licenseName}</dd></div>
               </dl>

@@ -1,0 +1,185 @@
+/* Author page: the profile card, its breadcrumb and the ordering control. */
+
+.article-meta a {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.article-meta a:hover {
+  color: var(--accent);
+}
+
+.profile-name a:hover {
+  color: var(--accent);
+}
+
+.breadcrumb {
+  margin-bottom: var(--sp-3);
+  font-size: var(--text-12);
+  color: var(--text-tertiary);
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.breadcrumb li + li::before {
+  content: "/";
+  color: var(--text-quaternary);
+}
+
+.breadcrumb a {
+  color: var(--text-tertiary);
+}
+
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+
+.breadcrumb li[aria-current="page"] {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.author-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.author-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border-subtle);
+  object-fit: cover;
+  background: var(--bg-sunken);
+}
+
+.author-avatar--placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--accent-contrast);
+  font-size: var(--text-24);
+  font-weight: 600;
+  background: var(--accent);
+}
+
+.author-body {
+  min-width: 0;
+}
+
+.author-kicker {
+  margin: 0 0 var(--sp-0-5);
+  font-size: var(--text-10-5);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps, 0.08em);
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+.author-name {
+  margin: 0;
+  font-size: var(--text-24);
+  line-height: 1.2;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.author-bio {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--text-13-5);
+  line-height: var(--ui-line);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.author-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: var(--sp-2) 0 0;
+  font-size: var(--text-12);
+  color: var(--text-tertiary);
+}
+
+.author-meta span,
+.author-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.author-meta a:hover {
+  color: var(--accent);
+}
+
+.author-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1-5);
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.author-count {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--text-12);
+  color: var(--text-tertiary);
+}
+
+.author-list-heading {
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+
+.author-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1-5);
+}
+
+.author-sort .chip.is-active {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .author-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--sp-4);
+  }
+
+  .author-avatar {
+    width: 72px;
+    height: 72px;
+  }
+}

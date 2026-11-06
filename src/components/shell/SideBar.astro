@@ -108,7 +108,13 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
           {avatar
             ? <img class="profile-avatar" src={avatar} alt="" loading="lazy" />
             : <span class="profile-avatar profile-avatar--placeholder" aria-hidden="true">{Array.from(profile.name || '?')[0]?.toUpperCase() ?? '?'}</span>}
-          {widgetTitle(widget) && <h2 class="profile-name">{widgetTitle(widget)}</h2>}
+          {widgetTitle(widget) && (
+            <h2 class="profile-name">
+              {profile.slug
+                ? <a href={`/authors/${encodeURIComponent(profile.slug)}`} aria-label={t(locale, 'author.viewProfile')}>{widgetTitle(widget)}</a>
+                : widgetTitle(widget)}
+            </h2>
+          )}
           {profile.bio && <p class="profile-bio">{profile.bio}</p>}
           {(profile.location || profile.email) && (
             <p class="profile-meta">
