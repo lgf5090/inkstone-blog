@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCollectionItem } from '../../lib/blog-types'
 
   type Kind = 'skills' | 'devices' | 'games' | 'anime'
-  let { kind, items, locale }: { kind: Kind; items: BlogCollectionItem[]; locale: BlogLocale } = $props()
+  let { kind, items, locale, title, messages }: { kind: Kind; items: BlogCollectionItem[]; locale: BlogLocale; title: string; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   const text = (data: Record<string, unknown>, key: string): string =>
     typeof data[key] === 'string' ? data[key] as string : ''
@@ -46,8 +48,6 @@
       ...list(item.data, 'technologies').map(String),
     ].join(' ').toLowerCase().includes(needle)
   }))
-  const titleKey = $derived(kind === 'skills' ? 'nav.skills' : kind === 'devices' ? 'nav.devices' : kind === 'games' ? 'nav.games' : 'nav.anime')
-
   function initial(value: string): string {
     return Array.from(value.trim())[0]?.toUpperCase() ?? '?'
   }
@@ -86,19 +86,19 @@
 
 <section class="grid-section" aria-labelledby="collection-title">
   <div class="grid-head">
-    <div><h1 id="collection-title">{t(locale, titleKey)}</h1><p>{filtered.length}</p></div>
+    <div><h1 id="collection-title">{title}</h1><p>{filtered.length}</p></div>
   </div>
 
   {#if items.length > 0}
     <div class="grid-tools">
       <div class="grid-search">
-        <label class="grid-sr" for="collection-search">{t(locale, 'collections.search')}</label>
-        <input id="collection-search" type="search" placeholder={t(locale, 'collections.search')} bind:value={query} autocomplete="off" />
-        {#if query}<button type="button" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>{/if}
+        <label class="grid-sr" for="collection-search">{tr('collections.search')}</label>
+        <input id="collection-search" type="search" placeholder={tr('collections.search')} bind:value={query} autocomplete="off" />
+        {#if query}<button type="button" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>{/if}
       </div>
       {#if filters.length > 1}
-        <div class="grid-chips" role="group" aria-label={t(locale, titleKey)}>
-          <button type="button" class:active={!selectedFilter} aria-pressed={!selectedFilter} onclick={() => (selectedFilter = '')}>{t(locale, 'collections.all')}</button>
+        <div class="grid-chips" role="group" aria-label={title}>
+          <button type="button" class:active={!selectedFilter} aria-pressed={!selectedFilter} onclick={() => (selectedFilter = '')}>{tr('collections.all')}</button>
           {#each filters as filter (filter)}<button type="button" class:active={selectedFilter === filter} aria-pressed={selectedFilter === filter} onclick={() => (selectedFilter = filter)}>{filter}</button>{/each}
         </div>
       {/if}
@@ -106,7 +106,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="grid-empty">{items.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
+    <div class="grid-empty">{items.length === 0 ? tr('collections.empty') : tr('collections.noResults')}</div>
   {:else}
     <div class="grid-cards" data-kind={kind}>
       {#each filtered as item (item.id)}
@@ -131,7 +131,7 @@
               {/if}
               {#if (kind === 'games' || kind === 'anime') && rating !== null}<span class="grid-badge grid-badge--rating">★ {rating}</span>{/if}
               {#if (kind === 'games' || kind === 'anime') && text(item.data, 'status')}<span class="grid-badge grid-badge--status">{text(item.data, 'status')}</span>{/if}
-              {#if featured}<span class="grid-badge grid-badge--featured">{t(locale, 'common.pinned')}</span>{/if}
+              {#if featured}<span class="grid-badge grid-badge--featured">{tr('common.pinned')}</span>{/if}
             </div>
           {/if}
           <div class="grid-body">
@@ -158,10 +158,10 @@
             {#if kind === 'games' && text(item.data, 'description')}<p class="grid-desc">{text(item.data, 'description')}</p>{/if}
             {#if kind === 'anime' && percent !== null}
               <div class="grid-meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={percent} aria-label={`${item.title}: ${watched}/${total}`}><span style={`width:${percent}%`}></span></div>
-              <p class="grid-meta">{watched} / {total} {t(locale, 'common.episodes')}</p>
+              <p class="grid-meta">{watched} / {total} {tr('common.episodes')}</p>
             {/if}
             {#if tags.length > 0}<div class="grid-tags">{#each tags as tag (tag)}<span>#{tag}</span>{/each}</div>{/if}
-            {#if link}<a class="grid-link" href={link} target="_blank" rel="noopener noreferrer">{t(locale, 'common.link')}</a>{/if}
+            {#if link}<a class="grid-link" href={link} target="_blank" rel="noopener noreferrer">{tr('common.link')}</a>{/if}
           </div>
         </article>
       {/each}

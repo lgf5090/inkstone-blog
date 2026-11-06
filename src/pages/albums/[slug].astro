@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import AlbumGallery from '../../components/blog/AlbumGallery.svelte'
-import { blogLocale, t } from '../../i18n'
+import { blogLocale, pickMessages, t } from '../../i18n'
 import { BlogApiError, loadAlbum, mediaUrl, unlockAlbum, userFacingError } from '../../lib/blog-api'
 import { albumUnlockCookieName } from '../../lib/format'
 import type { BlogAlbumDetail } from '../../lib/blog-types'
@@ -95,7 +95,14 @@ const photos = album ? album.photos.flatMap((photo) => {
         </header>
         {cover && <img class="article-cover" src={cover} alt="" loading="eager" />}
         <div class="article-body album-body">
-          <AlbumGallery photos={photos} layout={album.album.layout} columns={album.album.columns} {locale} client:visible />
+          <AlbumGallery
+            photos={photos}
+            layout={album.album.layout}
+            columns={album.album.columns}
+            {locale}
+            messages={pickMessages(locale, ['collections.empty', 'common.photos', 'friends.open', 'common.previous', 'common.next', 'friends.close'])}
+            client:visible
+          />
         </div>
       </article>
     )}

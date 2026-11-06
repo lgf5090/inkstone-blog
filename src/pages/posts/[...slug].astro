@@ -3,11 +3,12 @@ import Layout from '../../layouts/Layout.astro'
 import '../../styles/reading.css'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import Toc from '../../components/blog/Toc.astro'
+import Breadcrumb from '../../components/blog/Breadcrumb.astro'
 import Comments from '../../components/Comments.svelte'
 import ArticleImageLightbox from '../../components/blog/ArticleImageLightbox.svelte'
 import SharePoster from '../../components/blog/SharePoster.svelte'
 import Icon from '../../components/Icon.astro'
-import { blogLocale, t } from '../../i18n'
+import { blogLocale, localizedMessages, pickMessages, t } from '../../i18n'
 import { mediaUrl, BlogApiError, loadAdjacent, loadComments, loadDiscoveryCandidates, loadPost, loadPosts, resolveRedirect, unlockPost, userFacingError } from '../../lib/blog-api'
 import { formatDate, postUrl, safeRedirectTarget, unlockCookieName } from '../../lib/format'
 import type { AdjacentPosts, BlogCommentsResponse, BlogPostDetail, BlogPostSummary, SeriesItem } from '../../lib/blog-types'
@@ -189,7 +190,11 @@ function normalizeHeadingText(value: string): string {
 const bodyHtml = post?.render?.html ?? ''
 const leadingHeading = /^\s*<h1\b[^>]*>([\s\S]*?)<\/h1>\s*/i.exec(bodyHtml)
 const stripLeadingTitle = Boolean(post?.render && titleText && leadingHeading && normalizeHeadingText(leadingHeading[1]) === normalizeHeadingText(titleText))
-const articleHtml = stripLeadingTitle ? bodyHtml.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '') : bodyHtml
+// The page header owns the single H1. A note body may start with its own H1
+// (or carry section H1s); demote them to H2 so a page never ships two top-level
+// headings, while keeping the ids the outline links to.
+const demoteHeadingOnes = (html: string): string => html.replace(/<h1(\s[^>]*)?>([\s\S]*?)<\/h1>/gi, '<h2$1>$2</h2>')
+const articleHtml = demoteHeadingOnes(stripLeadingTitle ? bodyHtml.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '') : bodyHtml)
 const articleHeadings = stripLeadingTitle
   ? headings.filter((heading, index) => !(index === 0 && heading.depth === 1 && normalizeHeadingText(heading.text) === normalizeHeadingText(titleText)))
   : headings
@@ -226,6 +231,11 @@ if ((Astro.request.method === 'GET' || Astro.request.method === 'HEAD') && perma
 const canonical = `${origin}${canonicalPath}`
 // Posts carry category/tag names; the canonical taxonomy URLs are keyed by slug.
 const categoryHref = (name: string): string => `/categories/${encodeURIComponent(blog.categories.find((item) => item.name === name)?.slug ?? name)}`
+const breadcrumbItems = [
+  { label: t(locale, 'nav.home'), href: '/' },
+  ...(post?.category ? [{ label: post.category, href: categoryHref(post.category) }] : []),
+  ...(post ? [{ label: post.title || t(locale, 'common.untitled') }] : []),
+]
 const tagHref = (name: string): string => `/tags/${encodeURIComponent(blog.tags.find((item) => item.name === name)?.slug ?? name)}`
 const runtimeOrigin = blogRuntimeOrigin()
 const runtimeVersion = post?.render?.rendererVersion ?? ''
@@ -325,7 +335,7 @@ const jsonLd = post ? {
         <div>
           <article class="article-shell" aria-labelledby="post-title">
             <header class="article-header">
-              <a class="chip" href="/">{blog.site.site.title}</a>
+              <Breadcrumb items={breadcrumbItems} />
               <h1 id="post-title" class="article-title">{post.title || t(locale, 'common.untitled')}</h1>
               <div class="article-meta">
                 {post.publishedAt && (
@@ -352,6 +362,7 @@ const jsonLd = post ? {
                       url={canonical}
                       coverUrl={cover}
                       locale={locale}
+                      messages={pickMessages(locale, ['poster.open', 'poster.title', 'poster.download', 'poster.generating', 'poster.failed', 'poster.close'])}
                     />
                   </>
                 )}
@@ -373,7 +384,11 @@ const jsonLd = post ? {
               )}
             </div>
           </article>
-          <ArticleImageLightbox client:only="svelte" locale={locale} />
+          <ArticleImageLightbox
+            client:only="svelte"
+            locale={locale}
+            messages={pickMessages(locale, ['common.photos', 'common.previous', 'common.next', 'friends.close'])}
+          />
 
           {showUpdatedNotice && post.updatedAt && (
             <p class="article-updated-note" role="note">
@@ -469,6 +484,7 @@ const jsonLd = post ? {
             discussion={discussion}
             initial={comments?.items ?? []}
             locale={locale}
+            messages={localizedMessages(locale)}
             provider={blog.site.comment?.provider ?? 'none'}
             providerConfig={blog.site.comment}
           />

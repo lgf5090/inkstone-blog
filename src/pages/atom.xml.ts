@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
-import { loadFeeds } from '../lib/blog-api'
-import { escapeXml, postLink, publicPosts, siteOrigin } from '../lib/feed'
+import { loadFeeds, loadPost } from '../lib/blog-api'
+import { cdata, escapeXml, feedFullText, feedPostHtml, latestUpdatedAt, postLink, publicPosts, siteOrigin } from '../lib/feed'
 
 export const prerender = false
 
@@ -8,9 +8,25 @@ export const GET: APIRoute = async ({ url }) => {
   const feed = await loadFeeds().catch(() => null)
   if (!feed) return new Response('Blog feed unavailable', { status: 503 })
   const origin = siteOrigin(url, feed.site.site.url)
-  const updated = feed.posts[0]?.updatedAt ? new Date(feed.posts[0].updatedAt).toISOString() : new Date().toISOString()
-  const entries = publicPosts(feed.posts).slice(0, 50).map((post) => {
+  const posts = publicPosts(feed.posts).slice(0, 50)
+  const fullText = feedFullText(feed.site)
+  const bodies = fullText
+    ? await Promise.all(posts.map(async (post) => {
+      const inline = feedPostHtml(post, origin)
+      if (inline) return inline
+      try {
+        const detail = await loadPost(post.slug, null, { countView: false })
+        return feedPostHtml({ ...post, html: detail.render?.html ?? '' }, origin)
+      } catch (cause) {
+        console.warn('[blog] feed body unavailable', post.slug, cause)
+        return ''
+      }
+    }))
+    : []
+  const updated = latestUpdatedAt(posts) ?? Date.now()
+  const entries = posts.map((post, index) => {
     const link = postLink(origin, post.slug, post.permalink, feed.site.permalink.enable)
+    const body = bodies[index] ?? ''
     return `<entry>
       <title>${escapeXml(post.title)}</title>
       <link href="${escapeXml(link)}"/>
@@ -18,6 +34,7 @@ export const GET: APIRoute = async ({ url }) => {
       <updated>${new Date(post.updatedAt).toISOString()}</updated>
       ${post.publishedAt ? `<published>${new Date(post.publishedAt).toISOString()}</published>` : ''}
       <summary>${escapeXml(post.excerpt || post.description)}</summary>
+      ${body ? `<content type="html">${cdata(body)}</content>` : ''}
       ${post.category ? `<category term="${escapeXml(post.category)}"/>` : ''}
       ${post.tags.map((tag) => `<category term="${escapeXml(tag)}"/>`).join('')}
     </entry>`
@@ -28,7 +45,7 @@ export const GET: APIRoute = async ({ url }) => {
   <link href="${escapeXml(origin)}"/>
   <link rel="self" href="${escapeXml(`${origin}/atom.xml`)}"/>
   <id>${escapeXml(origin)}</id>
-  <updated>${updated}</updated>
+  <updated>${new Date(updated).toISOString()}</updated>
   <subtitle>${escapeXml(feed.site.site.description)}</subtitle>
   ${entries}
 </feed>`

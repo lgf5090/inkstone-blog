@@ -1,20 +1,25 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import { onDestroy, onMount, tick } from 'svelte'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
 
   type LightboxPhoto = { src: string; alt: string; caption?: string }
 
-  let { photos, index = 0, locale, onclose }: {
+  let { photos, index = 0, locale, messages, onclose }: {
     photos: LightboxPhoto[]
     index?: number
     locale: BlogLocale
+    messages: ClientMessages
     onclose: () => void
   } = $props()
+  const tr = $derived(translator(messages))
 
   // svelte-ignore state_referenced_locally
   let current = $state(Math.min(Math.max(index, 0), Math.max(photos.length - 1, 0)))
   let dialog = $state<HTMLDivElement | null>(null)
   let closeButton = $state<HTMLButtonElement | null>(null)
+  // Captured before the dialog steals focus, restored when it unmounts.
+  let opener: HTMLElement | null = null
 
   const photo = $derived(photos[current] ?? photos[0])
 
@@ -39,27 +44,46 @@
     } else if (event.key === 'End') {
       event.preventDefault()
       current = photos.length - 1
+    } else if (event.key === 'Tab') {
+      const container = event.currentTarget as HTMLElement
+      const focusable = [...container.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+        .filter((node) => node.offsetParent !== null || node === document.activeElement)
+      if (focusable.length === 0) return
+      const first = focusable[0]!
+      const last = focusable[focusable.length - 1]!
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
     }
   }
 
   onMount(() => {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
     void tick().then(() => closeButton?.focus())
+  })
+
+  onDestroy(() => {
+    opener?.focus()
   })
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="lightbox" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) onclose() }}>
-  <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label={t(locale, 'common.photos')} tabindex="-1" bind:this={dialog} onkeydown={onKey}>
+  <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label={tr('common.photos')} tabindex="-1" bind:this={dialog} onkeydown={onKey}>
     <div class="lightbox__bar">
       <span class="lightbox__count" aria-live="polite">{current + 1} / {photos.length}</span>
-      <button bind:this={closeButton} type="button" class="lightbox__close" aria-label={t(locale, 'friends.close')} onclick={onclose}>×</button>
+      <button bind:this={closeButton} type="button" class="lightbox__close" aria-label={tr('friends.close')} onclick={onclose}>×</button>
     </div>
     <div class="lightbox__stage">
-      <button type="button" class="lightbox__nav" aria-label={t(locale, 'common.previous')} disabled={current === 0} onclick={() => go(-1)}>‹</button>
+      <button type="button" class="lightbox__nav" aria-label={tr('common.previous')} disabled={current === 0} onclick={() => go(-1)}>‹</button>
       {#if photo}
         <img src={photo.src} alt={photo.alt} />
       {/if}
-      <button type="button" class="lightbox__nav" aria-label={t(locale, 'common.next')} disabled={current === photos.length - 1} onclick={() => go(1)}>›</button>
+      <button type="button" class="lightbox__nav" aria-label={tr('common.next')} disabled={current === photos.length - 1} onclick={() => go(1)}>›</button>
     </div>
     {#if photo?.caption}<p class="lightbox__caption">{photo.caption}</p>{/if}
   </div>

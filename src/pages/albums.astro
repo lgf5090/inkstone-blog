@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import AlbumSection from '../components/blog/AlbumSection.svelte'
-import { blogLocale, t } from '../i18n'
+import { blogLocale, pickMessages, t } from '../i18n'
 import { loadCollection, userFacingError } from '../lib/blog-api'
 import type { BlogCollectionItem } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -18,7 +18,12 @@ try { items = (await loadCollection('albums')).items } catch (cause) { error = u
     {error ? (
       <div class="error-state" role="alert"><strong>{t(locale, 'common.loadError')}</strong><p>{error}</p></div>
     ) : (
-      <AlbumSection albums={items} {locale} client:visible />
+      <AlbumSection
+        albums={items}
+        {locale}
+        messages={pickMessages(locale, ['albums.protected', 'collections.all', 'collections.empty', 'collections.noResults', 'collections.search', 'common.photos', 'common.tags', 'friends.close', 'nav.albums'])}
+        client:visible
+      />
     )}
   </MainGridLayout>
 </Layout>

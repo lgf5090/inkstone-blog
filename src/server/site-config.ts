@@ -19,6 +19,7 @@ export interface BlogRuntimeConfig {
     pageSize: number
     tocDepth: number
     progressStyle: 'dual' | 'single'
+    feedFullText: boolean
   }
   article: {
     showLastUpdated: boolean
@@ -106,6 +107,9 @@ export function buildRuntimeConfig(
       pageSize: numberSetting(display.postListPageSize, 10, 1, 50),
       tocDepth: numberSetting(display.tocDepth, 2, 1, 6),
       progressStyle: display.progressStyle === 'single' ? 'single' : 'dual',
+      // Persisted in the same `blog_settings.display` JSON as the other display
+      // switches; it reaches the feed through the public `/site` projection.
+      feedFullText: display.feedFullText === true,
     },
     article: site.article,
     music: site.integrations.music,

@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCollectionItem } from '../../lib/blog-types'
 
-  let { albums, locale }: { albums: BlogCollectionItem[]; locale: BlogLocale } = $props()
+  let { albums, locale, messages }: { albums: BlogCollectionItem[]; locale: BlogLocale; messages: ClientMessages } = $props()
+  const tr = $derived(translator(messages))
 
   const text = (data: Record<string, unknown>, key: string): string =>
     typeof data[key] === 'string' ? data[key] as string : ''
@@ -55,7 +57,7 @@
 <section class="album-section" aria-labelledby="albums-title">
   <div class="album-head">
     <div>
-      <h1 id="albums-title">{t(locale, 'nav.albums')}</h1>
+      <h1 id="albums-title">{tr('nav.albums')}</h1>
       <p>{filtered.length}</p>
     </div>
   </div>
@@ -63,13 +65,13 @@
   {#if albums.length > 0}
     <div class="album-tools">
       <div class="album-search">
-        <label class="album-sr" for="album-search">{t(locale, 'collections.search')}</label>
-        <input id="album-search" type="search" placeholder={t(locale, 'collections.search')} bind:value={query} autocomplete="off" />
-        {#if query}<button type="button" aria-label={t(locale, 'friends.close')} onclick={() => (query = '')}>×</button>{/if}
+        <label class="album-sr" for="album-search">{tr('collections.search')}</label>
+        <input id="album-search" type="search" placeholder={tr('collections.search')} bind:value={query} autocomplete="off" />
+        {#if query}<button type="button" aria-label={tr('friends.close')} onclick={() => (query = '')}>×</button>{/if}
       </div>
       {#if tags.length > 0}
-        <div class="album-chips" role="group" aria-label={t(locale, 'common.tags')}>
-          <button type="button" class:active={!selectedTag} aria-pressed={!selectedTag} onclick={() => (selectedTag = '')}>{t(locale, 'collections.all')}</button>
+        <div class="album-chips" role="group" aria-label={tr('common.tags')}>
+          <button type="button" class:active={!selectedTag} aria-pressed={!selectedTag} onclick={() => (selectedTag = '')}>{tr('collections.all')}</button>
           {#each tags as tag (tag)}<button type="button" class:active={selectedTag === tag} aria-pressed={selectedTag === tag} onclick={() => (selectedTag = tag)}>{tag}</button>{/each}
         </div>
       {/if}
@@ -77,7 +79,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <div class="album-empty">{albums.length === 0 ? t(locale, 'collections.empty') : t(locale, 'collections.noResults')}</div>
+    <div class="album-empty">{albums.length === 0 ? tr('collections.empty') : tr('collections.noResults')}</div>
   {:else}
     <div class="album-grid">
       {#each filtered as album (album.id)}
@@ -88,7 +90,7 @@
           <a class="album-card__link" href={href(album)}>
             <div class="album-card__cover">
               {#if image}<img src={image} alt="" loading="lazy" />{:else}<span aria-hidden="true">▦</span>{/if}
-              {#if locked}<span class="album-card__lock">{t(locale, 'albums.protected')}</span>{/if}
+              {#if locked}<span class="album-card__lock">{tr('albums.protected')}</span>{/if}
             </div>
             <div class="album-card__body">
               <div class="album-card__title"><h2>{album.title}</h2><span aria-hidden="true">→</span></div>
@@ -96,7 +98,7 @@
               <div class="album-card__meta">
                 {#if text(album.data, 'date')}<span>{text(album.data, 'date')}</span>{/if}
                 {#if text(album.data, 'location')}<span>{text(album.data, 'location')}</span>{/if}
-                <span>{String(album.data.photoCount ?? 0)} {t(locale, 'common.photos')}</span>
+                <span>{String(album.data.photoCount ?? 0)} {tr('common.photos')}</span>
               </div>
               {#if albumTags.length > 0}
                 <div class="album-card__tags">{#each albumTags.slice(0, 4) as tag (tag)}<span>#{tag}</span>{/each}</div>

@@ -1,0 +1,29 @@
+---
+import { blogLocale, t } from '../../i18n'
+import { FALLBACK_SITE } from '../../server/site-config'
+
+interface Item {
+  label: string
+  href?: string
+}
+
+interface Props {
+  items: Item[]
+}
+
+const blog = Astro.locals.blog ?? { site: FALLBACK_SITE }
+const locale = blogLocale(blog.site.site.locale)
+const { items } = Astro.props
+---
+
+<nav class="breadcrumb" aria-label={t(locale, 'common.breadcrumb')}>
+  <ol>
+    {items.map((item, index) => (
+      <li>
+        {item.href && index < items.length - 1
+          ? <a href={item.href}>{item.label}</a>
+          : <span aria-current="page">{item.label}</span>}
+      </li>
+    ))}
+  </ol>
+</nav>

@@ -1,13 +1,16 @@
 <script lang="ts">
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import type { BlogCalendarEntry } from '../../lib/blog-types'
 
   interface Props {
     locale: BlogLocale
     timeZone: string
     items: BlogCalendarEntry[]
+    messages: ClientMessages
   }
-  let { locale, timeZone, items }: Props = $props()
+  let { locale, timeZone, items, messages }: Props = $props()
+  const tr = $derived(translator(messages))
 
   const pad = (value: number) => String(value).padStart(2, '0')
   function partsOf(ms: number): { year: number; month: number; day: number } {
@@ -97,9 +100,9 @@
 
 <div class="calendar-widget">
   <div class="calendar-head">
-    <button type="button" class="calendar-nav" disabled={!canPrev} aria-label={t(locale, 'calendar.prevMonth')} onclick={() => moveTo(prevTarget, -1)}>‹</button>
-    <button type="button" class="calendar-month" title={t(locale, 'calendar.backToday')} onclick={backToToday}>{monthTitle}</button>
-    <button type="button" class="calendar-nav" disabled={!canNext} aria-label={t(locale, 'calendar.nextMonth')} onclick={() => moveTo(nextTarget, 1)}>›</button>
+    <button type="button" class="calendar-nav" disabled={!canPrev} aria-label={tr('calendar.prevMonth')} onclick={() => moveTo(prevTarget, -1)}>‹</button>
+    <button type="button" class="calendar-month" title={tr('calendar.backToday')} onclick={backToToday}>{monthTitle}</button>
+    <button type="button" class="calendar-nav" disabled={!canNext} aria-label={tr('calendar.nextMonth')} onclick={() => moveTo(nextTarget, 1)}>›</button>
   </div>
   <div class="calendar-weekdays" aria-hidden="true">
     {#each weekdays as day}<span>{day}</span>{/each}
@@ -115,7 +118,7 @@
           class:selected={selected === cell.key}
           disabled={cell.posts.length === 0}
           aria-pressed={selected === cell.key}
-          aria-label={`${cell.key} · ${cell.posts.length} ${t(locale, 'calendar.posts')}`}
+          aria-label={`${cell.key} · ${cell.posts.length} ${tr('calendar.posts')}`}
           onclick={() => (selected = selected === cell.key ? null : cell.key)}
         >
           <span>{cell.day}</span>

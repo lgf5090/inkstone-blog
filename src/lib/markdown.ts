@@ -26,6 +26,8 @@ export function renderPageMarkdown(source: string): string {
     allowedSchemes: ['http', 'https', 'mailto'],
     allowedSchemesByTag: { img: ['http', 'https', 'data'] },
     transformTags: {
+      // The page header owns the single H1; page bodies are chapter content.
+      h1: 'h2',
       a: (tagName, attribs) => ({
         tagName,
         attribs: {

@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import MainGridLayout from '../layouts/MainGridLayout.astro'
 import FriendsSection from '../components/blog/FriendsSection.svelte'
-import { blogLocale, t } from '../i18n'
+import { blogLocale, localizedMessages, t } from '../i18n'
 import { loadFriends, userFacingError } from '../lib/blog-api'
 import type { BlogFriends } from '../lib/blog-types'
 import { FALLBACK_SITE } from '../server/site-config'
@@ -22,7 +22,7 @@ try { friends = await loadFriends() } catch (cause) { error = userFacingError(ca
         <a class="chip" href="/">{t(locale, 'common.backHome')}</a>
       </div>
     ) : (
-      <FriendsSection {friends} {locale} client:visible />
+      <FriendsSection {friends} {locale} messages={localizedMessages(locale)} client:visible />
     )}
   </MainGridLayout>
 </Layout>

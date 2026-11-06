@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
   import PhotoLightbox from './PhotoLightbox.svelte'
   type LightboxPhoto = { src: string; alt: string; caption?: string }
 
@@ -10,12 +11,14 @@
     caption?: string
   }
 
-  let { photos, layout = 'grid', columns = 3, locale }: {
+  let { photos, layout = 'grid', columns = 3, locale, messages }: {
     photos: AlbumPhotoView[]
     layout?: string
     columns?: number
     locale: BlogLocale
+    messages: ClientMessages
   } = $props()
+  const tr = $derived(translator(messages))
 
   const count = $derived(Math.min(4, Math.max(2, Math.round(columns) || 3)))
   const masonry = $derived(layout === 'masonry')
@@ -24,16 +27,16 @@
 </script>
 
 {#if photos.length === 0}
-  <div class="album-gallery-empty">{t(locale, 'collections.empty')}</div>
+  <div class="album-gallery-empty">{tr('collections.empty')}</div>
 {:else}
   <div
     class="album-gallery"
     class:album-gallery--masonry={masonry}
     style={`--album-columns:${count}`}
-    aria-label={t(locale, 'common.photos')}
+    aria-label={tr('common.photos')}
   >
     {#each photos as photo, index (photo.id)}
-      <button type="button" class="album-photo" aria-label={`${t(locale, 'friends.open')}: ${photo.alt}`} onclick={() => (lightboxIndex = index)}>
+      <button type="button" class="album-photo" aria-label={`${tr('friends.open')}: ${photo.alt}`} onclick={() => (lightboxIndex = index)}>
         <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
         {#if photo.caption}<span class="album-photo__caption">{photo.caption}</span>{/if}
       </button>
@@ -42,7 +45,7 @@
 {/if}
 
 {#if lightboxIndex !== null}
-  <PhotoLightbox photos={lightboxPhotos} index={lightboxIndex} {locale} onclose={() => (lightboxIndex = null)} />
+  <PhotoLightbox photos={lightboxPhotos} index={lightboxIndex} {locale} {messages} onclose={() => (lightboxIndex = null)} />
 {/if}
 
 <style>

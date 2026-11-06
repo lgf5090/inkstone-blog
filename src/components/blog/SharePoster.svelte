@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { t, type BlogLocale } from '../../i18n'
+  import type { BlogLocale } from '../../i18n'
+  import { translator, type ClientMessages } from '../../i18n/client'
 
   interface Props {
     title: string
@@ -10,8 +11,10 @@
     url: string
     coverUrl?: string | null
     locale: BlogLocale
+    messages: ClientMessages
   }
-  let { title, description, author, published, siteTitle, url, coverUrl = null, locale }: Props = $props()
+  let { title, description, author, published, siteTitle, url, coverUrl = null, locale, messages }: Props = $props()
+  const tr = $derived(translator(messages))
 
   let open = $state(false)
   let status = $state<'idle' | 'working' | 'ready' | 'error'>('idle')
@@ -113,7 +116,24 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') close()
+    if (event.key === 'Escape') {
+      close()
+      return
+    }
+    if (event.key !== 'Tab') return
+    const dialog = event.currentTarget as HTMLElement
+    const focusable = [...dialog.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+      .filter((node) => node.offsetParent !== null || node === document.activeElement)
+    if (focusable.length === 0) return
+    const first = focusable[0]!
+    const last = focusable[focusable.length - 1]!
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
   }
 
   function download(): void {
@@ -126,24 +146,24 @@
 </script>
 
 <button type="button" class="article-share" bind:this={trigger} onclick={show}>
-  {t(locale, 'poster.open')}
+  {tr('poster.open')}
 </button>
 
 {#if open}
   <div class="poster-overlay" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) close() }}>
     <div class="poster-dialog" role="dialog" aria-modal="true" aria-labelledby="poster-title" tabindex="-1" onkeydown={onKeydown}>
-      <h2 id="poster-title">{t(locale, 'poster.title')}</h2>
+      <h2 id="poster-title">{tr('poster.title')}</h2>
       {#if status === 'working'}
-        <p class="poster-status">{t(locale, 'poster.generating')}</p>
+        <p class="poster-status">{tr('poster.generating')}</p>
       {:else if status === 'error'}
-        <p class="poster-status" role="alert">{t(locale, 'poster.failed')}</p>
+        <p class="poster-status" role="alert">{tr('poster.failed')}</p>
       {:else if imageUrl}
-        <img class="poster-preview" src={imageUrl} alt={t(locale, 'poster.title')} />
+        <img class="poster-preview" src={imageUrl} alt={tr('poster.title')} />
       {/if}
       <div class="poster-actions">
-        <button type="button" class="chip" bind:this={closeButton} onclick={close}>{t(locale, 'poster.close')}</button>
+        <button type="button" class="chip" bind:this={closeButton} onclick={close}>{tr('poster.close')}</button>
         {#if imageUrl}
-          <button type="button" class="chip" onclick={download}>{t(locale, 'poster.download')}</button>
+          <button type="button" class="chip" onclick={download}>{tr('poster.download')}</button>
         {/if}
       </div>
     </div>

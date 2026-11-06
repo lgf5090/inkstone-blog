@@ -47,10 +47,39 @@ test('a rich article hydrates and keeps its blocks', async ({ page }) => {
 })
 
 test('a narrow viewport does not scroll sideways', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
+  for (const width of [360, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
+    expect(overflow, `home overflows at ${width}px`).toBe(false)
+  }
+})
+
+test('the skip link focuses the main region', async ({ page }) => {
   await page.goto('/')
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
-  expect(overflow).toBe(false)
+  await page.keyboard.press('Tab')
+  await expect(page.locator('.skip-link')).toBeFocused()
+  await page.keyboard.press('Enter')
+  expect(await page.evaluate(() => document.activeElement?.id)).toBe('main-content')
+})
+
+test('every page has exactly one h1', async ({ page }) => {
+  await page.goto('/')
+  expect(await page.locator('h1').count()).toBe(1)
+  const firstPost = page.locator('.post-card a').first()
+  test.skip((await firstPost.count()) === 0, 'the blog has no posts')
+  await page.goto((await firstPost.getAttribute('href')) ?? '/')
+  expect(await page.locator('h1').count()).toBe(1)
+})
+
+test('an article exposes a breadcrumb trail', async ({ page }) => {
+  await page.goto('/')
+  const firstPost = page.locator('.post-card a').first()
+  test.skip((await firstPost.count()) === 0, 'the blog has no posts')
+  await page.goto((await firstPost.getAttribute('href')) ?? '/')
+  const crumb = page.locator('nav.breadcrumb')
+  await expect(crumb).toBeVisible()
+  await expect(crumb.locator('[aria-current="page"]')).toHaveText(/.+/)
 })
 
 test('client navigation keeps one reading surface and its outline', async ({ page }) => {
@@ -79,6 +108,10 @@ test('reading overlays expose hover, table copy and a read-only menu', async ({ 
   await first.click()
   await page.waitForURL(/\/posts\//)
   const host = page.locator('[data-preview-content]')
+  // A plain article keeps the stored snapshot and never mounts the reading
+  // runtime, so there are no overlays to exercise on it.
+  await page.waitForTimeout(800)
+  test.skip((await host.count()) === 0, 'the reading runtime is not mounted for this article')
   await expect(host).toBeVisible()
   const wiki = host.locator('[data-wikilink]').first()
   if (await wiki.count()) {

@@ -248,9 +248,20 @@ export interface BlogSearchResult extends BlogPage<BlogPostSummary> {
   engine: 'fts' | 'like'
 }
 
+/**
+ * A feed row may carry the rendered body as well as its summary. The frontend
+ * accepts the field under either spelling so it works with a backend that
+ * includes HTML in `/feeds` and with one that only exposes the detail route.
+ */
+export interface BlogFeedPost extends BlogPostSummary {
+  content?: string | null
+  contentHtml?: string | null
+  html?: string | null
+}
+
 export interface BlogFeedData {
   site: BlogSitePublic
-  posts: BlogPostSummary[]
+  posts: BlogFeedPost[]
 }
 
 export type BlogCollectionKind =

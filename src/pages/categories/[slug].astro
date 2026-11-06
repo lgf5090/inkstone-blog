@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import MainGridLayout from '../../layouts/MainGridLayout.astro'
 import PostCard from '../../components/blog/PostCard.astro'
+import Breadcrumb from '../../components/blog/Breadcrumb.astro'
 import Pagination from '../../components/blog/Pagination.astro'
 import { blogLocale, t } from '../../i18n'
 import { loadPosts, userFacingError } from '../../lib/blog-api'
@@ -39,6 +40,11 @@ const canonicalUrl = category
 ---
 <Layout title={category?.name ?? t(locale, 'nav.categories')} noIndex={!category} canonicalUrl={canonicalUrl}>
   <MainGridLayout page="categories">
+    <Breadcrumb items={[
+      { label: t(locale, 'nav.home'), href: '/' },
+      { label: t(locale, 'nav.categories'), href: '/categories' },
+      { label: category?.name ?? t(locale, 'blog.notFound') },
+    ]} />
     <div class="section-heading">
       <div>
         <h1>{category?.name ?? t(locale, 'blog.notFound')}</h1>

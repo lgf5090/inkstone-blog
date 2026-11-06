@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter/index.css";
-@import "@fontsource-variable/jetbrains-mono/index.css";
+@import "./fonts.css";
 @import "katex/dist/katex.min.css";
 @import "./inkstone-tokens.css";
 @import "./blog-tokens.css";
