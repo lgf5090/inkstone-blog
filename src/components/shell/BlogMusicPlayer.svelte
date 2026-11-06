@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, untrack } from 'svelte'
   import type { BlogMusicConfig, BlogMusicTrack } from '../../lib/blog-types'
   import PlayerSlider from './PlayerSlider.svelte'
 
@@ -100,25 +100,52 @@
   const OFFSET_KEY = 'blog-music-offset-v1'
   const DRAG_MARGIN = 8
   let panelEl = $state<HTMLElement | null>(null)
-  let dragState = $state<{ pointerId: number; startX: number; startY: number; baseX: number; baseY: number } | null>(null)
+  let dragState = $state<{
+    pointerId: number
+    startX: number
+    startY: number
+    baseX: number
+    baseY: number
+    baseLeft: number
+    baseTop: number
+    width: number
+    height: number
+  } | null>(null)
+  // `offset` is the reader's intent (what is persisted); `shown` is that intent
+  // clamped for the panel's current geometry. Keeping them apart matters on a
+  // phone: the expanded panel is viewport-wide, so its horizontal clamp would
+  // otherwise overwrite the position saved from the collapsed bubble.
   let offset = $state({ x: 0, y: 0 })
+  let shown = $state({ x: 0, y: 0 })
+  let dragMoved = false
+  let suppressOrbClick = false
 
-  function clampOffset(x: number, y: number): { x: number; y: number } {
-    const element = panelEl
-    if (!element) return { x, y }
-    const rect = element.getBoundingClientRect()
-    const baseLeft = rect.left - offset.x
-    const baseTop = rect.top - offset.y
+  function clampWithBase(
+    baseLeft: number,
+    baseTop: number,
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+  ): { x: number; y: number } {
     const viewportW = document.documentElement.clientWidth
     const viewportH = document.documentElement.clientHeight
     const minX = DRAG_MARGIN - baseLeft
-    const maxX = viewportW - DRAG_MARGIN - (baseLeft + rect.width)
+    const maxX = viewportW - DRAG_MARGIN - (baseLeft + width)
     const minY = DRAG_MARGIN - baseTop
-    const maxY = viewportH - DRAG_MARGIN - (baseTop + rect.height)
+    const maxY = viewportH - DRAG_MARGIN - (baseTop + height)
     return {
       x: Math.max(minX, Math.min(maxX, x)),
       y: Math.max(minY, Math.min(maxY, y)),
     }
+  }
+
+  /** Re-project the persisted intent onto the panel the template currently shows. */
+  function projectOffset(): void {
+    const element = panelEl
+    if (!element) return
+    const rect = element.getBoundingClientRect()
+    shown = clampWithBase(rect.left - shown.x, rect.top - shown.y, rect.width, rect.height, offset.x, offset.y)
   }
 
   function saveOffset(): void {
@@ -132,21 +159,38 @@
   function startDrag(event: PointerEvent): void {
     if (event.pointerType === 'mouse' && event.button !== 0) return
     const element = event.currentTarget as HTMLElement
+    // Clamp against the panel, not the grip/orb that received the pointer: a
+    // control's own box is smaller than the surface the translate moves.
+    const rect = (panelEl ?? element).getBoundingClientRect()
+    dragMoved = false
     dragState = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      baseX: offset.x,
-      baseY: offset.y,
+      baseX: shown.x,
+      baseY: shown.y,
+      baseLeft: rect.left - shown.x,
+      baseTop: rect.top - shown.y,
+      width: rect.width,
+      height: rect.height,
     }
     element.setPointerCapture(event.pointerId)
-    event.preventDefault()
   }
 
   function moveDrag(event: PointerEvent): void {
     const state = dragState
     if (!state || state.pointerId !== event.pointerId) return
-    offset = clampOffset(state.baseX + event.clientX - state.startX, state.baseY + event.clientY - state.startY)
+    if (Math.abs(event.clientX - state.startX) + Math.abs(event.clientY - state.startY) > 4) dragMoved = true
+    const next = clampWithBase(
+      state.baseLeft,
+      state.baseTop,
+      state.width,
+      state.height,
+      state.baseX + event.clientX - state.startX,
+      state.baseY + event.clientY - state.startY,
+    )
+    offset = next
+    shown = next
     event.preventDefault()
   }
 
@@ -156,30 +200,45 @@
     dragState = null
     const element = event.currentTarget as HTMLElement
     if (element.hasPointerCapture(state.pointerId)) element.releasePointerCapture(state.pointerId)
+    suppressOrbClick = dragMoved
     saveOffset()
+  }
+
+  // A drag that ends on the collapsed bubble must not also expand it or toggle
+  // playback; the first click after a drag is consumed here.
+  function consumeDragClick(): boolean {
+    if (!suppressOrbClick) return false
+    suppressOrbClick = false
+    return true
   }
 
   function nudgeDrag(event: KeyboardEvent): void {
     const step = event.shiftKey ? 40 : 16
-    let x = offset.x
-    let y = offset.y
+    let x = shown.x
+    let y = shown.y
     if (event.key === 'ArrowLeft') x -= step
     else if (event.key === 'ArrowRight') x += step
     else if (event.key === 'ArrowUp') y -= step
     else if (event.key === 'ArrowDown') y += step
     else return
     event.preventDefault()
-    offset = clampOffset(x, y)
+    const element = panelEl
+    if (!element) return
+    const rect = element.getBoundingClientRect()
+    const next = clampWithBase(rect.left - shown.x, rect.top - shown.y, rect.width, rect.height, x, y)
+    offset = next
+    shown = next
     saveOffset()
   }
 
-  // Re-clamp whenever the panel mounts, opens, or changes size.
+  // Re-project the saved position whenever the panel mounts, opens, collapses or
+  // changes size. The projection itself is untracked: reading `offset`/`shown`
+  // here would turn every drag frame into a new clamp over stale geometry.
   $effect(() => {
-    if (!panelEl) return
     const element = panelEl
-    const reclamp = () => {
-      offset = clampOffset(offset.x, offset.y)
-    }
+    if (!element) return
+    const reclamp = () => untrack(() => projectOffset())
+    reclamp()
     window.addEventListener('resize', reclamp)
     const observer = new ResizeObserver(reclamp)
     observer.observe(element)
@@ -438,12 +497,24 @@
     {#if collapsed}
       <div
         class="bm-player bm-player--collapsed"
+        class:bm-player--dragging={dragState !== null}
         role="region"
         aria-label={labels.title}
         bind:this={panelEl}
-        style:translate={`${offset.x}px ${offset.y}px`}
+        style:translate={`${shown.x}px ${shown.y}px`}
       >
-        <button type="button" class="bm-orb" aria-label={labels.expand} onclick={() => { collapsed = false }}>
+        <button
+          type="button"
+          class="bm-orb"
+          aria-label={labels.expand}
+          title={labels.drag}
+          onpointerdown={startDrag}
+          onpointermove={moveDrag}
+          onpointerup={endDrag}
+          onpointercancel={endDrag}
+          onkeydown={nudgeDrag}
+          onclick={() => { if (consumeDragClick()) return; collapsed = false }}
+        >
           <span class="bm-cover bm-cover--orb" aria-hidden="true">
             {#if current && coverOf(current)}
               <img src={coverOf(current) ?? ''} alt="" onerror={() => current && coverFailedFor(current)} />
@@ -454,7 +525,7 @@
             {/if}
           </span>
         </button>
-        <button type="button" class="bm-orb-toggle" aria-label={playing ? labels.pause : labels.play} onclick={toggle}>
+        <button type="button" class="bm-orb-toggle" aria-label={playing ? labels.pause : labels.play} onclick={() => { if (consumeDragClick()) return; toggle() }}>
           {#if playing}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
           {:else}
@@ -469,7 +540,7 @@
         role="region"
         aria-label={labels.title}
         bind:this={panelEl}
-        style:translate={`${offset.x}px ${offset.y}px`}
+        style:translate={`${shown.x}px ${shown.y}px`}
       >
         <header class="bm-header">
           <button
@@ -680,6 +751,17 @@
     padding: 0;
     overflow: hidden;
     border-radius: var(--r-full);
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+    /* The quick-action stack owns the right edge; the bubble sits just left of it
+       so the two never overlap and the back-to-top button stays clickable. */
+    right: 4rem;
+  }
+
+  .bm-player--collapsed.bm-player--dragging,
+  .bm-player--dragging .bm-grip {
+    cursor: grabbing;
   }
 
   .bm-orb {
@@ -1143,10 +1225,12 @@
     }
 
     .bm-player--collapsed {
-      right: 8px;
+      right: 4rem;
       bottom: 8px;
       left: auto;
       width: auto;
+      /* The mobile `.bm-player` rule adds padding; the bubble is only the orb. */
+      padding: 0;
     }
 
     .bm-queue-list { max-height: 38vh; }
