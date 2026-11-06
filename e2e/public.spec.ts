@@ -82,6 +82,27 @@ test('an article exposes a breadcrumb trail', async ({ page }) => {
   await expect(crumb.locator('[aria-current="page"]')).toHaveText(/.+/)
 })
 
+const siteApi = process.env.BLOG_E2E_SITE_API?.replace(/\/+$/, '')
+const siteKey = process.env.BLOG_E2E_SITE_KEY
+
+test('every enabled sidebar widget renders a card', async ({ page, request }) => {
+  test.skip(!siteApi || !siteKey, 'the blog site API is not configured')
+  const site = await (await request.get(`${siteApi}/api/blog/site`, {
+    headers: { 'x-blog-proxy-key': siteKey! },
+  })).json() as { widgets?: { type: string; enabled?: boolean; pages?: string[] }[] }
+  const expected = (site.widgets ?? [])
+    .filter((widget) => widget.enabled !== false && (!widget.pages?.length || widget.pages.includes('post')))
+    .map((widget) => widget.type)
+  await page.goto('/')
+  const firstPost = page.locator('.post-card a').first()
+  test.skip((await firstPost.count()) === 0, 'the blog has no posts')
+  await page.goto((await firstPost.getAttribute('href')) ?? '/')
+  const rendered = await page.evaluate(() =>
+    [...document.querySelectorAll('aside.sidebar [data-widget]')].map((element) => element.getAttribute('data-widget') ?? ''),
+  )
+  for (const type of expected) expect(rendered, `missing sidebar widget: ${type}`).toContain(type)
+})
+
 test('client navigation keeps one reading surface and its outline', async ({ page }) => {
   await page.goto('/')
   const first = page.locator('.post-card a').first()

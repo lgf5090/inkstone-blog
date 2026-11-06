@@ -38,6 +38,7 @@ export type MessageKey =
   | 'common.latest' | 'common.copyFailed' | 'common.link' | 'common.repository' | 'common.episodes' | 'common.photos' | 'common.skipToContent' | 'common.mainNavigation' | 'common.sidebar' | 'common.breadcrumb' | 'search.title' | 'search.placeholder' | 'search.empty' | 'search.results'
   | 'search.close' | 'search.loading' | 'search.error' | 'search.viewAll'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint' | 'blog.serverError' | 'blog.serverErrorHint'
+  | 'widget.emptyProfile' | 'widget.emptyCategories' | 'widget.emptyTags' | 'widget.emptySeries' | 'widget.emptyRecent' | 'widget.emptyContent'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
   | 'collections.search' | 'collections.all' | 'collections.noResults' | 'collections.loadMore'
   | 'albums.protected' | 'albums.protectedHint'
@@ -243,6 +244,13 @@ const en: Dictionary = {
   'common.breadcrumb': 'Breadcrumb',
   'blog.serverError': 'Something went wrong',
   'blog.serverErrorHint': 'This page could not be loaded. Try again, or return home.',
+
+  'widget.emptyProfile': 'No profile details yet.',
+  'widget.emptyCategories': 'No categories yet.',
+  'widget.emptyTags': 'No tags yet.',
+  'widget.emptySeries': 'No series yet.',
+  'widget.emptyRecent': 'No posts yet.',
+  'widget.emptyContent': 'Nothing configured yet.',
   'newsletter.title': 'Subscribe to updates',
   'newsletter.description': 'Get new posts by email. No account needed.',
   'newsletter.emailLabel': 'Email address',
@@ -436,6 +444,13 @@ const zhCN: Dictionary = {
   'common.breadcrumb': '面包屑',
   'blog.serverError': '服务器出错了',
   'blog.serverErrorHint': '页面暂时无法加载，请重试或返回首页。',
+
+  'widget.emptyProfile': '暂无个人资料。',
+  'widget.emptyCategories': '暂无分类。',
+  'widget.emptyTags': '暂无标签。',
+  'widget.emptySeries': '暂无系列。',
+  'widget.emptyRecent': '暂无文章。',
+  'widget.emptyContent': '暂无内容。',
   'newsletter.title': '订阅更新',
   'newsletter.description': '通过邮件收到新文章，无需注册账号。',
   'newsletter.emailLabel': '邮箱地址',
@@ -646,6 +661,13 @@ const zhTW: Dictionary = { ...zhCN,
   'common.breadcrumb': '麵包屑',
   'blog.serverError': '伺服器發生錯誤',
   'blog.serverErrorHint': '頁面暫時無法載入，請重試或返回首頁。',
+
+  'widget.emptyProfile': '暫無個人資料。',
+  'widget.emptyCategories': '暫無分類。',
+  'widget.emptyTags': '暫無標籤。',
+  'widget.emptySeries': '暫無系列。',
+  'widget.emptyRecent': '暫無文章。',
+  'widget.emptyContent': '暫無內容。',
 }
 
 const ja: Dictionary = { ...en,
@@ -804,6 +826,13 @@ const ja: Dictionary = { ...en,
   'common.breadcrumb': 'パンくずリスト',
   'blog.serverError': 'サーバーエラーが発生しました',
   'blog.serverErrorHint': 'このページを読み込めませんでした。再試行するか、ホームに戻ってください。',
+
+  'widget.emptyProfile': 'プロフィール情報はまだありません。',
+  'widget.emptyCategories': 'カテゴリーはまだありません。',
+  'widget.emptyTags': 'タグはまだありません。',
+  'widget.emptySeries': 'シリーズはまだありません。',
+  'widget.emptyRecent': '記事はまだありません。',
+  'widget.emptyContent': '内容はまだ設定されていません。',
 }
 
 const ko: Dictionary = { ...en,
@@ -962,6 +991,13 @@ const ko: Dictionary = { ...en,
   'common.breadcrumb': '탐색 경로',
   'blog.serverError': '서버에 문제가 발생했습니다',
   'blog.serverErrorHint': '페이지를 불러오지 못했습니다. 다시 시도하거나 홈으로 돌아가세요.',
+
+  'widget.emptyProfile': '아직 프로필 정보가 없습니다.',
+  'widget.emptyCategories': '아직 카테고리가 없습니다.',
+  'widget.emptyTags': '아직 태그가 없습니다.',
+  'widget.emptySeries': '아직 시리즈가 없습니다.',
+  'widget.emptyRecent': '아직 글이 없습니다.',
+  'widget.emptyContent': '아직 설정된 내용이 없습니다.',
 }
 
 const es: Dictionary = { ...en,
@@ -1120,6 +1156,13 @@ const es: Dictionary = { ...en,
   'common.breadcrumb': 'Migas de pan',
   'blog.serverError': 'Algo salió mal',
   'blog.serverErrorHint': 'No se pudo cargar esta página. Vuelve a intentarlo o regresa al inicio.',
+
+  'widget.emptyProfile': 'Aún no hay datos de perfil.',
+  'widget.emptyCategories': 'Aún no hay categorías.',
+  'widget.emptyTags': 'Aún no hay etiquetas.',
+  'widget.emptySeries': 'Aún no hay series.',
+  'widget.emptyRecent': 'Aún no hay artículos.',
+  'widget.emptyContent': 'Aún no hay nada configurado.',
 }
 
 const id: Dictionary = { ...en,
@@ -1278,6 +1321,13 @@ const id: Dictionary = { ...en,
   'common.breadcrumb': 'Remah roti',
   'blog.serverError': 'Terjadi kesalahan',
   'blog.serverErrorHint': 'Halaman ini tidak dapat dimuat. Coba lagi atau kembali ke beranda.',
+
+  'widget.emptyProfile': 'Belum ada detail profil.',
+  'widget.emptyCategories': 'Belum ada kategori.',
+  'widget.emptyTags': 'Belum ada tag.',
+  'widget.emptySeries': 'Belum ada seri.',
+  'widget.emptyRecent': 'Belum ada artikel.',
+  'widget.emptyContent': 'Belum ada yang dikonfigurasi.',
 }
 
 const th: Dictionary = { ...en,
@@ -1436,6 +1486,13 @@ const th: Dictionary = { ...en,
   'common.breadcrumb': 'เส้นทางนำทาง',
   'blog.serverError': 'เกิดข้อผิดพลาด',
   'blog.serverErrorHint': 'ไม่สามารถโหลดหน้านี้ได้ โปรดลองอีกครั้งหรือกลับไปหน้าแรก',
+
+  'widget.emptyProfile': 'ยังไม่มีข้อมูลโปรไฟล์',
+  'widget.emptyCategories': 'ยังไม่มีหมวดหมู่',
+  'widget.emptyTags': 'ยังไม่มีแท็ก',
+  'widget.emptySeries': 'ยังไม่มีซีรีส์',
+  'widget.emptyRecent': 'ยังไม่มีบทความ',
+  'widget.emptyContent': 'ยังไม่มีการตั้งค่าเนื้อหา',
 }
 
 const tr: Dictionary = { ...en,
@@ -1594,6 +1651,13 @@ const tr: Dictionary = { ...en,
   'common.breadcrumb': 'Gezinti izi',
   'blog.serverError': 'Bir sorun oluştu',
   'blog.serverErrorHint': 'Bu sayfa yüklenemedi. Tekrar deneyin veya ana sayfaya dönün.',
+
+  'widget.emptyProfile': 'Henüz profil bilgisi yok.',
+  'widget.emptyCategories': 'Henüz kategori yok.',
+  'widget.emptyTags': 'Henüz etiket yok.',
+  'widget.emptySeries': 'Henüz seri yok.',
+  'widget.emptyRecent': 'Henüz yazı yok.',
+  'widget.emptyContent': 'Henüz yapılandırılmış içerik yok.',
 }
 
 const vi: Dictionary = { ...en,
@@ -1752,6 +1816,13 @@ const vi: Dictionary = { ...en,
   'common.breadcrumb': 'Đường dẫn',
   'blog.serverError': 'Đã xảy ra lỗi',
   'blog.serverErrorHint': 'Không thể tải trang này. Hãy thử lại hoặc quay về trang chủ.',
+
+  'widget.emptyProfile': 'Chưa có thông tin hồ sơ.',
+  'widget.emptyCategories': 'Chưa có danh mục.',
+  'widget.emptyTags': 'Chưa có thẻ.',
+  'widget.emptySeries': 'Chưa có bộ bài.',
+  'widget.emptyRecent': 'Chưa có bài viết.',
+  'widget.emptyContent': 'Chưa có nội dung nào được cấu hình.',
 }
 
 const dictionaries: Record<BlogLocale, Dictionary> = {

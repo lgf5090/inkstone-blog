@@ -514,6 +514,15 @@ select {
   overflow-wrap: anywhere;
 }
 
+.widget-empty {
+  margin: 0;
+  padding: var(--sp-1) 0;
+  font-size: var(--text-12);
+  line-height: 1.6;
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+
 .profile-links {
   display: flex;
   flex-wrap: wrap;
@@ -681,11 +690,14 @@ select {
   margin: 0;
   padding: 0;
   list-style: none;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .breadcrumb li {
   display: inline-flex;
   min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: var(--sp-1-5);
 }
@@ -705,10 +717,11 @@ select {
 }
 
 .breadcrumb [aria-current='page'] {
-  overflow: hidden;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
   color: var(--text-primary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .section-heading {
@@ -1386,6 +1399,10 @@ select {
   .layout-grid[data-sidebar='single'][data-side='right'],
   .layout-grid[data-sidebar='dual'] {
     grid-template-columns: minmax(0, 1fr);
+    /* The rails below are horizontal scrollers. A grid container counts its
+       items' scrollable overflow as its own, which widened the page instead of
+       leaving the swipe inside the rail; clipping here keeps that contained. */
+    overflow-x: clip;
   }
   .layout-grid > .sidebar,
   .layout-grid > .content-column,

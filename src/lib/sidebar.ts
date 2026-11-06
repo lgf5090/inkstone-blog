@@ -42,49 +42,22 @@ export function sidebarWidgets(blog: SidebarData, page: string, column: SidebarQ
     && (column === 'all' || widgetColumn(widget) === column))
 }
 
-function profileHasContent(blog: SidebarData): boolean {
-  const profile = blog.site.profile
-  return Boolean(profile.name || profile.bio || profile.avatar || profile.email || profile.location || profile.links.length > 0)
-}
-
-/**
- * A visible widget still renders nothing when its data source is empty (a tag
- * list with no tags, a profile card with every field blank). The shell asks
- * this before reserving a rail so "all cards off" collapses to one column.
- */
-function widgetHasContent(widget: BlogWidget, blog: SidebarData): boolean {
-  switch (widget.type) {
-    case 'profile':
-      return profileHasContent(blog)
-    case 'search':
-      return true
-    case 'categories':
-      return blog.categories.length > 0
-    case 'tags':
-      return blog.tags.length > 0
-    case 'series':
-      return blog.series.length > 0
-    case 'recent':
-    case 'stats':
-    case 'calendar':
-      return true
-    case 'announcement':
-      return typeof widget.config.text === 'string' && widget.config.text.trim().length > 0
-    case 'custom':
-      return typeof widget.config.html === 'string' && widget.config.html.trim().length > 0
-    default:
-      return false
-  }
-}
-
 export function isSortedTop(widget: BlogWidget): boolean {
   return widget.slot === 'top'
 }
 
+/**
+ * Whether a rail has anything to show.
+ *
+ * Every enabled widget renders a card of its own: an empty profile or a taxonomy with no rows
+ * draws an explicit empty state instead of disappearing, so the rail is reserved by the widget
+ * list rather than by whether its data happens to be present. The legacy announcement sits above
+ * the widgets and is the one card that still depends on its own text.
+ */
 export function sidebarHasContent(blog: SidebarData, page: string, column: SidebarColumn): boolean {
   if (column === 'primary') {
     const announcement = blog.site.announcement
     if (announcement?.enable && announcement.text.trim()) return true
   }
-  return sidebarWidgets(blog, page, column).some((widget) => widgetHasContent(widget, blog))
+  return sidebarWidgets(blog, page, column).length > 0
 }

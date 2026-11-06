@@ -90,18 +90,21 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
       </section>
     )}
     {ordered.map((widget) => {
-      if (widget.type === 'profile') return (profile.name || profile.bio || avatar || socialLinks.length > 0 || profile.email || profile.location) && (
-        <section class:list={["sidebar-card profile-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={profile.name || t(locale, 'nav.about')}>
+      if (widget.type === 'profile') {
+        const hasProfile = Boolean(profile.name || profile.bio || avatar || socialLinks.length > 0 || profile.email || profile.location)
+        const heading = widgetTitle(widget) || blog.site.site.title || t(locale, 'nav.about')
+        const linkable = Boolean(profile.slug && profile.name)
+        return (
+        <section data-widget="profile" class:list={["sidebar-card profile-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={heading}>
           {avatar
             ? <img class="profile-avatar" src={avatar} alt="" loading="lazy" />
-            : <span class="profile-avatar profile-avatar--placeholder" aria-hidden="true">{Array.from(profile.name || '?')[0]?.toUpperCase() ?? '?'}</span>}
-          {widgetTitle(widget) && (
-            <h2 class="profile-name">
-              {profile.slug
-                ? <a href={`/authors/${encodeURIComponent(profile.slug)}`} aria-label={t(locale, 'author.viewProfile')}>{widgetTitle(widget)}</a>
-                : widgetTitle(widget)}
-            </h2>
-          )}
+            : <span class="profile-avatar profile-avatar--placeholder" aria-hidden="true">{Array.from(profile.name || blog.site.site.title || '?')[0]?.toUpperCase() ?? '?'}</span>}
+          <h2 class="profile-name">
+            {linkable
+              ? <a href={`/authors/${encodeURIComponent(profile.slug)}`} aria-label={t(locale, 'author.viewProfile')}>{heading}</a>
+              : heading}
+          </h2>
+          {!hasProfile && <p class="widget-empty">{t(locale, 'widget.emptyProfile')}</p>}
           {profile.bio && <p class="profile-bio">{profile.bio}</p>}
           {(profile.location || profile.email) && (
             <p class="profile-meta">
@@ -128,9 +131,10 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
             )}
           </div>
         </section>
-      )
+        )
+      }
       if (widget.type === 'search') return (
-        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={t(locale, 'search.title')}>
+        <section data-widget="search" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={t(locale, 'search.title')}>
           <h2 class="sidebar-title">{widgetTitle(widget)}</h2>
           <form class="search-form" action="/search" method="get" role="search">
             <label class="sr-only" for="sidebar-search">{t(locale, 'search.placeholder')}</label>
@@ -143,7 +147,17 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
         const items = widget.type === 'categories' ? blog.categories : widget.type === 'tags' ? blog.tags : blog.series
         const base = widget.type === 'categories' ? '/categories' : widget.type === 'tags' ? '/tags' : '/series'
         const key = widget.type === 'categories' ? 'nav.categories' : widget.type === 'tags' ? 'nav.tags' : 'nav.series'
-        if (items.length === 0) return null
+        const emptyKey = widget.type === 'categories'
+          ? t(locale, 'widget.emptyCategories')
+          : widget.type === 'tags'
+            ? t(locale, 'widget.emptyTags')
+            : t(locale, 'widget.emptySeries')
+        if (items.length === 0) return (
+          <section data-widget={widget.type} class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
+            <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget) || t(locale, key)}</h2>
+            <p class="widget-empty">{emptyKey}</p>
+          </section>
+        )
         const collapseAt = typeof widget.collapseAfter === 'number' && widget.collapseAfter > 0 ? widget.collapseAfter : 8
         const shown = items.slice(0, collapseAt)
         const rest = items.slice(collapseAt)
@@ -156,7 +170,7 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
           </li>
         )
         return (
-          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
+          <section data-widget={widget.type} class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
             <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget) || t(locale, key)}</h2>
             <ul class="widget-list">
               {shown.map(renderItem)}
@@ -172,22 +186,26 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
         )
       }
       if (widget.type === 'recent') return (
-        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
+        <section data-widget="recent" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
-          <ul class="widget-list">
-            {recent.map((post) => (
-              <li>
-                <a href={`/posts/${encodeURIComponent(post.slug)}`}>
-                  <span>{post.title || t(locale, 'common.untitled')}</span>
-                  <Icon name="arrow-right" size={13} />
-                </a>
-              </li>
-            ))}
-          </ul>
+          {recent.length === 0
+            ? <p class="widget-empty">{t(locale, 'widget.emptyRecent')}</p>
+            : (
+              <ul class="widget-list">
+                {recent.map((post) => (
+                  <li>
+                    <a href={`/posts/${encodeURIComponent(post.slug)}`}>
+                      <span>{post.title || t(locale, 'common.untitled')}</span>
+                      <Icon name="arrow-right" size={13} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
         </section>
       )
       if (widget.type === 'calendar') return (
-        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
+        <section data-widget="calendar" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-labelledby={`widget-${widget.id}`}>
           <h2 class="sidebar-title" id={`widget-${widget.id}`}>{widgetTitle(widget)}</h2>
           <CalendarWidget
             client:visible
@@ -199,7 +217,7 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
         </section>
       )
       if (widget.type === 'stats') return (
-        <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widgetTitle(widget) || t(locale, 'common.stats')}>
+        <section data-widget="stats" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widgetTitle(widget) || t(locale, 'common.stats')}>
           <h2 class="sidebar-title">{widgetTitle(widget) || t(locale, 'common.stats')}</h2>
           <ul class="widget-list">
             <li><span>{t(locale, 'common.posts')}</span><span class="widget-count">{blog.site.counts.posts}</span></li>
@@ -212,21 +230,21 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
       )
       if (widget.type === 'announcement') {
         const text = announcement(widget)
-        return text ? (
-          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Announcement'}>
+        return (
+          <section data-widget="announcement" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Announcement'}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
-            <p class="profile-bio">{text}</p>
+            {text ? <p class="profile-bio">{text}</p> : <p class="widget-empty">{t(locale, 'widget.emptyContent')}</p>}
           </section>
-        ) : null
+        )
       }
       if (widget.type === 'custom') {
         const html = customHtml(widget)
-        return html ? (
-          <section class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Custom'}>
+        return (
+          <section data-widget="custom" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Custom'}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
-            <div set:html={html} />
+            {html ? <div set:html={html} /> : <p class="widget-empty">{t(locale, 'widget.emptyContent')}</p>}
           </section>
-        ) : null
+        )
       }
       return null
     })}
