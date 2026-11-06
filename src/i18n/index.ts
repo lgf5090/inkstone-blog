@@ -39,6 +39,7 @@ export type MessageKey =
   | 'search.close' | 'search.loading' | 'search.error' | 'search.viewAll'
   | 'theme.toggle' | 'blog.poweredBy' | 'blog.notFound' | 'blog.notFoundHint' | 'blog.serverError' | 'blog.serverErrorHint'
   | 'widget.emptyProfile' | 'widget.emptyCategories' | 'widget.emptyTags' | 'widget.emptySeries' | 'widget.emptyRecent' | 'widget.emptyContent'
+  | 'widget.announcement' | 'widget.custom'
   | 'collections.empty' | 'collections.friends' | 'collections.moments'
   | 'collections.search' | 'collections.all' | 'collections.noResults' | 'collections.loadMore'
   | 'albums.protected' | 'albums.protectedHint'
@@ -251,6 +252,8 @@ const en: Dictionary = {
   'widget.emptySeries': 'No series yet.',
   'widget.emptyRecent': 'No posts yet.',
   'widget.emptyContent': 'Nothing configured yet.',
+  'widget.announcement': 'Announcement',
+  'widget.custom': 'Custom content',
   'newsletter.title': 'Subscribe to updates',
   'newsletter.description': 'Get new posts by email. No account needed.',
   'newsletter.emailLabel': 'Email address',
@@ -451,6 +454,8 @@ const zhCN: Dictionary = {
   'widget.emptySeries': '暂无系列。',
   'widget.emptyRecent': '暂无文章。',
   'widget.emptyContent': '暂无内容。',
+  'widget.announcement': '公告',
+  'widget.custom': '自定义内容',
   'newsletter.title': '订阅更新',
   'newsletter.description': '通过邮件收到新文章，无需注册账号。',
   'newsletter.emailLabel': '邮箱地址',

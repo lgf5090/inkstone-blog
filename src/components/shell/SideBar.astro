@@ -231,7 +231,7 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
       if (widget.type === 'announcement') {
         const text = announcement(widget)
         return (
-          <section data-widget="announcement" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Announcement'}>
+          <section data-widget="announcement" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || t(locale, 'widget.announcement')}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
             {text ? <p class="profile-bio">{text}</p> : <p class="widget-empty">{t(locale, 'widget.emptyContent')}</p>}
           </section>
@@ -240,7 +240,7 @@ const socialGlyph = (label: string): string => Array.from(label.trim())[0]?.toUp
       if (widget.type === 'custom') {
         const html = customHtml(widget)
         return (
-          <section data-widget="custom" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || 'Custom'}>
+          <section data-widget="custom" class:list={["sidebar-card", widget.slot === 'sticky' && 'sidebar-sticky']} aria-label={widget.title || t(locale, 'widget.custom')}>
             {widget.title && <h2 class="sidebar-title">{widget.title}</h2>}
             {html ? <div set:html={html} /> : <p class="widget-empty">{t(locale, 'widget.emptyContent')}</p>}
           </section>
